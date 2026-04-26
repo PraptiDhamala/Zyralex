@@ -6,22 +6,44 @@ import ConfettiCannon from "react-native-confetti-cannon";
 import emojis from "../../assets/emojis.json";
 
 function fisherYatesShuffle<T>(array: T[]): T[] {
-  const result = [...array]; // copy so original is safe
+  const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1)); // random index
-    [result[i], result[j]] = [result[j], result[i]]; // swap
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
 }
-
 
 function getRandomPairs<T>(source: T[], count: number): T[] {
   const shuffled = fisherYatesShuffle(source);
   return shuffled.slice(0, count);
 }
 
+// ⭐ NEW: ensures no correct pair appears in same row
+function shuffleAvoidingMatches(
+  names: string[],
+  emojis: string[],
+  pairs: { name: string; emoji: string }[]
+) {
+  let shuffledEmojis = [...emojis];
+  let hasMatch = true;
+
+  while (hasMatch) {
+    shuffledEmojis = fisherYatesShuffle(shuffledEmojis);
+
+    hasMatch = names.some((name, index) => {
+      const emoji = shuffledEmojis[index];
+      return pairs.some(
+        (p) => p.name === name && p.emoji === emoji
+      );
+    });
+  }
+
+  return shuffledEmojis;
+}
+
 const styles = StyleSheet.create({
-   container: { flex: 1 },
+  container: { flex: 1 },
   gradient: { flex: 1, padding: 20 },
   header: {
     flexDirection: "row",
@@ -29,16 +51,15 @@ const styles = StyleSheet.create({
     marginTop: 40,
     marginBottom: 20,
   },
-  backArrow: { fontSize: 28, marginRight: 10, color: "#fff"},
+  backArrow: { fontSize: 28, marginRight: 10, color: "#fff" },
   title: {
     fontSize: 30,
-    fontFamily:"Times New Roman",
+    fontFamily: "Times New Roman",
     fontWeight: "700",
     textAlign: "center",
     color: "#011e1f",
     flex: 1,
-    marginBottom:25
-    
+    marginBottom: 25,
   },
   row: { flexDirection: "row", flex: 1 },
   column: { flex: 1 },
@@ -48,15 +69,12 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#eee",
     borderRadius: 8,
-    alignItems: "center"
+    alignItems: "center",
   },
-  emojiText: { fontSize: 30 },   // large playful emojis
-  nameText: { fontSize:30}, 
-  selected: { backgroundColor: "#ebd595" }, // yellow when selected
-  matched: { backgroundColor: "#d5f096" }, // green when matched
-  backButton: { marginTop: 20, padding: 10, backgroundColor: "#318ef8", borderRadius: 8 },
-  backText: { color: "#fff", fontWeight: "600" },
-
+  emojiText: { fontSize: 30 },
+  nameText: { fontSize: 30 },
+  selected: { backgroundColor: "#ebd595" },
+  matched: { backgroundColor: "#d5f096" },
   mimoSpeech: {
     marginTop: 10,
     padding: 12,
@@ -67,7 +85,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    marginBottom:60,
+    marginBottom: 60,
   },
   mimoSpeechText: {
     fontSize: 17,
@@ -78,42 +96,57 @@ const styles = StyleSheet.create({
 });
 
 export default function MatchGame() {
-  const pathname = usePathname(); // hook at top level
+  const pathname = usePathname();
 
   const [pairs] = useState(getRandomPairs(emojis, 4));
   const [selected, setSelected] = useState<string[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
-  const [names, setNames] = useState(() =>
-    [...pairs.map((p) => p.name)].sort(() => Math.random() - 0.5)
+
+  // ✅ Shuffle names FIRST
+  const [names] = useState(() =>
+    fisherYatesShuffle(pairs.map((p) => p.name))
   );
-  const [emojisOnly, setEmojisOnly] = useState(() =>
-    [...pairs.map((p) => p.emoji)].sort(() => Math.random() - 0.5)
+
+  // ✅ Shuffle emojis WITHOUT same-row matches
+  const [emojisOnly] = useState(() =>
+    shuffleAvoidingMatches(
+      names,
+      pairs.map((p) => p.emoji),
+      pairs
+    )
   );
 
   const allMatched = matched.length === pairs.length * 2;
 
   const handleSelect = (item: string) => {
+    if (selected.includes(item)) return;
+
     const newSelected = [...selected, item];
     setSelected(newSelected);
 
     if (newSelected.length === 2) {
       setMoves((prev) => prev + 1);
+
       const [first, second] = newSelected;
+
       const match = pairs.find(
         (p) =>
           (p.name === first && p.emoji === second) ||
           (p.name === second && p.emoji === first)
       );
+
       if (match) {
-        setMatched([...matched, match.name, match.emoji]);
+        setMatched((prev) => [...prev, match.name, match.emoji]);
       }
-      setSelected([]);
+
+      setTimeout(() => setSelected([]), 400); // smoother UX
     }
   };
 
   return (
     <LinearGradient colors={["#f1adb0", "#9edbdf"]} style={styles.gradient}>
+      
       {/* Back button */}
       <View style={{ alignItems: "flex-end", marginTop: 10 }}>
         <Pressable onPress={() => router.back()}>
@@ -130,7 +163,7 @@ export default function MatchGame() {
       <View style={styles.row}>
         <FlatList
           data={names}
-          extraData={matched.concat(selected)} //  ensures re-render
+          extraData={matched.concat(selected)}
           keyExtractor={(item, index) => "name-" + index}
           renderItem={({ item }) => (
             <Pressable
@@ -149,7 +182,7 @@ export default function MatchGame() {
 
         <FlatList
           data={emojisOnly}
-          extraData={matched.concat(selected)} //  ensures re-render
+          extraData={matched.concat(selected)}
           keyExtractor={(item, index) => "emoji-" + index}
           renderItem={({ item }) => (
             <Pressable
@@ -167,36 +200,36 @@ export default function MatchGame() {
         />
       </View>
 
-      {/* Mimo mascot + speech bubble */}
+      {/* Mimo mascot */}
       <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 20 }}>
         <Image
           source={require("../../assets/mimoimg.png")}
-          style={{ width: 70, height: 80, marginRight: 0 }}
+          style={{ width: 70, height: 80 }}
           resizeMode="cover"
         />
 
         <View style={styles.mimoSpeech}>
           <Text style={styles.mimoSpeechText}>
             {allMatched
-              ? "🎉 Congratulations! You matched them all! Would you like to."
+              ? "🎉 Congratulations! You matched them all!"
               : moves === 0
-              ? " 👋 Hi, I’m Mimo! Match the names with the emojis to begin."
+              ? "👋 Hi, I’m Mimo! Match the names with the emojis to begin."
               : `You’ve made ${moves} moves so far!`}
           </Text>
 
-          {/* Play Again button */}
           {allMatched && (
             <Pressable
               style={{
                 marginTop: 5,
-                padding: 3,
+                padding: 6,
                 backgroundColor: "#318ef8",
                 borderRadius: 8,
-                alignContent:"center"
               }}
               onPress={() => router.replace(pathname as any)}
             >
-              <Text style={{ color: "#fff", fontWeight: "600",alignSelf:"center" }}>Play Again ?</Text>
+              <Text style={{ color: "#fff", fontWeight: "600", textAlign: "center" }}>
+                Play Again
+              </Text>
             </Pressable>
           )}
         </View>
@@ -204,11 +237,7 @@ export default function MatchGame() {
 
       {/* Confetti */}
       {allMatched && (
-        <ConfettiCannon
-          count={200}
-          origin={{ x: 200, y: 0 }}
-          fadeOut={true}
-        />
+        <ConfettiCannon count={70} origin={{ x: 200, y: 0 }} fadeOut />
       )}
     </LinearGradient>
   );
