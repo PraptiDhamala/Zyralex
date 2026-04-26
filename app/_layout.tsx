@@ -41,7 +41,7 @@ export default function RootLayout() {
         console.log("CURRENT:", currentRoute);
         console.log("TARGET:", targetRoute);
 
-        // 🔥 HARD STOP: prevent loop
+       
         if (currentRoute === targetRoute) {
           console.log("Already correct");
           return;
