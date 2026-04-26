@@ -5,12 +5,19 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import ConfettiCannon from "react-native-confetti-cannon";
 import emojis from "../../assets/emojis.json";
 
+function fisherYatesShuffle<T>(array: T[]): T[] {
+  const result = [...array]; // copy so original is safe
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); // random index
+    [result[i], result[j]] = [result[j], result[i]]; // swap
+  }
+  return result;
+}
 
 
-
-function getRandomPairs(source:any[],count:number){
-  const shuffled=[...source].sort(()=>Math.random() - 0.5);
-  return shuffled.slice(0,count);
+function getRandomPairs<T>(source: T[], count: number): T[] {
+  const shuffled = fisherYatesShuffle(source);
+  return shuffled.slice(0, count);
 }
 
 const styles = StyleSheet.create({
@@ -24,10 +31,11 @@ const styles = StyleSheet.create({
   },
   backArrow: { fontSize: 28, marginRight: 10, color: "#fff"},
   title: {
-    fontSize: 24,
+    fontSize: 30,
+    fontFamily:"Times New Roman",
     fontWeight: "700",
     textAlign: "center",
-    color: "#fff",
+    color: "#011e1f",
     flex: 1,
     marginBottom:25
     
@@ -43,11 +51,12 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   emojiText: { fontSize: 30 },   // large playful emojis
-nameText: { fontSize:30}, 
-  selected: { backgroundColor: "#ffd966" }, // yellow when selected
-  matched: { backgroundColor: "#8fce00" }, // green when matched
+  nameText: { fontSize:30}, 
+  selected: { backgroundColor: "#ebd595" }, // yellow when selected
+  matched: { backgroundColor: "#d5f096" }, // green when matched
   backButton: { marginTop: 20, padding: 10, backgroundColor: "#318ef8", borderRadius: 8 },
   backText: { color: "#fff", fontWeight: "600" },
+
   mimoSpeech: {
     marginTop: 10,
     padding: 12,
