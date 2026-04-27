@@ -23,3 +23,5 @@ const styles = StyleSheet.create({
   backButton: { marginTop: 20, padding: 10, backgroundColor: "#318ef8", borderRadius: 8 },
   backText: { color: "#fff", fontWeight: "600" },
 });
+//category sort
+//puzzle

@@ -74,7 +74,7 @@ export default function DyslexicGames() {
                 colors={["#a18cd1", "#fbc2eb"]}
                 style={styles.card}
               >
-                <Text style={styles.emoji}>😊</Text>
+                <Text style={styles.emoji}>❓</Text>
                 <Text style={styles.buttonText}>Emoji Riddles</Text>
               </LinearGradient>
             </TouchableOpacity>
