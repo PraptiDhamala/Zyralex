@@ -44,7 +44,7 @@ export default function Onboarding() {
               <Text style={styles.cardSubtitle}>Reading & vocabulary practice</Text>
             </View>
 
-            <View style={styles.cardButtons}>
+            <div style={styles.cardButtons}>
               <View style={styles.cardButton}>
                 <FontAwesome5 name="book" size={18} color="#fff" />
                 <Text style={styles.cardButtonText}>Reading</Text>
@@ -57,7 +57,7 @@ export default function Onboarding() {
                 <Ionicons name="game-controller" size={18} color="#fff" />
                 <Text style={styles.cardButtonText}>Games</Text>
               </View>
-            </View>
+            </div>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#fff" />
         </LinearGradient>
@@ -77,7 +77,7 @@ export default function Onboarding() {
               <Text style={styles.cardSubtitle}>ASL & sign language training</Text>
             </View>
 
-            <View style={styles.cardButtons}>
+            <div style={styles.cardButtons}>
               <View style={styles.cardButton}>
                 <Ionicons name="hand-left" size={18} color="#fff" />
                 <Text style={styles.cardButtonText}>ASL</Text>
@@ -90,7 +90,7 @@ export default function Onboarding() {
                 <Ionicons name="camera" size={18} color="#fff" />
                 <Text style={styles.cardButtonText}>Camera</Text>
               </View>
-            </View>
+            </div>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#fff" />
         </LinearGradient>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 15,
     borderRadius: 10,
-    overflow: "hidden", // ensures gradient respects rounded corners
+    overflow: "hidden", 
     width: "100%",
   },
   cardGradient: {
