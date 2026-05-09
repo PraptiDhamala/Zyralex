@@ -1,10 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, usePathname } from "expo-router";
 import React, { useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import emojis from "../../assets/emojis.json";
-
 function fisherYatesShuffle<T>(array: T[]): T[] {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
@@ -148,9 +148,9 @@ export default function MatchGame() {
     <LinearGradient colors={["#f1adb0", "#9edbdf"]} style={styles.gradient}>
       
       {/* Back button */}
-      <View style={{ alignItems: "flex-end", marginTop: 10 }}>
+      <View style={{ alignItems: "flex-start", marginTop: 20 }}>
         <Pressable onPress={() => router.back()}>
-          <Text style={styles.backArrow}>{"x"}</Text>
+          <Ionicons name="chevron-back" size={24} color="#fff" />
         </Pressable>
       </View>
 
