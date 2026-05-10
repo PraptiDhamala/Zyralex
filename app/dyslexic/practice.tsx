@@ -17,11 +17,41 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
+import { beginnerWords } from "../../data/lesson"
+import { speakWord } from "../../services/speech"
+import { startListening } from "../../services/voice"
 
 export default function DyslexicPractice() {
   const [activeTab, setActiveTab] = useState("practice")
   const [selectedDifficulty, setSelectedDifficulty] = useState("beginner")
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+
+  const [wordIndex, setWordIndex] = useState(0)
+
+  const goToNextWord = () => {
+    if (wordIndex < beginnerWords.length - 1) {
+      setWordIndex(wordIndex + 1)
+    } else {
+      setWordIndex(0)
+    }
+  }
+
+  const [spokenText, setSpokenText] = useState("")
+  const [feedback, setFeedback] = useState("")
+
+  const currentWord = beginnerWords?.[wordIndex] ?? ""
+
+  const handleSpeech = (text: any) => {
+    const safeText = typeof text === "string" ? text : ""
+
+    setSpokenText(safeText)
+
+    if (safeText.toLowerCase() === currentWord.toLowerCase()) {
+      setFeedback("✅ Correct!")
+    } else {
+      setFeedback("❌ Try Again")
+    }
+  }
 
   const difficulties = [
     { id: "beginner", label: "Beginner", icon: "◎" },
@@ -35,7 +65,7 @@ export default function DyslexicPractice() {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <View>
@@ -91,20 +121,42 @@ export default function DyslexicPractice() {
           <Text style={styles.cardTitle}>🎙 Read Aloud</Text>
 
           <View style={styles.wordBox}>
-            <Text style={styles.bigWord}>cat</Text>
+            <Text style={styles.bigWord}>
+              {currentWord}
+            </Text>
           </View>
 
-          <TouchableOpacity style={styles.listenBtn}>
+          <TouchableOpacity
+            style={styles.listenBtn}
+            onPress={() => speakWord(currentWord)}
+          >
             <Volume2 size={18} />
             <Text> Listen</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.speakBtn}>
+          <TouchableOpacity
+            style={styles.speakBtn}
+            onPress={() => {
+              console.log("MIC CLICKED")
+              startListening(handleSpeech)
+            }}
+          >
             <Mic size={20} color="#fff" />
             <Text style={{ color: "#fff", marginLeft: 5 }}>
               Click to Speak
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.nextBtn} onPress={goToNextWord}>
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+              Next Word
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.resultBox}>
+            <Text>You said: {spokenText || ""}</Text>
+            <Text>{feedback || ""}</Text>
+          </View>
         </View>
 
         {/* Phonics */}
@@ -134,13 +186,21 @@ export default function DyslexicPractice() {
             ))}
           </View>
         </View>
-      </ScrollView>
 
+      </ScrollView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+  nextBtn: {
+    backgroundColor: "#3B82F6",
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 10,
+    alignItems: "center",
+  },
+
   container: { flex: 1, backgroundColor: "#F9FAFB", padding: 15 },
 
   header: {
@@ -155,6 +215,13 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: "row",
     gap: 12,
+  },
+
+  resultBox: {
+    backgroundColor: "#F3F4F6",
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 15,
   },
 
   mainHeading: {
