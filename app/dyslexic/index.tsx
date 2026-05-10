@@ -39,11 +39,13 @@ export default function DyslexicHome() {
     try {
       setLoading(true);
 
+      // PICK FILE
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["text/plain", "application/pdf"],
+        type: ["application/pdf", "text/plain"],
         copyToCacheDirectory: true,
       });
 
+      // USER CANCELLED
       if (result.canceled) {
         setLoading(false);
         return;
@@ -51,48 +53,102 @@ export default function DyslexicHome() {
 
       const file = result.assets[0];
 
+      console.log("Selected File:", file);
+
+      // CREATE FORM DATA
+      // Replace your existing formData.append logic with this:
       const formData = new FormData();
+
+      // Ensure we have a valid mime type or fallback
+      const type = file.mimeType || "application/pdf";
 
       formData.append("file", {
         uri: file.uri,
-        name: file.name,
-        type: file.mimeType || "application/pdf",
+        name: file.name || "temp_file.pdf",
+        type: type,
       } as any);
 
-      const response = await fetch("http://YOUR_IP_ADDRESS:8000/simplify", {
-        method: "POST",
-        body: formData,
-      });
+      // IMPORTANT: Do NOT manually set 'Content-Type' in headers when using FormData.
+      // The browser/fetch needs to set the boundary itself.
+      const response = await fetch(
+        "https://grinch-cloak-grazing.ngrok-free.dev/simplify",
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Accept: "application/pdf",
+            // Remove 'Content-Type': 'multipart/form-data' if you had it.
+            // Fetch adds it automatically with the correct 'boundary'.
+          },
+        },
+      );
 
-      // RECEIVE PDF FILE
-      const blob = await response.blob();
+      console.log("Response Status:", response.status);
 
-      // CREATE FILE PATH
-      const fileUri = FileSystem.documentDirectory + "simplified.pdf";
+      // BACKEND ERROR
+      if (!response.ok) {
+        const errorText = await response.text();
 
-      // CONVERT BLOB TO BASE64
-      const reader = new FileReader();
-
-      reader.onloadend = async () => {
-        const base64data = (reader.result as string).split(",")[1];
-
-        // SAVE PDF
-        await FileSystem.writeAsSudtringAsync(fileUri, base64data, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        console.log("SERVER ERROR:", errorText);
 
         setLoading(false);
 
-        alert("Your simplified PDF is ready!");
+        alert("Backend Error:\n" + errorText);
 
-        // OPEN SHARE / DOWNLOAD MENU
-        await Sharing.shareAsync(fileUri);
+        return;
+      }
+
+      // GET PDF
+      const blob = await response.blob();
+
+      console.log("Blob Type:", blob.type);
+
+      // SAVE PATH
+      const fileUri = FileSystem.documentDirectory + "simplified.pdf";
+
+      // CONVERT TO BASE64
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        try {
+          const base64data = (reader.result as string).split(",")[1];
+
+          // SAVE FILE
+          await FileSystem.writeAsStringAsync(fileUri, base64data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          console.log("PDF Saved:", fileUri);
+
+          setLoading(false);
+
+          alert("Your simplified PDF is ready!");
+
+          // OPEN SHARE MENU
+          await Sharing.shareAsync(fileUri);
+        } catch (saveError) {
+          console.log("SAVE ERROR:", saveError);
+
+          setLoading(false);
+
+          alert("Failed to save PDF");
+        }
+      };
+
+      reader.onerror = () => {
+        console.log("Reader Error");
+
+        setLoading(false);
+
+        alert("Failed to read PDF");
       };
 
       reader.readAsDataURL(blob);
     } catch (error) {
-      console.log(error);
+      console.log("UPLOAD ERROR:", error);
+
       setLoading(false);
+
       alert("Error simplifying file");
     }
   };
