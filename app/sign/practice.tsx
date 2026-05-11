@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
   SafeAreaView,
-  TouchableOpacity,
+  ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
-import { PRACTICE_SESSIONS } from '../../constants/mockData';
+import { CameraPracticeGrid } from '../../components/CameraPracticeGrid';
 import { DifficultySelector } from '../../components/DifficultySelector';
 import { PracticeSessionCard } from '../../components/PracticeSessionCard';
-import { CameraPracticeGrid } from '../../components/CameraPracticeGrid';
 import { COLORS } from '../../constants/colors';
+import { PRACTICE_SESSIONS } from '../../constants/mockData';
 
 type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
 
