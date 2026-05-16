@@ -253,61 +253,93 @@ export default function DyslexicHome() {
           </View>
         </View>
 
-        {/* STATS */}
-        <View style={styles.statsContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.statsScrollContent}
-            decelerationRate="fast"
-            snapToInterval={125}
-          >
+        {/* STATS + ACTION BUTTONS */}
+        <View style={styles.statsWrapper}>
+          {/* STATS */}
+          <View style={styles.statsGrid}>
             {/* STREAK */}
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>🔥</Text>
+            <View style={styles.newStatCard}>
+              <Text style={styles.newStatEmoji}>🔥</Text>
 
-              <Text style={styles.statNumber}>1</Text>
+              <Text style={styles.newStatNumber}>1</Text>
 
-              <Text style={styles.statLabel}>
+              <Text style={styles.newStatLabel}>
                 {isSimplified ? "Days" : "Day Streak"}
               </Text>
             </View>
 
             {/* SCORE */}
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>🏆</Text>
+            <View style={styles.newStatCard}>
+              <Text style={styles.newStatEmoji}>🏆</Text>
 
-              <Text style={styles.statNumber}>0%</Text>
+              <Text style={styles.newStatNumber}>0%</Text>
 
-              <Text style={styles.statLabel}>
+              <Text style={styles.newStatLabel}>
                 {isSimplified ? "Top" : "Best Score"}
               </Text>
             </View>
 
             {/* IMPROVEMENT */}
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>📈</Text>
+            <View style={styles.newStatCard}>
+              <Text style={styles.newStatEmoji}>📈</Text>
 
-              <Text style={styles.statNumber}>+0%</Text>
+              <Text style={styles.newStatNumber}>+0%</Text>
 
-              <Text style={styles.statLabel}>
+              <Text style={styles.newStatLabel}>
                 {isSimplified ? "Better" : "Improvement"}
               </Text>
             </View>
+          </View>
 
-            {/* UPLOAD */}
-            <Pressable style={styles.statCard} onPress={pickDocument}>
-              <View style={styles.iconWrapper}>
-                <Feather name="upload-cloud" size={20} color="#3b82f6" />
+          {/* ACTION BUTTONS */}
+          <View style={styles.actionButtonsSection}>
+            {/* LEARN */}
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => router.push("/dyslexic/learn")}
+            >
+              <View style={styles.actionButtonContent}>
+                <Text style={styles.actionButtonIcon}>📖</Text>
+
+                <Text style={styles.actionButtonLabel}>Learn</Text>
               </View>
-
-              <Text style={styles.statNumber}>Add</Text>
-
-              <Text style={styles.statLabel}>
-                {isSimplified ? "Easy Read" : "Simplified"}
-              </Text>
             </Pressable>
-          </ScrollView>
+
+            {/* PRACTICE */}
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => router.push("/dyslexic/practice")}
+            >
+              <View style={styles.actionButtonContent}>
+                <Text style={styles.actionButtonIcon}>🎯</Text>
+
+                <Text style={styles.actionButtonLabel}>Practice</Text>
+              </View>
+            </Pressable>
+
+            {/* GAMES */}
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => router.push("/dyslexic/games")}
+            >
+              <View style={styles.actionButtonContent}>
+                <Text style={styles.actionButtonIcon}>🎮</Text>
+
+                <Text style={styles.actionButtonLabel}>Games</Text>
+              </View>
+            </Pressable>
+
+            {/* SIMPLIFIED PDF */}
+            <Pressable style={styles.actionButton} onPress={pickDocument}>
+              <View style={styles.actionButtonContent}>
+                <Feather name="upload-cloud" size={24} color="#3b82f6" />
+
+                <Text style={styles.actionButtonLabel}>
+                  {isSimplified ? "Easy Read" : "Simplified"}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
         </View>
 
         {/* LOADING */}
@@ -446,7 +478,79 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#9ca3af",
   },
+  statsWrapper: {
+    width: "100%",
+    marginTop: 25,
+  },
 
+  statsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+
+  newStatCard: {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    elevation: 2,
+  },
+
+  newStatEmoji: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+
+  newStatNumber: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#3b82f6",
+    marginBottom: 4,
+  },
+
+  newStatLabel: {
+    fontSize: 12,
+    color: "#6b7280",
+    fontWeight: "500",
+    textAlign: "center",
+  },
+
+  actionButtonsSection: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    gap: 10,
+  },
+
+  actionButton: {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 16,
+    paddingVertical: 18,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+
+  actionButtonContent: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  actionButtonIcon: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+
+  actionButtonLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1f2937",
+  },
   progressBarBg: {
     height: 8,
     backgroundColor: "#f3f4f6",
