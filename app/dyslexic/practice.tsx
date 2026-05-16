@@ -1,11 +1,7 @@
 // app/dyslexic/practice.tsx
 
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  Mic,
-  Target,
-  Volume2
-} from "lucide-react-native";
+import { Mic, Target, Volume2 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   ScrollView,
