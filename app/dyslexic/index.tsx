@@ -155,46 +155,6 @@ export default function DyslexicHome() {
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View>
-          <View style={styles.logoRow}>
-            <View style={styles.logoIcon}>
-              <Text style={styles.logoLetter}>Z</Text>
-            </View>
-
-            <View>
-              <Text style={styles.logoTitle}>Zyralex</Text>
-              <Text style={styles.logoSub}>Advancing accessible reading</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.headerIcons}>
-          <Ionicons
-            name="settings-outline"
-            size={22}
-            color="#6b7280"
-            style={styles.hIcon}
-          />
-
-          <Ionicons
-            name="shield-outline"
-            size={22}
-            color="#8b5cf6"
-            style={styles.hIcon}
-          />
-
-          <Pressable onPress={handleReset}>
-            <Ionicons
-              name="exit-outline"
-              size={22}
-              color="#3b82f6"
-              style={styles.hIcon}
-            />
-          </Pressable>
-        </View>
-      </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
