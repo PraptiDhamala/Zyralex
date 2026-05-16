@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import {
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  Animated,
+  View
 } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { AI_TIPS } from '../constants/mockData';
@@ -75,7 +74,7 @@ export function AITutorCard() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.cream,
+    backgroundColor: COLORS.white,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
