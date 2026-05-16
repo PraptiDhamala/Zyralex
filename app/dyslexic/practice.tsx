@@ -1,85 +1,67 @@
 // app/dyslexic/practice.tsx
 
-import { LinearGradient } from "expo-linear-gradient"
+import { LinearGradient } from "expo-linear-gradient";
 import {
-  Hexagon,
-  LogOut,
   Mic,
-  Settings,
   Target,
   Volume2
-} from "lucide-react-native"
-import React, { useState } from "react"
+} from "lucide-react-native";
+import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from "react-native"
-import { beginnerWords } from "../../data/lesson"
-import { speakWord } from "../../services/speech"
-import { startListening } from "../../services/voice"
+} from "react-native";
+import { beginnerWords } from "../../data/lesson";
+import { speakWord } from "../../services/speech";
+import { startListening } from "../../services/voice";
 
 export default function DyslexicPractice() {
-  const [activeTab, setActiveTab] = useState("practice")
-  const [selectedDifficulty, setSelectedDifficulty] = useState("beginner")
-  const [selectedLetter, setSelectedLetter] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("practice");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("beginner");
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
 
-  const [wordIndex, setWordIndex] = useState(0)
+  const [wordIndex, setWordIndex] = useState(0);
 
   const goToNextWord = () => {
     if (wordIndex < beginnerWords.length - 1) {
-      setWordIndex(wordIndex + 1)
+      setWordIndex(wordIndex + 1);
     } else {
-      setWordIndex(0)
+      setWordIndex(0);
     }
-  }
+  };
 
-  const [spokenText, setSpokenText] = useState("")
-  const [feedback, setFeedback] = useState("")
+  const [spokenText, setSpokenText] = useState("");
+  const [feedback, setFeedback] = useState("");
 
-  const currentWord = beginnerWords?.[wordIndex] ?? ""
+  const currentWord = beginnerWords?.[wordIndex] ?? "";
 
   const handleSpeech = (text: any) => {
-    const safeText = typeof text === "string" ? text : ""
+    const safeText = typeof text === "string" ? text : "";
 
-    setSpokenText(safeText)
+    setSpokenText(safeText);
 
     if (safeText.toLowerCase() === currentWord.toLowerCase()) {
-      setFeedback("✅ Correct!")
+      setFeedback("✅ Correct!");
     } else {
-      setFeedback("❌ Try Again")
+      setFeedback("❌ Try Again");
     }
-  }
+  };
 
   const difficulties = [
     { id: "beginner", label: "Beginner", icon: "◎" },
     { id: "intermediate", label: "Intermediate", icon: "◉" },
     { id: "advanced", label: "Advanced", icon: "⚡" },
     { id: "expert", label: "Expert", icon: "∧" },
-  ]
+  ];
 
-  const letters = ["A", "E", "I", "O"]
+  const letters = ["A", "E", "I", "O"];
 
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Dyslexic Learn</Text>
-            <Text style={styles.subtitle}>Anusha's Journey</Text>
-          </View>
-
-          <View style={styles.headerIcons}>
-            <Settings size={20} color="#888" />
-            <Hexagon size={20} color="#888" />
-            <LogOut size={20} color="#3B82F6" />
-          </View>
-        </View>
-
         {/* Title */}
         <Text style={styles.mainHeading}>Practice Sessions</Text>
 
@@ -108,12 +90,14 @@ export default function DyslexicPractice() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>📚 Lesson Practice</Text>
 
-          {["Letter Recognition", "Simple Words", "Syllable Basics"].map((t) => (
-            <View key={t} style={styles.practiceItem}>
-              <Text style={styles.practiceText}>{t}</Text>
-              <Target size={18} color="#3B82F6" />
-            </View>
-          ))}
+          {["Letter Recognition", "Simple Words", "Syllable Basics"].map(
+            (t) => (
+              <View key={t} style={styles.practiceItem}>
+                <Text style={styles.practiceText}>{t}</Text>
+                <Target size={18} color="#3B82F6" />
+              </View>
+            ),
+          )}
         </View>
 
         {/* Read Aloud */}
@@ -121,9 +105,7 @@ export default function DyslexicPractice() {
           <Text style={styles.cardTitle}>🎙 Read Aloud</Text>
 
           <View style={styles.wordBox}>
-            <Text style={styles.bigWord}>
-              {currentWord}
-            </Text>
+            <Text style={styles.bigWord}>{currentWord}</Text>
           </View>
 
           <TouchableOpacity
@@ -137,20 +119,16 @@ export default function DyslexicPractice() {
           <TouchableOpacity
             style={styles.speakBtn}
             onPress={() => {
-              console.log("MIC CLICKED")
-              startListening(handleSpeech)
+              console.log("MIC CLICKED");
+              startListening(handleSpeech);
             }}
           >
             <Mic size={20} color="#fff" />
-            <Text style={{ color: "#fff", marginLeft: 5 }}>
-              Click to Speak
-            </Text>
+            <Text style={{ color: "#fff", marginLeft: 5 }}>Click to Speak</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.nextBtn} onPress={goToNextWord}>
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>
-              Next Word
-            </Text>
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Next Word</Text>
           </TouchableOpacity>
 
           <View style={styles.resultBox}>
@@ -186,10 +164,9 @@ export default function DyslexicPractice() {
             ))}
           </View>
         </View>
-
       </ScrollView>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -325,4 +302,4 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
   },
-})
+});
