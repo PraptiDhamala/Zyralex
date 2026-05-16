@@ -2,10 +2,7 @@
 
 import { LinearGradient } from "expo-linear-gradient"
 import {
-  Hexagon,
-  LogOut,
   Mic,
-  Settings,
   Target,
   Volume2
 } from "lucide-react-native"
@@ -65,20 +62,6 @@ export default function DyslexicPractice() {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Dyslexic Learn</Text>
-            <Text style={styles.subtitle}>Anusha's Journey</Text>
-          </View>
-
-          <View style={styles.headerIcons}>
-            <Settings size={20} color="#888" />
-            <Hexagon size={20} color="#888" />
-            <LogOut size={20} color="#3B82F6" />
-          </View>
-        </View>
 
         {/* Title */}
         <Text style={styles.mainHeading}>Practice Sessions</Text>
