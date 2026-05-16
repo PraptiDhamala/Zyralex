@@ -19,7 +19,6 @@ function CustomHeader({ handleReset }: { handleReset: () => void }) {
           </View>
         </View>
 
-        {/* Header icons */}
         <View style={styles.headerIcons}>
           <Ionicons name="settings-outline" size={22} color="#6b7280" style={styles.hIcon} />
           <Ionicons name="shield-outline" size={22} color="#8b5cf6" style={styles.hIcon} />
