@@ -1,19 +1,21 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
+  Dimensions,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Dimensions,
+  View,
 } from 'react-native';
-import { CAMERA_PRACTICE_ITEMS } from '../constants/mockData';
 import { COLORS } from '../constants/colors';
+import { CAMERA_PRACTICE_ITEMS } from '../constants/mockData';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ITEM_WIDTH = (SCREEN_WIDTH - 48) / 2; // 2 columns with padding
 
 export const CameraPracticeGrid: React.FC = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Camera Practice</Text>
@@ -25,6 +27,11 @@ export const CameraPracticeGrid: React.FC = () => {
             key={item.id}
             style={styles.gridItem}
             activeOpacity={0.7}
+            onPress={() => {
+              router.push('/sign/CameraPracticeScreen');
+
+
+            }}
           >
             <View style={styles.itemContent}>
               <Text style={styles.handIcon}>👋</Text>

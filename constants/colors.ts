@@ -7,4 +7,9 @@ export const COLORS = {
   lightGray: '#CCCCCC',
   border: '#E5E5E5',
   success: '#4CAF50',
+  warning: '#FFC107',
+  info: '#2196F3',
+  text: '#333333',
+  textLight: '#666666',
+  background: '#FAFAFA',
 };
