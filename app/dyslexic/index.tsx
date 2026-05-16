@@ -51,32 +51,32 @@ export default function DyslexicHome() {
         return;
       }
 
-      const file = result.assets[0];
+      const selectedFile = result.assets[0];
 
-      console.log("Selected File:", file);
-
+      console.log("Selected File:", selectedFile);
       // CREATE FORM DATA
       // Replace your existing formData.append logic with this:
       const formData = new FormData();
 
       // Ensure we have a valid mime type or fallback
-      const type = file.mimeType || "application/pdf";
+      const type = selectedFile.mimeType || "application/pdf";
 
       formData.append("file", {
-        uri: file.uri,
-        name: file.name || "temp_file.pdf",
+        uri: selectedFile.uri,
+        name: selectedFile.name || "temp_file.pdf",
         type: type,
       } as any);
 
       // IMPORTANT: Do NOT manually set 'Content-Type' in headers when using FormData.
       // The browser/fetch needs to set the boundary itself.
       const response = await fetch(
-        "https://grinch-cloak-grazing.ngrok-free.dev/simplify",
+        "https://grinch-cloak-grazing.ngrok-free.app/simplify",
         {
           method: "POST",
           body: formData,
           headers: {
             Accept: "application/pdf",
+            "ngrok-skip-browser-warning": "true",
             // Remove 'Content-Type': 'multipart/form-data' if you had it.
             // Fetch adds it automatically with the correct 'boundary'.
           },
