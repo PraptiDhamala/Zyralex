@@ -1,65 +1,65 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Slot, useRouter } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { supabase } from "../lib/supabase";
 
 export default function RootLayout() {
   const router = useRouter();
+  const segments = useSegments();
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      setLoading(true);
+    const checkAuth = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      // GET CURRENT SESSION
-      const { data: { session } } = await supabase.auth.getSession();
+        const inAuthScreen = segments[0] === "signup";
 
-      // LISTEN FOR FUTURE CHANGES
-      const { data: listener } = supabase.auth.onAuthStateChange(
-        async (_event, session) => {
-
-          if (!session) {
+        if (!session) {
+          if (!inAuthScreen) {
             router.replace("/signup");
-            setLoading(false);
-            return;
           }
-
-          const choice = await AsyncStorage.getItem("moduleChoice");
-
-          if (!choice) {
-            router.replace("/onboarding");
-            setLoading(false);
-            return;
-          }
-
-          if (choice === "dyslexic") {
-            router.replace("/dyslexic");
-          } else if (choice === "sign") {
-            router.replace("/sign");
-          }
-
           setLoading(false);
+          return;
         }
-      );
 
-      // INITIAL CHECK
-      if (!session) {
-        router.replace("/signup");
+        const choice = await AsyncStorage.getItem("moduleChoice");
+
+        if (!choice) {
+          router.replace("/onboarding");
+          setLoading(false);
+          return;
+        }
+
+        if (choice === "dyslexic") {
+          router.replace("/dyslexic");
+        } else if (choice === "sign") {
+          router.replace("/sign");
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
         setLoading(false);
       }
-
-      return () => {
-        listener.subscription.unsubscribe();
-      };
     };
 
-    initAuth();
+    checkAuth();
   }, []);
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Text>Loading...</Text>
       </View>
     );
