@@ -13,7 +13,7 @@ while True:
     gray_roi = cv2.GaussianBlur(gray_roi, (7,7), 0)
     _, threshold = cv2.threshold(gray_roi, 60, 255, cv2.THRESH_BINARY_INV)
     # video sakiyo or read garna sakena vane break huncha
-    contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     print(contours)
     for cnt in contours:
         cv2.drawContours(roi, [cnt], -1, (0,0,255), 3)
