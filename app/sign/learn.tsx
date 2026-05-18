@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import { LESSON_LEVELS } from '../../constants/mockData';
+import { LESSON_LEVELS } from '../../constants/lessonData';
 import { LevelCollapsible } from '../../components/LevelCollapsible';
 import { COLORS } from '../../constants/colors';
 
@@ -28,7 +28,7 @@ export default function LearnScreen() {
         {/* Lesson Levels */}
         <View style={styles.lessonsContainer}>
           {LESSON_LEVELS.map((level) => (
-            <LevelCollapsible key={level.level} level={level} />
+            <LevelCollapsible key={level.levelId} level={level} />
           ))}
         </View>
 
