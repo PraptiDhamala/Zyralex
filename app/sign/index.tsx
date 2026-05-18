@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { COLORS } from '../../constants/colors';
-import { USER_STATS, LESSON_LEVELS } from '../../constants/mockData';
+import { USER_STATS } from '../../constants/mockData';
+import { LESSON_LEVELS } from '../../constants/lessonData';
 import { AITutorCard } from '../../components/AITutorCard';
 
 //ActionButton Component
