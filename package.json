@@ -19,12 +19,8 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
-<<<<<<< HEAD
-    "expo": "~54.0.34",
-=======
     "@supabase/supabase-js": "^2.105.4",
     "expo": "~54.0.33",
->>>>>>> 3c7139991eeb2259dcf3911e53ae95b54ea3e4ce
     "expo-av": "~16.0.8",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
