@@ -18,7 +18,8 @@ function ActionButton({
   icon,
   label,
   onPress,
-}: {
+}: 
+{
   icon: string;
   label: string;
   onPress: () => void;
@@ -281,6 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
+    elevation: 4,
   },
   levelHeader: {
     flexDirection: 'row',
