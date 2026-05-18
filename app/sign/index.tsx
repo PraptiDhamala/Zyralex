@@ -10,9 +10,9 @@ import {
   View,
 } from 'react-native';
 import { AITutorCard } from '../../components/AITutorCard';
+import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
 import { LESSON_LEVELS, USER_STATS } from '../../constants/mockData';
-
 //ActionButton Component
 function ActionButton({
   icon,
@@ -173,7 +173,7 @@ export default function HomeScreen() {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeIcon}>👋</Text>
+         <HelloWave />
           <Text style={styles.welcomeTitle}>Welcome Back!</Text>
           <Text style={styles.welcomeSubtitle}>
             Continue your learning journey
