@@ -31,6 +31,9 @@ export default function SignUp() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: { name }, // 👈 saves name into auth.users metadata
+        },
       });
 
       if (error) {
@@ -38,32 +41,15 @@ export default function SignUp() {
         return;
       }
 
-      const user = data.user;
-
-      if (!user) {
+      if (!data.user) {
         Alert.alert("Error", "User not created");
         return;
       }
 
-      // save profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert([
-          {
-            id: user.id,
-            name,
-            email,
-          },
-        ]);
-
-      if (profileError) {
-        Alert.alert("Database Error", profileError.message);
-        return;
-      }
+      // ✅ No need to insert into profiles manually
+      // The database trigger handles it automatically
 
       Alert.alert("Success", "Account created!");
-
-      // IMPORTANT: go to onboarding
       router.replace("/onboarding");
 
     } catch (err) {
