@@ -31,7 +31,10 @@ export default function Onboarding() {
       </View>
 
       {/* Dyslexic Learn card */}
-      <TouchableOpacity onPress={() => selectModule("dyslexic")} style={styles.cardWrapper}>
+      <TouchableOpacity
+        onPress={() => selectModule("dyslexic")}
+        style={styles.cardWrapper}
+      >
         <LinearGradient
           colors={["#1679ea", "#70b5f9"]} // gradient shades of blue
           start={{ x: 0, y: 0 }}
@@ -41,7 +44,9 @@ export default function Onboarding() {
           <View style={styles.cardContent}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Dyslexic Learn</Text>
-              <Text style={styles.cardSubtitle}>Reading & vocabulary practice</Text>
+              <Text style={styles.cardSubtitle}>
+                Reading & vocabulary practice
+              </Text>
             </View>
 
             <View style={styles.cardButtons}>
@@ -64,7 +69,10 @@ export default function Onboarding() {
       </TouchableOpacity>
 
       {/* Sign Learn card */}
-      <TouchableOpacity onPress={() => selectModule("sign")} style={styles.cardWrapper}>
+      <TouchableOpacity
+        onPress={() => selectModule("sign")}
+        style={styles.cardWrapper}
+      >
         <LinearGradient
           colors={["#f29d15", "#f4b562"]} // gradient shades of orange
           start={{ x: 0, y: 0 }}
@@ -74,7 +82,9 @@ export default function Onboarding() {
           <View style={styles.cardContent}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Sign Learn</Text>
-              <Text style={styles.cardSubtitle}>ASL & sign language training</Text>
+              <Text style={styles.cardSubtitle}>
+                ASL & sign language training
+              </Text>
             </View>
 
             <View style={styles.cardButtons}>
@@ -101,9 +111,18 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20 },
-  title: { fontSize: 30, marginBottom: 30, fontWeight: "700", textAlign: "center" },
+  title: {
+    fontSize: 30,
+    marginBottom: 30,
+    fontWeight: "700",
+    textAlign: "center",
+  },
 
-  mascotWrapper: { flexDirection: "column", alignItems: "center", marginBottom: 20 },
+  mascotWrapper: {
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: 20,
+  },
   mascot: { width: 200, height: 200 },
   speechBubble: {
     backgroundColor: "#f1e195",
@@ -117,7 +136,7 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 15,
     borderRadius: 10,
-    overflow: "hidden", 
+    overflow: "hidden",
     width: "100%",
   },
   cardGradient: {
@@ -129,7 +148,12 @@ const styles = StyleSheet.create({
 
   cardContent: { flex: 1 },
   cardHeader: { marginBottom: 8 },
-  cardTitle: { fontSize: 20, fontWeight: "700", color: "#fff", marginBottom: 10 },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 10,
+  },
   cardSubtitle: { color: "#fff", marginBottom: 20 },
 
   cardButtons: { flexDirection: "row", gap: 15 },
