@@ -6,16 +6,18 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { LessonLevel } from '../constants/mockData';
+import { Level } from '../constants/lessonData';
 import { LessonCard } from './LessonCard';
 import { COLORS } from '../constants/colors';
+import { useRouter } from 'expo-router';
 
 interface LevelCollapsibleProps {
-  level: LessonLevel;
+  level: Level ;
 }
 
 export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -41,9 +43,10 @@ export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => 
         <View style={styles.content}>
           {level.lessons.map((lesson) => (
             <LessonCard
-              key={lesson.id}
+              key={lesson.lessonId}
               lesson={lesson}
-              onPress={() => console.log('Lesson pressed:', lesson.id)}
+              onPress={() => router.push({pathname: '/sign/lesson',params: { levelId: level.levelId, lessonId: lesson.lessonId },})
+              }
             />
           ))}
         </View>
