@@ -1,18 +1,23 @@
 // app/sign/lesson.tsx
 
-import React, { useState, useCallback } from 'react';
-import {
-  View, Text, SafeAreaView, StyleSheet,
-  TouchableOpacity, StatusBar, Alert,
-} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { LESSON_MAP, LESSON_LEVELS, SignItem } from '../../constants/lessonData';
-import { COLORS } from '../../constants/colors';
-import { TeachSlide } from '../../components/lesson/TeachSlide';
-import { QuizSlide } from '../../components/lesson/QuizSlide';
-import { MatchGame } from '../../components/lesson/MatchGame';
-import { ResultsScreen } from '../../components/lesson/ResultsScreen';
+import React, { useCallback, useState } from 'react';
+import {
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Mascot } from '../../components/lesson/Mascot';
+import { MatchGame } from '../../components/lesson/MatchGame';
+import { QuizSlide } from '../../components/lesson/QuizSlide';
+import { ResultsScreen } from '../../components/lesson/ResultsScreen';
+import { TeachSlide } from '../../components/lesson/TeachSlide';
+import { COLORS } from '../../constants/colors';
+import { LESSON_LEVELS, LESSON_MAP, SignItem } from '../../constants/lessonData';
 
 type QuizType = 'whatSign' | 'whichImage';
 
@@ -303,6 +308,12 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
               router.replace({
                 pathname: '/sign/lesson',
                 params: { levelId, lessonId: nextLessonId },
+              })
+             }
+            onPractice={() =>
+              router.push({
+                pathname: '/sign/practice',
+                params: { lessonId: lessonData.lessonId } ,
               })
             }
           />

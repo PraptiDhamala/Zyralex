@@ -7,11 +7,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mylearningapp",
     "userInterfaceStyle": "automatic",
-
     "ios": {
       "supportsTablet": true
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -19,12 +17,10 @@
       },
       "package": "com.anonymous.MyLearningApp"
     },
-
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-
     "plugins": [
       "@react-native-voice/voice",
       "expo-router",
@@ -40,9 +36,10 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-audio",
+      "expo-video"
     ],
-
     "experiments": {
       "typedRoutes": true
     }
