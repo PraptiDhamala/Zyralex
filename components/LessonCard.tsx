@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from 'react-native';
-import { Lesson } from '../constants/mockData';
+import { Lesson } from '../constants/lessonData';
 import { COLORS } from '../constants/colors';
 
 interface LessonCardProps {

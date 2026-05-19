@@ -1,69 +1,66 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Slot, useRouter, useSegments } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { supabase } from "../lib/supabase";
 
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
+
   const [loading, setLoading] = useState(true);
-  const hasChecked = useRef(false);
 
   useEffect(() => {
-    const run = async () => {
-      if (hasChecked.current) return;
-      hasChecked.current = true;
-
+    const checkAuth = async () => {
       try {
-        console.log("START");
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        const inAuthScreen = segments[0] === "signup";
+
+        if (!session) {
+          if (!inAuthScreen) {
+            router.replace("/signup");
+          }
+          setLoading(false);
+          return;
+        }
 
         const choice = await AsyncStorage.getItem("moduleChoice");
-        console.log("CHOICE:", choice);
-
-        const currentRoute = segments?.[0];
-
-        if (!currentRoute) return;
 
         if (!choice) {
-          if (currentRoute !== "onboarding") {
-            router.replace("/onboarding");
-          }
+          router.replace("/onboarding");
+          setLoading(false);
           return;
         }
 
-        const routeMap = {
-          dyslexic: "dyslexic",
-          sign: "sign",
-        } as const;
-
-        const targetRoute = routeMap[choice as keyof typeof routeMap];
-
-        console.log("CURRENT:", currentRoute);
-        console.log("TARGET:", targetRoute);
-
-       
-        if (currentRoute === targetRoute) {
-          console.log("Already correct");
-          return;
+        if (choice === "dyslexic") {
+          router.replace("/dyslexic");
+        } else if (choice === "sign") {
+          router.replace("/sign");
         }
 
-        console.log("NAVIGATING...");
-        router.replace(`/${targetRoute}`);
-      } catch (e) {
-        console.log("ERROR:", e);
-        router.replace("/onboarding");
-      } finally {
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
         setLoading(false);
       }
     };
 
-    run();
-  }, [segments]);
+    checkAuth();
+  }, []);
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading Root...</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text>Loading...</Text>
       </View>
     );
   }
