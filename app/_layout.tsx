@@ -7,7 +7,6 @@ import { supabase } from "../lib/supabase";
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,14 +29,17 @@ export default function RootLayout() {
         const choice = await AsyncStorage.getItem("moduleChoice");
 
         if (!choice) {
-          router.replace("/onboarding");
+          if (segments[0] !== "onboarding") {
+            router.replace("/onboarding");
+          }
           setLoading(false);
           return;
         }
 
-        if (choice === "dyslexic") {
+        // --- FIXED PATHS & SEGMENT GUARDS ---
+        if (choice === "dyslexic" && segments[0] !== "dyslexic") {
           router.replace("/dyslexic");
-        } else if (choice === "sign") {
+        } else if (choice === "sign" && segments[0] !== "sign") {
           router.replace("/sign");
         }
 
@@ -49,17 +51,11 @@ export default function RootLayout() {
     };
 
     checkAuth();
-  }, []);
+  }, [segments]); // Added segments array here to listen safely to route mutations
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Loading...</Text>
       </View>
     );

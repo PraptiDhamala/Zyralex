@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
+import { useRouter } from "expo-router";
 export default function LearnScreen() {
   const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
