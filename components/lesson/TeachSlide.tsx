@@ -1,10 +1,14 @@
+import { ResizeMode, Video } from 'expo-av';
 import React from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
-import { SignItem } from '../../constants/lessonData';
 import { COLORS } from '../../constants/colors';
+import { SignItem } from '../../constants/lessonData';
 
 interface Props {
     sign: SignItem;
