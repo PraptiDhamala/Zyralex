@@ -1,13 +1,13 @@
 import React from 'react';
 import {
+  GestureResponderEvent,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  GestureResponderEvent,
+  View,
 } from 'react-native';
-import { PracticeSession } from '../constants/mockData';
 import { COLORS } from '../constants/colors';
+import { PracticeSession } from '../constants/mockData';
 
 interface PracticeSessionCardProps {
   session: PracticeSession;
