@@ -11,34 +11,50 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        const inAuthScreen = segments[0] === "signup";
+        if (!mounted) return;
 
+        const currentRoute = segments[0];
+
+        // USER NOT LOGGED IN
         if (!session) {
-          if (!inAuthScreen) {
+          if (currentRoute !== "signup") {
             router.replace("/signup");
           }
+
           setLoading(false);
           return;
         }
 
+        // USER LOGGED IN
         const choice = await AsyncStorage.getItem("moduleChoice");
 
+        if (!mounted) return;
+
         if (!choice) {
-          router.replace("/onboarding");
+          if (currentRoute !== "onboarding") {
+            router.replace("/onboarding");
+          }
+
           setLoading(false);
           return;
         }
 
         if (choice === "dyslexic") {
-          router.replace("/dyslexic");
+          if (currentRoute !== "dyslexic") {
+            router.replace("/dyslexic");
+          }
         } else if (choice === "sign") {
-          router.replace("/sign");
+          if (currentRoute !== "sign") {
+            router.replace("/sign");
+          }
         }
 
         setLoading(false);
@@ -49,7 +65,11 @@ export default function RootLayout() {
     };
 
     checkAuth();
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [segments]);
 
   if (loading) {
     return (
