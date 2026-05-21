@@ -6,13 +6,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { supabase } from "../../lib/supabase";
 export default function LearnScreen() {
   const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [weakPatterns, setWeakPatterns] = useState<string[]>([]);
   const startTime = useRef<number>(Date.now());
 
   const questions = [
@@ -22,53 +23,71 @@ export default function LearnScreen() {
       answer: "Flight",
       pattern: "phonological_awareness",
     },
+
     {
       question:
         "What word do you get if you take the 'S' sound out of 'Scream'?",
       options: ["Cream", "Creamy", "Seam"],
       answer: "Cream",
+      pattern: "phoneme_manipulation",
     },
+
     {
       question: "Which word rhymes with 'Stray'?",
       options: ["Spit", "Weigh", "Straw"],
       answer: "Weigh",
+      pattern: "phonological_awareness",
     },
+
     {
-      question: "Complete the word '___illiand'",
+      question:
+        "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
       options: ["b", "d", "p"],
       answer: "b",
       pattern: "letter_reversal",
     },
+
     {
       question: "Choose the correct spelling of this common word:",
       options: ["Dose", "Does", "Deos"],
       answer: "Does",
+      pattern: "spelling_recognition",
     },
+
     {
       question: "Find the letter pattern that matches 'b-d-p-q':",
       options: ["d-b-q-p", "b-d-p-q", "p-q-b-d"],
       answer: "b-d-p-q",
+      pattern: "visual_tracking",
     },
+
     {
       question: "Which of these is a REAL English word, not a made-up word?",
       options: ["Trish", "Plung", "Thump"],
       answer: "Thump",
+      pattern: "word_recognition",
     },
+
     {
       question: "If 'G-L-I-N-T' spells Glint, what does 'B-L-I-N-K' spell?",
       options: ["Blind", "Blink", "Blank"],
       answer: "Blink",
+      pattern: "decoding",
     },
+
     {
       question:
         "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
       options: ["ou", "oa", "ao"],
       answer: "oa",
+      pattern: "vowel_processing",
     },
+
     {
       question: "Which word makes a long 'E' sound (like in 'Tree')?",
       options: ["Chief", "Chef", "Chair"],
       answer: "Chief",
+      pattern: "phonics",
     },
   ];
 
@@ -78,6 +97,8 @@ export default function LearnScreen() {
     if (selected === questions[currentQuestion].answer) {
       updatedScore += 1;
       setScore(updatedScore);
+    } else {
+      setWeakPatterns((prev) => [...prev, questions[currentQuestion].pattern]);
     }
 
     const nextQuestion = currentQuestion + 1;
@@ -115,7 +136,29 @@ export default function LearnScreen() {
         console.log("Backend Response Received:", data);
 
         if (data.level) {
-          setLevel(data.level);
+          const assignedLevel = data.level;
+
+          setLevel(assignedLevel);
+
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          const primaryWeakArea =
+            weakPatterns.length > 0 ? weakPatterns[0] : "None Identified";
+
+          let dynamicReview = "Excellent decoding fluency!";
+          if (assignedLevel === "easy")
+            dynamicReview = "Focus: Phoneme Foundations";
+          if (assignedLevel === "medium")
+            dynamicReview = "Focus: Chunking & Syllables";
+
+          await supabase.from("assessments").insert({
+            user_id: user?.id,
+            score: updatedScore,
+            level: assignedLevel,
+            weak_area: primaryWeakArea,
+            review: dynamicReview,
+          });
         } else {
           throw new Error("Invalid level payload structure");
         }
