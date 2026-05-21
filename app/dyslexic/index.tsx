@@ -317,7 +317,7 @@ export default function DyslexicHome() {
           <View style={styles.actionButtonsSection}>
             <Pressable
               style={styles.actionButton}
-              onPress={() => router.push("/learn")}
+              onPress={() => router.push("/dyslexic/learn")}
             >
               <View style={styles.actionButtonContent}>
                 <Ionicons name="clipboard-outline" size={24} color="#3b82f6" />
