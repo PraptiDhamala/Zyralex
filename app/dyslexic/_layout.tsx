@@ -32,7 +32,7 @@ function CustomHeader({ handleReset }: { handleReset: () => void }) {
   );
 }
 
-export default function SignLayout() {
+export default function DyslexicLayout() {
   const router = useRouter();
 
   const handleReset = async () => {
