@@ -10,23 +10,32 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        const inAuthScreen = segments[0] === "signup";
+        if (!mounted) return;
 
+        const currentRoute = segments[0];
+
+        // USER NOT LOGGED IN
         if (!session) {
-          if (!inAuthScreen) {
+          if (currentRoute !== "signup") {
             router.replace("/signup");
           }
+
           setLoading(false);
           return;
         }
 
+        // USER LOGGED IN
         const choice = await AsyncStorage.getItem("moduleChoice");
+
+        if (!mounted) return;
 
         if (!choice) {
           if (segments[0] !== "onboarding") {

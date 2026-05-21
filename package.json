@@ -11,7 +11,12 @@
     "lint": "expo lint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@expo/vector-icons": "^15.1.1",
+=======
+    "@expo/ngrok": "^4.1.0",
+    "@expo/vector-icons": "^15.0.3",
+>>>>>>> cd594623937500bf58a7b6be09ee3c2aefc26d9f
     "@lottiefiles/dotlottie-react": "^0.13.5",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "5.0.1",
