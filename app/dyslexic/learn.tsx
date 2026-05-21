@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
 export default function LearnScreen() {
   const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -21,6 +20,7 @@ export default function LearnScreen() {
       question: "Which word rhymes with 'Fright'?",
       options: ["Flight", "Fridg", "Freit"],
       answer: "Flight",
+      pattern: "phonological_awareness",
     },
     {
       question:
@@ -34,10 +34,10 @@ export default function LearnScreen() {
       answer: "Weigh",
     },
     {
-      question:
-        "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
+      question: "Complete the word '___illiand'",
       options: ["b", "d", "p"],
       answer: "b",
+      pattern: "letter_reversal",
     },
     {
       question: "Choose the correct spelling of this common word:",
