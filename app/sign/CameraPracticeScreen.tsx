@@ -1,7 +1,8 @@
+import { ResizeMode, Video } from 'expo-av';
 import { Camera, CameraView } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LESSON_MAP } from '../../constants/lessonData';
 
 export default function CameraPracticeScreen() {
@@ -69,7 +70,9 @@ export default function CameraPracticeScreen() {
 
       {/* Top-right overlay for sign image */}
       <View style={styles.topOverlay}>
-        <Image source={currentSign.image} style={styles.signImage} />
+        <Video source={currentSign.video} style={styles.signImage} resizeMode={ResizeMode.CONTAIN}
+          shouldPlay 
+          isLooping/>
         <Text style={styles.caption}>{currentSign.label}</Text>
       </View>
 
@@ -110,11 +113,14 @@ const styles = StyleSheet.create({
   topOverlay: {
     position: 'absolute',
     top: 20,
-    right: 20,
+    right: 10,
     alignItems: 'center',
+    overflow: 'hidden',
+    borderRadius:30 
+    
   },
-  signImage: { width: 100, height: 100, resizeMode: 'contain', marginBottom: 4 },
-  caption: { fontSize: 20, fontWeight: '900', color: '#333' },
+  signImage: { width: 290, height: 200, resizeMode: 'cover', marginBottom: 4,borderRadius:30,overflow:'hidden' },
+  caption: { fontSize: 50, fontWeight: '900', color: '#333' },
 
   bottomOverlay: {
     position: 'absolute',
