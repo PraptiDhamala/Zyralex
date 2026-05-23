@@ -9,15 +9,62 @@ import {
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 
+// ==========================================
+// 1. LESSON DATA STORAGE (Embedded directly)
+// ==========================================
+interface LessonSlide {
+  title: string;
+  content: string;
+  example?: string;
+}
+
+const lessonsDataset: Record<string, LessonSlide[]> = {
+  easy: [
+    {
+      title: "Phoneme Foundations: Tracking b vs d",
+      content: "The letter 'b' has a belly in front. The letter 'd' has a diaper in the back. Let's practice tracking them visually.",
+      example: "b -> bed, d -> dog"
+    },
+    {
+      title: "Short Vowel Isolations",
+      content: "Short vowel sounds can shift easily. Pay close attention to how your mouth changes shape between 'eh' (Net) and 'ih' (Nit).",
+      example: "Net vs. Nit"
+    }
+  ],
+  medium: [
+    {
+      title: "Chunking & Syllables",
+      content: "Breaking longer complex words into tiny chunks makes reading smoother. Tap your fingers for every visual beat.",
+      example: "Cat-er-pil-lar (Caterpillar)"
+    },
+    {
+      title: "Vowel Teams (OA & OU)",
+      content: "When two vowels match up together, the first vowel sound is usually long while the second stays completely quiet.",
+      example: "C-OA-T (Coat)"
+    }
+  ],
+  hard: [
+    {
+      title: "Advanced Morphological Patterns",
+      content: "Isolating structural roots from prefixes and suffixes prevents visual crowding and improves total tracking speed.",
+      example: "Un-comfort-able"
+    }
+  ]
+};
+
 export default function LearnScreen() {
   const router = useRouter();
-  const [level, setLevel] = useState("");
+  const [level, setLevel] = useState("easy");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [weakPatterns, setWeakPatterns] = useState<string[]>([]);
   const startTime = useRef<number>(Date.now());
+
+  // NEW STATES: Control the active lesson slides after the assessment ends
+  const [inLessonMode, setInLessonMode] = useState(false);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const questions = [
     {
@@ -27,8 +74,7 @@ export default function LearnScreen() {
       pattern: "phonological_awareness",
     },
     {
-      question:
-        "What word do you get if you take the 'S' sound out of 'Scream'?",
+      question: "What word do you get if you take the 'S' sound out of 'Scream'?",
       options: ["Cream", "Creamy", "Seam"],
       answer: "Cream",
       pattern: "phoneme_manipulation",
@@ -40,8 +86,7 @@ export default function LearnScreen() {
       pattern: "phonological_awareness",
     },
     {
-      question:
-        "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
+      question: "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
       options: ["b", "d", "p"],
       answer: "b",
       pattern: "letter_reversal",
@@ -71,8 +116,7 @@ export default function LearnScreen() {
       pattern: "decoding",
     },
     {
-      question:
-        "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
+      question: "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
       options: ["ou", "oa", "ao"],
       answer: "oa",
       pattern: "vowel_processing",
@@ -146,15 +190,10 @@ export default function LearnScreen() {
       setLevel(assignedLevel);
 
       let dynamicReview = "Excellent decoding fluency!";
-      if (assignedLevel === "easy")
-        dynamicReview = "Focus: Phoneme Foundations";
-      if (assignedLevel === "medium")
-        dynamicReview = "Focus: Chunking & Syllables";
+      if (assignedLevel === "easy") dynamicReview = "Focus: Phoneme Foundations";
+      if (assignedLevel === "medium") dynamicReview = "Focus: Chunking & Syllables";
 
-      // SAVE DATA USING UPSERT
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from("assessments").upsert(
           {
@@ -164,7 +203,7 @@ export default function LearnScreen() {
             weak_area: primaryWeakArea,
             review: dynamicReview,
           },
-          { onConflict: "user_id" }, // Updates data matching this user_id entry
+          { onConflict: "user_id" },
         );
       }
       setLoading(false);
@@ -172,14 +211,11 @@ export default function LearnScreen() {
   };
 
   useEffect(() => {
-    // Optional: Only verify data configurations, do not auto-lock finished state out-of-the-box
     checkAssessment();
   }, []);
 
   const checkAssessment = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data } = await supabase
@@ -198,11 +234,25 @@ export default function LearnScreen() {
     router.replace("/dyslexic");
   };
 
+  // NEW METHOD: Advances lessons or returns user to Home when slides finish
+  const handleNextSlide = (totalSlides: number) => {
+    if (currentSlideIndex < totalSlides - 1) {
+      setCurrentSlideIndex(prev => prev + 1);
+    } else {
+      navigateToHome();
+    }
+  };
+
+  // Locate current active slide sequence
+  const activeSlides = lessonsDataset[level] || lessonsDataset["easy"];
+  const currentSlide = activeSlides[currentSlideIndex];
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>ZyraLex Dyslexia Assessment</Text>
+      <Text style={styles.title}>ZyraLex Dyslexia Program</Text>
 
-      {!finished && (
+      {/* STAGE 1: ASSESSMENT QUESTIONS */}
+      {!finished && !inLessonMode && (
         <View style={styles.quizContainer}>
           <Text style={styles.progressText}>
             Task {currentQuestion + 1} of {questions.length}
@@ -223,63 +273,69 @@ export default function LearnScreen() {
         </View>
       )}
 
-      {finished && (
+      {/* STAGE 2: ASSESSMENT RESULTS PREVIEW */}
+      {finished && !inLessonMode && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultHeader}>Assessment Completed</Text>
 
           {loading ? (
-            <Text style={styles.loadingText}>
-              Processing reading diagnostics...
-            </Text>
+            <Text style={styles.loadingText}>Processing reading diagnostics...</Text>
           ) : (
             <>
               <Text style={styles.levelBadge}>
-                Assigned Program: {level.toUpperCase()}
+                Assigned Tier: {level.toUpperCase()}
               </Text>
 
-              {level === "easy" && (
-                <View style={styles.lessonCard}>
-                  <Text style={styles.lessonTitle}>
-                    Focus: Phoneme Foundations
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    We are starting with tracking letter sound alignments.
-                  </Text>
-                </View>
-              )}
+              <View style={styles.lessonCard}>
+                <Text style={styles.lessonTitle}>Your Path is Ready</Text>
+                <Text style={styles.lessonText}>
+                  Based on your performance speed and patterns, we have curated a tracking program specifically for your profile.
+                </Text>
+              </View>
 
-              {level === "medium" && (
-                <View style={styles.lessonCard}>
-                  <Text style={styles.lessonTitle}>
-                    Focus: Chunking & Syllables
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    You have solid basic phoneme tracking. Let's build up
-                    complex vowel team segments.
-                  </Text>
-                </View>
-              )}
-
-              {level === "hard" && (
-                <View style={styles.lessonCard}>
-                  <Text style={styles.lessonTitle}>
-                    Focus: Advanced Morphological Patterns
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    Excellent decoding fluency! Your path will optimize
-                    structural reading metrics.
-                  </Text>
-                </View>
-              )}
-
+              {/* Action Button to launch Lesson state inside this same file */}
               <TouchableOpacity
-                style={styles.homeButton}
-                onPress={navigateToHome}
+                style={[styles.homeButton, { backgroundColor: "#10B981", marginBottom: 12 }]}
+                onPress={() => setInLessonMode(true)}
               >
-                <Text style={styles.homeButtonText}>Go to Dashboard</Text>
+                <Text style={styles.homeButtonText}>Start Learning Modules</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={navigateToHome}>
+                <Text style={styles.secondaryButtonText}>Back to Dashboard</Text>
               </TouchableOpacity>
             </>
           )}
+        </View>
+      )}
+
+      {/* STAGE 3: RUNTIME LESSON SLIDES */}
+      {inLessonMode && currentSlide && (
+        <View style={styles.lessonContainer}>
+          <Text style={styles.progressText}>
+            Slide {currentSlideIndex + 1} of {activeSlides.length} ({level.toUpperCase()})
+          </Text>
+
+          <View style={styles.slideCard}>
+            <Text style={styles.slideTitle}>{currentSlide.title}</Text>
+            <Text style={styles.slideContent}>{currentSlide.content}</Text>
+
+            {currentSlide.example && (
+              <View style={styles.exampleContainer}>
+                <Text style={styles.exampleHeader}>Visual Breakdown:</Text>
+                <Text style={styles.exampleText}>{currentSlide.example}</Text>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.homeButton}
+            onPress={() => handleNextSlide(activeSlides.length)}
+          >
+            <Text style={styles.homeButtonText}>
+              {currentSlideIndex === activeSlides.length - 1 ? "Complete Curriculum" : "Next Segment"}
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </ScrollView>
@@ -363,7 +419,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     color: "#475569",
     letterSpacing: 0.8,
-    marginBottom: 12,
   },
   homeButton: {
     backgroundColor: "#2563EB",
@@ -372,4 +427,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   homeButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  secondaryButton: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+  secondaryButtonText: { color: "#475569", fontSize: 16, fontWeight: "600" },
+  
+  // Lesson Specific Styles
+  lessonContainer: { width: "100%" },
+  slideCard: {
+    backgroundColor: "#FFFFFF",
+    padding: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 24,
+  },
+  slideTitle: { fontSize: 22, fontWeight: "800", color: "#1E293B", marginBottom: 14 },
+  slideContent: { fontSize: 18, lineHeight: 28, color: "#475569", letterSpacing: 0.5 },
+  exampleContainer: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: "#10B981",
+  },
+  exampleHeader: { fontSize: 12, fontWeight: "700", color: "#64748B", textTransform: "uppercase" },
+  exampleText: { fontSize: 20, fontWeight: "700", color: "#1E293B", marginTop: 4, letterSpacing: 1 },
 });
