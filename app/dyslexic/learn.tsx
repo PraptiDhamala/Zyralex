@@ -177,15 +177,31 @@ export default function LearnScreen() {
       }
     }
   };
-  // ROUTER LINK MAPPER TO EXPO PATHWAY
   const startTargetedLesson = () => {
     const routeLevel =
       level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
-    // FIXED: Added the dot after [level1] to match your exact directory structure
-    router.replace({
-      pathname: "/dyslexic/module/[level1]./[lesson]",
-      params: { level1: routeLevel, lesson: "letter_reversal" },
+    // ADAPTIVE LESSON SELECTION
+    let recommendedLesson = "letter_reversal";
+
+    if (weakPatterns.includes("phonics")) {
+      recommendedLesson = "phonics";
+    }
+
+    if (weakPatterns.includes("decoding")) {
+      recommendedLesson = "decoding";
+    }
+
+    if (weakPatterns.includes("vowel_processing")) {
+      recommendedLesson = "vowel_processing";
+    }
+
+    router.push({
+      pathname: "/dyslexic/module/[level1]/[lesson]",
+      params: {
+        level1: routeLevel,
+        lesson: recommendedLesson,
+      },
     });
   };
 
