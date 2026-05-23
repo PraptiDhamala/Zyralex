@@ -112,14 +112,14 @@ const styles = StyleSheet.create({
 
   topOverlay: {
     position: 'absolute',
-    top: 20,
+    top: 1,
     right: 10,
     alignItems: 'center',
     overflow: 'hidden',
     borderRadius:30 
     
   },
-  signImage: { width: 290, height: 200, resizeMode: 'cover', marginBottom: 4,borderRadius:30,overflow:'hidden' },
+  signImage: { width: 200, height: 200, resizeMode: 'cover', marginBottom: 4,borderRadius:30,overflow:'hidden' },
   caption: { fontSize: 50, fontWeight: '900', color: '#333' },
 
   bottomOverlay: {
