@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,7 +8,9 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
+
 export default function LearnScreen() {
+  const router = useRouter();
   const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -23,7 +26,6 @@ export default function LearnScreen() {
       answer: "Flight",
       pattern: "phonological_awareness",
     },
-
     {
       question:
         "What word do you get if you take the 'S' sound out of 'Scream'?",
@@ -31,14 +33,12 @@ export default function LearnScreen() {
       answer: "Cream",
       pattern: "phoneme_manipulation",
     },
-
     {
       question: "Which word rhymes with 'Stray'?",
       options: ["Spit", "Weigh", "Straw"],
       answer: "Weigh",
       pattern: "phonological_awareness",
     },
-
     {
       question:
         "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
@@ -46,35 +46,30 @@ export default function LearnScreen() {
       answer: "b",
       pattern: "letter_reversal",
     },
-
     {
       question: "Choose the correct spelling of this common word:",
       options: ["Dose", "Does", "Deos"],
       answer: "Does",
       pattern: "spelling_recognition",
     },
-
     {
       question: "Find the letter pattern that matches 'b-d-p-q':",
       options: ["d-b-q-p", "b-d-p-q", "p-q-b-d"],
       answer: "b-d-p-q",
       pattern: "visual_tracking",
     },
-
     {
       question: "Which of these is a REAL English word, not a made-up word?",
       options: ["Trish", "Plung", "Thump"],
       answer: "Thump",
       pattern: "word_recognition",
     },
-
     {
       question: "If 'G-L-I-N-T' spells Glint, what does 'B-L-I-N-K' spell?",
       options: ["Blind", "Blink", "Blank"],
       answer: "Blink",
       pattern: "decoding",
     },
-
     {
       question:
         "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
@@ -82,7 +77,6 @@ export default function LearnScreen() {
       answer: "oa",
       pattern: "vowel_processing",
     },
-
     {
       question: "Which word makes a long 'E' sound (like in 'Tree')?",
       options: ["Chief", "Chef", "Chair"],
@@ -93,12 +87,15 @@ export default function LearnScreen() {
 
   const handleAnswer = async (selected: string) => {
     let updatedScore = score;
+    let localWeakPatterns = [...weakPatterns];
 
     if (selected === questions[currentQuestion].answer) {
       updatedScore += 1;
       setScore(updatedScore);
     } else {
-      setWeakPatterns((prev) => [...prev, questions[currentQuestion].pattern]);
+      const currentPattern = questions[currentQuestion].pattern;
+      localWeakPatterns.push(currentPattern);
+      setWeakPatterns((prev) => [...prev, currentPattern]);
     }
 
     const nextQuestion = currentQuestion + 1;
@@ -115,11 +112,15 @@ export default function LearnScreen() {
         Math.floor((endTime - startTime.current) / 1000),
       );
       const mistakes = questions.length - updatedScore;
+      const primaryWeakArea =
+        localWeakPatterns.length > 0 ? localWeakPatterns[0] : "None Identified";
 
-      console.log("=== SENDING TO BACKEND ===");
-      console.log(
-        `Score: ${updatedScore}, Mistakes: ${mistakes}, Speed: ${totalTimeSeconds}s`,
-      );
+      let assignedLevel = "easy";
+      if (updatedScore >= 8 && totalTimeSeconds <= 22) {
+        assignedLevel = "hard";
+      } else if (updatedScore >= 4) {
+        assignedLevel = "medium";
+      }
 
       try {
         const response = await fetch("http://127.0.0.1:5000/predict", {
@@ -133,60 +134,68 @@ export default function LearnScreen() {
         });
 
         const data = await response.json();
-        console.log("Backend Response Received:", data);
-
         if (data.level) {
-          const assignedLevel = data.level;
+          assignedLevel = data.level;
+        }
+      } catch (error) {
+        console.warn(
+          "Backend dynamic prediction offline. Proceeding with frontend logic calculation.",
+        );
+      }
 
-          setLevel(assignedLevel);
+      setLevel(assignedLevel);
 
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          const primaryWeakArea =
-            weakPatterns.length > 0 ? weakPatterns[0] : "None Identified";
+      let dynamicReview = "Excellent decoding fluency!";
+      if (assignedLevel === "easy")
+        dynamicReview = "Focus: Phoneme Foundations";
+      if (assignedLevel === "medium")
+        dynamicReview = "Focus: Chunking & Syllables";
 
-          let dynamicReview = "Excellent decoding fluency!";
-          if (assignedLevel === "easy")
-            dynamicReview = "Focus: Phoneme Foundations";
-          if (assignedLevel === "medium")
-            dynamicReview = "Focus: Chunking & Syllables";
-
-          await supabase.from("assessments").insert({
-            user_id: user?.id,
+      // SAVE DATA USING UPSERT
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("assessments").upsert(
+          {
+            user_id: user.id,
             score: updatedScore,
             level: assignedLevel,
             weak_area: primaryWeakArea,
             review: dynamicReview,
-          });
-        } else {
-          throw new Error("Invalid level payload structure");
-        }
-      } catch (error) {
-        console.warn(
-          "Backend unavailable or faulty. Triggering local backup processor...",
-          error,
+          },
+          { onConflict: "user_id" }, // Updates data matching this user_id entry
         );
-        // Bulletproof Frontend Fallback: Ensures correct level display even if ML server lags
-        if (updatedScore >= 8 && totalTimeSeconds <= 22) {
-          setLevel("hard");
-        } else if (updatedScore >= 4) {
-          setLevel("medium");
-        } else {
-          setLevel("easy");
-        }
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     }
   };
 
-  const restartQuiz = () => {
-    startTime.current = Date.now();
-    setCurrentQuestion(0);
-    setScore(0);
-    setFinished(false);
-    setLevel("");
+  useEffect(() => {
+    // Optional: Only verify data configurations, do not auto-lock finished state out-of-the-box
+    checkAssessment();
+  }, []);
+
+  const checkAssessment = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("assessments")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (data) {
+      setLevel(data.level || "easy");
+      setScore(data.score || 0);
+    }
+  };
+
+  const navigateToHome = () => {
+    router.replace("/dyslexic");
   };
 
   return (
@@ -236,18 +245,6 @@ export default function LearnScreen() {
                   <Text style={styles.lessonText}>
                     We are starting with tracking letter sound alignments.
                   </Text>
-                  <Text style={styles.lessonText}>
-                    Let's practice the difference between{" "}
-                    <Text style={styles.boldText}>b</Text> and{" "}
-                    <Text style={styles.boldText}>d</Text>:
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    • <Text style={styles.highlight}>b</Text> has a belly
-                    (points right: <Text style={styles.boldText}>ba</Text>ll)
-                    {"\n"}• <Text style={styles.highlight}>d</Text> wears a
-                    diaper (points left: <Text style={styles.boldText}>do</Text>
-                    g)
-                  </Text>
                 </View>
               )}
 
@@ -260,12 +257,6 @@ export default function LearnScreen() {
                     You have solid basic phoneme tracking. Let's build up
                     complex vowel team segments.
                   </Text>
-                  <Text style={styles.lessonText}>
-                    When tracking longer blend terms, segment them cleanly:
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    • re · mem · ber{"\n"}• fanta · stic
-                  </Text>
                 </View>
               )}
 
@@ -276,21 +267,16 @@ export default function LearnScreen() {
                   </Text>
                   <Text style={styles.lessonText}>
                     Excellent decoding fluency! Your path will optimize
-                    structural reading metrics and prefixes/suffixes.
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    • <Text style={styles.highlight}>Un</Text>predict
-                    <Text style={styles.highlight}>able</Text>
-                    {"\n"}• <Text style={styles.highlight}>Mis</Text>understand
+                    structural reading metrics.
                   </Text>
                 </View>
               )}
 
               <TouchableOpacity
-                style={styles.restartButton}
-                onPress={restartQuiz}
+                style={styles.homeButton}
+                onPress={navigateToHome}
               >
-                <Text style={styles.restartButtonText}>Restart Test</Text>
+                <Text style={styles.homeButtonText}>Go to Dashboard</Text>
               </TouchableOpacity>
             </>
           )}
@@ -379,13 +365,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: 12,
   },
-  boldText: { fontWeight: "bold" },
-  highlight: { color: "#2563EB", fontWeight: "bold" },
-  restartButton: {
-    backgroundColor: "#1E293B",
+  homeButton: {
+    backgroundColor: "#2563EB",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
   },
-  restartButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  homeButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
 });

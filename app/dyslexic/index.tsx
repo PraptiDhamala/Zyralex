@@ -53,20 +53,28 @@ export default function DyslexicHome() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Get latest assessment data
-      const { data: assessmentData } = await supabase
+      // Force clear sort order to get the absolute newest entry
+      const { data: assessmentData, error: assessmentError } = await supabase
         .from("assessments")
         .select("score, level, weak_area, review")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1);
 
+      if (assessmentError) throw assessmentError;
+
       if (assessmentData && assessmentData.length > 0) {
         const latest = assessmentData[0];
-        setScore(latest.score);
+        setScore(latest.score ?? 0);
         setLevel(latest.level || "Beginner");
         setWeakArea(latest.weak_area || "None");
-        setReviewMessage(latest.review || "");
+        setReviewMessage(latest.review || "Take your assessment to begin.");
+      } else {
+        // Set fallbacks if no assessment entries exist yet
+        setScore(0);
+        setLevel("Beginner");
+        setWeakArea("None");
+        setReviewMessage("Take your assessment to begin.");
       }
 
       // 2. Track Progress from user_progress
@@ -76,7 +84,7 @@ export default function DyslexicHome() {
         .eq("user_id", user.id);
 
       if (progressData) {
-        const totalLessons = 4; // Total seed lessons
+        const totalLessons = 4;
         const completed = progressData.filter((p) => p.completed).length;
         setCompletedLessonsCount(completed);
         setProgressPercent(
@@ -89,7 +97,6 @@ export default function DyslexicHome() {
       setDbLoading(false);
     }
   };
-
   // PICK DOCUMENT
   const pickDocument = async () => {
     try {
