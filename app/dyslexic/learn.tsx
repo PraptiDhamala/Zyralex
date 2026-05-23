@@ -10,92 +10,255 @@ import {
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 
+/* =========================
+   QUESTION POOL
+========================= */
+
+const questionPool = [
+  {
+    question: "Which word rhymes with 'Cake'?",
+    options: ["Bake", "Back", "Book", "Bird"],
+    answer: "Bake",
+    pattern: "phonological_awareness",
+  },
+  {
+    question: "Which word rhymes with 'Light'?",
+    options: ["Night", "Leaf", "Stone", "Jump"],
+    answer: "Night",
+    pattern: "phonological_awareness",
+  },
+
+  {
+    question: "Remove the 'S' sound from 'Smile'",
+    options: ["Mile", "Tile", "File", "Pile"],
+    answer: "Mile",
+    pattern: "phoneme_manipulation",
+  },
+  {
+    question: "Remove the 'B' sound from 'Black'",
+    options: ["Lack", "Clock", "Back", "Lock"],
+    answer: "Lack",
+    pattern: "phoneme_manipulation",
+  },
+
+  {
+    question: "Tap the letter q",
+    options: ["p", "d", "q", "b"],
+    answer: "q",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter faces right?",
+    options: ["b", "d", "q", "p"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter faces left?",
+    options: ["b", "d", "p", "q"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter hangs below the line?",
+    options: ["b", "d", "p", "m"],
+    answer: "p",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter has the circle first?",
+    options: ["b", "d", "p", "q"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter has the stick first?",
+    options: ["b", "d", "p", "q"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Find the matching letter for b",
+    options: ["d", "q", "b", "p"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Find the matching letter for d",
+    options: ["p", "d", "q", "b"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Complete the word: ___ed",
+    options: ["b", "d", "p", "q"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Complete the word: ___og",
+    options: ["d", "b", "p", "q"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter points upward and left?",
+    options: ["d", "b", "q", "p"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+  {
+    question: "Choose the correct spelling",
+    options: ["Freind", "Friend", "Frend", "Frined"],
+    answer: "Friend",
+    pattern: "spelling_recognition",
+  },
+  {
+    question: "Choose the correct spelling",
+    options: ["Becuse", "Because", "Beacause", "Beacuse"],
+    answer: "Because",
+    pattern: "spelling_recognition",
+  },
+
+  {
+    question: "Which word has a long E sound?",
+    options: ["Chief", "Chef", "Chair", "Chat"],
+    answer: "Chief",
+    pattern: "phonics",
+  },
+  {
+    question: "Which word sounds like 'Tree'?",
+    options: ["Free", "Trap", "Frog", "Truck"],
+    answer: "Free",
+    pattern: "phonics",
+  },
+
+  {
+    question: "What does B-L-I-N-K spell?",
+    options: ["Blank", "Blink", "Blind", "Black"],
+    answer: "Blink",
+    pattern: "decoding",
+  },
+  {
+    question: "What does S-T-A-R spell?",
+    options: ["Start", "Store", "Star", "Stair"],
+    answer: "Star",
+    pattern: "decoding",
+  },
+
+  {
+    question: "Fill in the missing vowel: C___t",
+    options: ["oa", "ou", "ee", "ai"],
+    answer: "oa",
+    pattern: "vowel_processing",
+  },
+  {
+    question: "Fill in the missing vowel: Tr___n",
+    options: ["ai", "ee", "oa", "ou"],
+    answer: "ai",
+    pattern: "vowel_processing",
+  },
+
+  {
+    question: "Find the matching pattern b-d-p-q",
+    options: ["b-d-p-q", "d-b-q-p", "p-q-b-d", "q-p-d-b"],
+    answer: "b-d-p-q",
+    pattern: "visual_tracking",
+  },
+  {
+    question: "Choose the matching sequence",
+    options: ["m-w-n-u", "n-u-m-w", "w-m-u-n", "u-n-w-m"],
+    answer: "m-w-n-u",
+    pattern: "visual_tracking",
+  },
+];
+
+/* =========================
+   HELPERS
+========================= */
+
+function shuffleArray<T>(array: T[]): T[] {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
+function generateAssessmentQuestions() {
+  const groupedQuestions: Record<string, any[]> = {};
+
+  // Group questions by pattern
+  questionPool.forEach((question) => {
+    if (!groupedQuestions[question.pattern]) {
+      groupedQuestions[question.pattern] = [];
+    }
+
+    groupedQuestions[question.pattern].push(question);
+  });
+
+  const selectedQuestions = [];
+
+  // Ensure each pattern appears at least once
+  for (const pattern in groupedQuestions) {
+    const shuffled = shuffleArray(groupedQuestions[pattern]);
+
+    selectedQuestions.push(shuffled[0]);
+  }
+
+  // Fill remaining slots randomly
+  const remainingQuestions = questionPool.filter(
+    (q) =>
+      !selectedQuestions.some((selected) => selected.question === q.question),
+  );
+
+  const shuffledRemaining = shuffleArray(remainingQuestions);
+
+  while (selectedQuestions.length < 10 && shuffledRemaining.length > 0) {
+    selectedQuestions.push(shuffledRemaining.pop());
+  }
+
+  return shuffleArray(selectedQuestions);
+}
+
+/* =========================
+   COMPONENT
+========================= */
+
 export default function LearnScreen() {
   const router = useRouter();
+
+  const [questions] = useState(generateAssessmentQuestions());
+
   const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [weakPatterns, setWeakPatterns] = useState<string[]>([]);
-  const startTime = useRef<number>(Date.now());
 
-  const questions = [
-    {
-      question: "Which word rhymes with 'Fright'?",
-      options: ["Flight", "Fridg", "Freit"],
-      answer: "Flight",
-      pattern: "phonological_awareness",
-    },
-    {
-      question:
-        "What word do you get if you take the 'S' sound out of 'Scream'?",
-      options: ["Cream", "Creamy", "Seam"],
-      answer: "Cream",
-      pattern: "phoneme_manipulation",
-    },
-    {
-      question: "Which word rhymes with 'Stray'?",
-      options: ["Spit", "Weigh", "Straw"],
-      answer: "Weigh",
-      pattern: "phonological_awareness",
-    },
-    {
-      question:
-        "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
-      options: ["b", "d", "p"],
-      answer: "b",
-      pattern: "letter_reversal",
-    },
-    {
-      question: "Choose the correct spelling of this common word:",
-      options: ["Dose", "Does", "Deos"],
-      answer: "Does",
-      pattern: "spelling_recognition",
-    },
-    {
-      question: "Find the letter pattern that matches 'b-d-p-q':",
-      options: ["d-b-q-p", "b-d-p-q", "p-q-b-d"],
-      answer: "b-d-p-q",
-      pattern: "visual_tracking",
-    },
-    {
-      question: "Which of these is a REAL English word, not a made-up word?",
-      options: ["Trish", "Plung", "Thump"],
-      answer: "Thump",
-      pattern: "word_recognition",
-    },
-    {
-      question: "If 'G-L-I-N-T' spells Glint, what does 'B-L-I-N-K' spell?",
-      options: ["Blind", "Blink", "Blank"],
-      answer: "Blink",
-      pattern: "decoding",
-    },
-    {
-      question:
-        "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
-      options: ["ou", "oa", "ao"],
-      answer: "oa",
-      pattern: "vowel_processing",
-    },
-    {
-      question: "Which word makes a long 'E' sound (like in 'Tree')?",
-      options: ["Chief", "Chef", "Chair"],
-      answer: "Chief",
-      pattern: "phonics",
-    },
-  ];
+  const startTime = useRef<number>(Date.now());
 
   const handleAnswer = async (selected: string) => {
     let updatedScore = score;
+
     let currentWeakAreas = [...weakPatterns];
 
     if (selected === questions[currentQuestion].answer) {
       updatedScore += 1;
+
       setScore(updatedScore);
     } else {
       const failedPattern = questions[currentQuestion].pattern;
+
       currentWeakAreas.push(failedPattern);
+
       setWeakPatterns((prev) => [...prev, failedPattern]);
     }
 
@@ -105,106 +268,148 @@ export default function LearnScreen() {
       setCurrentQuestion(nextQuestion);
     } else {
       setFinished(true);
+
       setLoading(true);
 
       const endTime = Date.now();
+
       const totalTimeSeconds = Math.max(
         1,
         Math.floor((endTime - startTime.current) / 1000),
       );
+
       const mistakes = questions.length - updatedScore;
 
       let assignedLevel = "easy";
-      if (updatedScore >= 8 && totalTimeSeconds <= 22) assignedLevel = "hard";
-      else if (updatedScore >= 4) assignedLevel = "medium";
+
+      if (updatedScore >= 8 && totalTimeSeconds <= 22) {
+        assignedLevel = "hard";
+      } else if (updatedScore >= 4) {
+        assignedLevel = "medium";
+      }
 
       try {
         const response = await fetch(
           "https://grinch-cloak-grazing.ngrok-free.app/predict",
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({
               score: updatedScore,
-              mistakes: mistakes,
+              mistakes,
               reading_speed: totalTimeSeconds,
             }),
           },
         );
 
         const data = await response.json();
-        if (data.level) assignedLevel = data.level;
+
+        if (data.level) {
+          assignedLevel = data.level;
+        }
       } catch (error) {
-        console.warn(
-          "Backend pipeline offline. Defaulting to algorithmic calculation tier.",
-        );
+        console.warn("Backend offline. Using local algorithm.");
       }
 
       setLevel(assignedLevel);
-      const primaryWeakArea =
-        currentWeakAreas.length > 0 ? currentWeakAreas[0] : "None Identified";
+
+      const patternFrequency: Record<string, number> = {};
+
+      currentWeakAreas.forEach((pattern) => {
+        patternFrequency[pattern] = (patternFrequency[pattern] || 0) + 1;
+      });
+
+      let primaryWeakArea = "None Identified";
+
+      let highestCount = 0;
+
+      for (const pattern in patternFrequency) {
+        if (patternFrequency[pattern] > highestCount) {
+          highestCount = patternFrequency[pattern];
+          primaryWeakArea = pattern;
+        }
+      }
 
       let dynamicReview = "Excellent decoding fluency!";
-      if (assignedLevel === "easy")
+
+      if (assignedLevel === "easy") {
         dynamicReview = "Focus: Phoneme Foundations";
-      if (assignedLevel === "medium")
+      }
+
+      if (assignedLevel === "medium") {
         dynamicReview = "Focus: Chunking & Syllables";
+      }
 
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
+
         if (user) {
-          // CRITICAL FIX: Change execution to .upsert matching the user primary profile
-          const { error: upsertError } = await supabase
-            .from("assessments")
-            .upsert(
-              {
-                user_id: user.id,
-                score: updatedScore,
-                level: assignedLevel,
-                weak_area: primaryWeakArea,
-                review: dynamicReview,
-              },
-              { onConflict: "user_id" },
-            );
-          if (upsertError) throw upsertError;
+          const { error } = await supabase.from("assessments").upsert(
+            {
+              user_id: user.id,
+              score: updatedScore,
+              level: assignedLevel,
+              weak_area: primaryWeakArea,
+              review: dynamicReview,
+            },
+            {
+              onConflict: "user_id",
+            },
+          );
+
+          if (error) throw error;
         }
       } catch (dbErr) {
-        console.error("Database save failed during evaluation cycle:", dbErr);
+        console.error("Database save failed:", dbErr);
       } finally {
         setLoading(false);
       }
     }
   };
+
   const startTargetedLesson = () => {
     const routeLevel =
       level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
-    // ADAPTIVE LESSON SELECTION
-    let recommendedLesson = "letter_reversal";
+    let targetedLessonFile = "letter_reversal";
 
-    if (weakPatterns.includes("phonics")) {
-      recommendedLesson = "phonics";
+    switch (primaryWeakPattern) {
+      case "phonological_awareness":
+      case "phoneme_manipulation":
+      case "phonics":
+      case "decoding":
+        targetedLessonFile = "phonics";
+        break;
+
+      case "vowel_processing":
+        targetedLessonFile = "vowel_processing";
+        break;
+
+      case "letter_reversal":
+      case "visual_tracking":
+        targetedLessonFile = "letter_reversal";
+        break;
+
+      case "spelling_recognition":
+        targetedLessonFile = "phonics";
+        break;
+
+      default:
+        targetedLessonFile = "phonics";
     }
 
-    if (weakPatterns.includes("decoding")) {
-      recommendedLesson = "decoding";
-    }
-
-    if (weakPatterns.includes("vowel_processing")) {
-      recommendedLesson = "vowel_processing";
-    }
-
-    router.push({
+    router.replace({
       pathname: "/dyslexic/module/[level1]/[lesson]",
       params: {
         level1: routeLevel,
-        lesson: recommendedLesson,
+        lesson: targetedLessonFile,
       },
     });
   };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>ZyraLex Dyslexia Assessment</Text>
