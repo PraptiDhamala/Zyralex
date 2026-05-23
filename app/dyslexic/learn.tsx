@@ -1,6 +1,7 @@
-import { useRouter } from "expo-router"; // 1. Import useRouter
+import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,7 +11,7 @@ import {
 import { supabase } from "../../lib/supabase";
 
 export default function LearnScreen() {
-  const router = useRouter(); // 2. Initialize the router
+  const router = useRouter();
   const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -26,7 +27,6 @@ export default function LearnScreen() {
       answer: "Flight",
       pattern: "phonological_awareness",
     },
-
     {
       question:
         "What word do you get if you take the 'S' sound out of 'Scream'?",
@@ -34,14 +34,12 @@ export default function LearnScreen() {
       answer: "Cream",
       pattern: "phoneme_manipulation",
     },
-
     {
       question: "Which word rhymes with 'Stray'?",
       options: ["Spit", "Weigh", "Straw"],
       answer: "Weigh",
       pattern: "phonological_awareness",
     },
-
     {
       question:
         "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
@@ -49,35 +47,30 @@ export default function LearnScreen() {
       answer: "b",
       pattern: "letter_reversal",
     },
-
     {
       question: "Choose the correct spelling of this common word:",
       options: ["Dose", "Does", "Deos"],
       answer: "Does",
       pattern: "spelling_recognition",
     },
-
     {
       question: "Find the letter pattern that matches 'b-d-p-q':",
       options: ["d-b-q-p", "b-d-p-q", "p-q-b-d"],
       answer: "b-d-p-q",
       pattern: "visual_tracking",
     },
-
     {
       question: "Which of these is a REAL English word, not a made-up word?",
       options: ["Trish", "Plung", "Thump"],
       answer: "Thump",
       pattern: "word_recognition",
     },
-
     {
       question: "If 'G-L-I-N-T' spells Glint, what does 'B-L-I-N-K' spell?",
       options: ["Blind", "Blink", "Blank"],
       answer: "Blink",
       pattern: "decoding",
     },
-
     {
       question:
         "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
@@ -85,7 +78,6 @@ export default function LearnScreen() {
       answer: "oa",
       pattern: "vowel_processing",
     },
-
     {
       question: "Which word makes a long 'E' sound (like in 'Tree')?",
       options: ["Chief", "Chef", "Chair"],
@@ -96,7 +88,6 @@ export default function LearnScreen() {
 
   const handleAnswer = async (selected: string) => {
     let updatedScore = score;
-    // Create a local copy to bypass async state update lag
     let currentWeakAreas = [...weakPatterns];
 
     if (selected === questions[currentQuestion].answer) {
@@ -123,82 +114,79 @@ export default function LearnScreen() {
       );
       const mistakes = questions.length - updatedScore;
 
+      let assignedLevel = "easy";
+      if (updatedScore >= 8 && totalTimeSeconds <= 22) assignedLevel = "hard";
+      else if (updatedScore >= 4) assignedLevel = "medium";
+
       try {
-        const response = await fetch("http://127.0.0.1:5000/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            score: updatedScore,
-            mistakes: mistakes,
-            reading_speed: totalTimeSeconds,
-          }),
-        });
+        const response = await fetch(
+          "https://grinch-cloak-grazing.ngrok-free.app/predict",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              score: updatedScore,
+              mistakes: mistakes,
+              reading_speed: totalTimeSeconds,
+            }),
+          },
+        );
 
         const data = await response.json();
-
-        if (data.level) {
-          const assignedLevel = data.level;
-          setLevel(assignedLevel);
-
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-
-          // FIX: Use the local variable instead of the stale state array
-          const primaryWeakArea =
-            currentWeakAreas.length > 0
-              ? currentWeakAreas[0]
-              : "None Identified";
-
-          let dynamicReview = "Excellent decoding fluency!";
-          if (assignedLevel === "easy")
-            dynamicReview = "Focus: Phoneme Foundations";
-          if (assignedLevel === "medium")
-            dynamicReview = "Focus: Chunking & Syllables";
-
-          await supabase.from("assessments").insert({
-            user_id: user?.id,
-            score: updatedScore,
-            level: assignedLevel,
-            weak_area: primaryWeakArea,
-            review: dynamicReview,
-          });
-        } else {
-          throw new Error("Invalid level payload structure");
-        }
+        if (data.level) assignedLevel = data.level;
       } catch (error) {
-        console.warn("Backend missing. Triggering local backup...", error);
-        let fallbackLevel = "easy";
-        if (updatedScore >= 8 && totalTimeSeconds <= 22) fallbackLevel = "hard";
-        else if (updatedScore >= 4) fallbackLevel = "medium";
+        console.warn(
+          "Backend pipeline offline. Defaulting to algorithmic calculation tier.",
+        );
+      }
 
-        setLevel(fallbackLevel);
+      setLevel(assignedLevel);
+      const primaryWeakArea =
+        currentWeakAreas.length > 0 ? currentWeakAreas[0] : "None Identified";
 
-        // Local fallback insert so the database updates even if your Python server is offline
+      let dynamicReview = "Excellent decoding fluency!";
+      if (assignedLevel === "easy")
+        dynamicReview = "Focus: Phoneme Foundations";
+      if (assignedLevel === "medium")
+        dynamicReview = "Focus: Chunking & Syllables";
+
+      try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        const primaryWeakArea =
-          currentWeakAreas.length > 0 ? currentWeakAreas[0] : "None Identified";
-
-        await supabase.from("assessments").insert({
-          user_id: user?.id,
-          score: updatedScore,
-          level: fallbackLevel,
-          weak_area: primaryWeakArea,
-          review:
-            fallbackLevel === "easy"
-              ? "Focus: Phoneme Foundations"
-              : "Review Patterns",
-        });
+        if (user) {
+          // CRITICAL FIX: Change execution to .upsert matching the user primary profile
+          const { error: upsertError } = await supabase
+            .from("assessments")
+            .upsert(
+              {
+                user_id: user.id,
+                score: updatedScore,
+                level: assignedLevel,
+                weak_area: primaryWeakArea,
+                review: dynamicReview,
+              },
+              { onConflict: "user_id" },
+            );
+          if (upsertError) throw upsertError;
+        }
+      } catch (dbErr) {
+        console.error("Database save failed during evaluation cycle:", dbErr);
       } finally {
         setLoading(false);
       }
     }
   };
-  // 3. Navigation handler back to Home
-  const navigateToHome = () => {
-    router.replace("/dyslexic"); // Adjust this route layout matcher matching your directory schema
+  // ROUTER LINK MAPPER TO EXPO PATHWAY
+  const startTargetedLesson = () => {
+    const routeLevel =
+      level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
+
+    // FIXED: Added the dot after [level1] to match your exact directory structure
+    router.replace({
+      pathname: "/dyslexic/module/[level1]./[lesson]",
+      params: { level1: routeLevel, lesson: "letter_reversal" },
+    });
   };
 
   return (
@@ -231,9 +219,17 @@ export default function LearnScreen() {
           <Text style={styles.resultHeader}>Assessment Completed</Text>
 
           {loading ? (
-            <Text style={styles.loadingText}>
-              Processing reading diagnostics...
-            </Text>
+            <View style={{ marginVertical: 20 }}>
+              <ActivityIndicator size="large" color="#2563EB" />
+              <Text
+                style={[
+                  styles.loadingText,
+                  { textAlign: "center", marginTop: 10 },
+                ]}
+              >
+                Processing reading diagnostics...
+              </Text>
+            </View>
           ) : (
             <>
               <Text style={styles.levelBadge}>
@@ -272,12 +268,6 @@ export default function LearnScreen() {
                     You have solid basic phoneme tracking. Let's build up
                     complex vowel team segments.
                   </Text>
-                  <Text style={styles.lessonText}>
-                    When tracking longer blend terms, segment them cleanly:
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    • re · mem · ber{"\n"}• fanta · stic
-                  </Text>
                 </View>
               )}
 
@@ -288,22 +278,30 @@ export default function LearnScreen() {
                   </Text>
                   <Text style={styles.lessonText}>
                     Excellent decoding fluency! Your path will optimize
-                    structural reading metrics and prefixes/suffixes.
-                  </Text>
-                  <Text style={styles.lessonText}>
-                    • <Text style={styles.highlight}>Un</Text>predict
-                    <Text style={styles.highlight}>able</Text>
-                    {"\n"}• <Text style={styles.highlight}>Mis</Text>understand
+                    structural prefixes and suffixes.
                   </Text>
                 </View>
               )}
 
-              {/* 4. Action Button added here */}
               <TouchableOpacity
                 style={styles.homeButton}
-                onPress={navigateToHome}
+                onPress={startTargetedLesson}
               >
-                <Text style={styles.homeButtonText}>Go to Dashboard</Text>
+                <Text style={styles.homeButtonText}>
+                  Start Your First Lesson
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.homeButton,
+                  { backgroundColor: "transparent", marginTop: 12 },
+                ]}
+                onPress={() => router.replace("/dyslexic")}
+              >
+                <Text style={{ color: "#475569", fontWeight: "600" }}>
+                  Go back to Dashboard
+                </Text>
               </TouchableOpacity>
             </>
           )}
@@ -393,7 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   boldText: { fontWeight: "bold" },
-  highlight: { color: "navy", fontWeight: "bold" },
+  highlight: { color: "#2563EB", fontWeight: "bold" },
   homeButton: {
     backgroundColor: "#2563EB",
     paddingVertical: 16,
