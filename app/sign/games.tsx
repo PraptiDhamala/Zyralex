@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function DyslexicGames() {
   return (
@@ -10,18 +10,14 @@ export default function DyslexicGames() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <View style={styles.inner}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Fun Learning Games</Text>
 
         <View style={styles.grid}>
-          
           {/* 🔗 Match */}
           <Link href="/game/match" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#7dbef7", "#74e7ef"]}
-                style={styles.card}
-              >
+              <LinearGradient colors={["#7dbef7", "#74e7ef"]} style={styles.card}>
                 <Text style={styles.emoji}>🔗</Text>
                 <Text style={styles.buttonText}>Match the Following</Text>
               </LinearGradient>
@@ -31,10 +27,7 @@ export default function DyslexicGames() {
           {/* 🃏 Memory */}
           <Link href="/game/memory" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#fadc7a", "#fda085"]}
-                style={styles.card}
-              >
+              <LinearGradient colors={["#fadc7a", "#fda085"]} style={styles.card}>
                 <Text style={styles.emoji}>🃏</Text>
                 <Text style={styles.buttonText}>Memory Cards</Text>
               </LinearGradient>
@@ -44,10 +37,7 @@ export default function DyslexicGames() {
           {/* 🔤 Unscramble */}
           <Link href="/game/unscramble" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#adf2c6", "#8fd3f4"]}
-                style={styles.card}
-              >
+              <LinearGradient colors={["#adf2c6", "#8fd3f4"]} style={styles.card}>
                 <Text style={styles.emoji}>🔤</Text>
                 <Text style={styles.buttonText}>Unscramble Words</Text>
               </LinearGradient>
@@ -57,12 +47,9 @@ export default function DyslexicGames() {
           {/* ✍️ Spelling */}
           <Link href="/game/spelling" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#ff9a9e", "#fad0c4"]}
-                style={styles.card}
-              >
+              <LinearGradient colors={["#ff9a9e", "#fad0c4"]} style={styles.card}>
                 <Text style={styles.emoji}>✍️</Text>
-                <Text style={styles.buttonText}>Spelling Bee </Text>
+                <Text style={styles.buttonText}>Spelling Bee</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Link>
@@ -70,11 +57,8 @@ export default function DyslexicGames() {
           {/* 😊 Emoji */}
           <Link href="/game/emoji" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#a18cd1", "#fbc2eb"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>❓</Text>
+              <LinearGradient colors={["#a18cd1", "#fbc2eb"]} style={styles.card}>
+                <Text style={styles.emoji}>😊</Text>
                 <Text style={styles.buttonText}>Emoji Riddles</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -83,18 +67,14 @@ export default function DyslexicGames() {
           {/* 📚 Sentence */}
           <Link href="/game/sentence" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#ffecd2", "#fcb69f"]}
-                style={styles.card}
-              >
+              <LinearGradient colors={["#ffecd2", "#fcb69f"]} style={styles.card}>
                 <Text style={styles.emoji}>📚</Text>
                 <Text style={styles.buttonText}>Sentence Builder</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Link>
-
         </View>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -102,12 +82,11 @@ export default function DyslexicGames() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 12,
   },
 
-  inner: {
-    flex: 1,
-    justifyContent: "center",
+  scrollContent: {
+    padding: 16,
+    alignItems: "center",
   },
 
   title: {
@@ -119,28 +98,27 @@ const styles = StyleSheet.create({
   },
 
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: "column", // stack vertically
+    alignItems: "center",
+    width: "100%",
   },
 
   baseButton: {
-    width: "48%",
-    marginBottom: 15,
+    width: "100%", // wider for column layout
+    marginBottom: 20,
     borderRadius: 12,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    
   },
 
   card: {
     padding: 20,
     alignItems: "center",
     borderRadius: 12,
-    height: 140, 
+    height: 140,
   },
 
   emoji: {

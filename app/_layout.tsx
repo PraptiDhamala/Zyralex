@@ -44,6 +44,11 @@ export default function RootLayout() {
           setLoading(false);
           return;
         }
+        if (segments[0] === "game") {
+  
+          setLoading(false);
+          return;
+        }
 
         // --- FIXED PATHS & SEGMENT GUARDS ---
         if (choice === "dyslexic" && segments[0] !== "dyslexic") {
