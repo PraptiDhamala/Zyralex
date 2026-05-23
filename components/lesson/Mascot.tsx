@@ -2,8 +2,12 @@
 
 import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity,
-  Image, Dimensions,
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
 
