@@ -176,7 +176,7 @@ const questionPool = [
     pattern: "visual_tracking",
   },
   {
-    question: "Choose the matching sequence",
+    question: "Choose the matching sequence m-w-n-u",
     options: ["m-w-n-u", "n-u-m-w", "w-m-u-n", "u-n-w-m"],
     answer: "m-w-n-u",
     pattern: "visual_tracking",
@@ -375,38 +375,25 @@ export default function LearnScreen() {
     const routeLevel =
       level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
-    let targetedLessonFile = "letter_reversal";
+    let recommendedLesson = "letter_reversal";
 
-    switch (primaryWeakPattern) {
-      case "phonological_awareness":
-      case "phoneme_manipulation":
-      case "phonics":
-      case "decoding":
-        targetedLessonFile = "phonics";
-        break;
-
-      case "vowel_processing":
-        targetedLessonFile = "vowel_processing";
-        break;
-
-      case "letter_reversal":
-      case "visual_tracking":
-        targetedLessonFile = "letter_reversal";
-        break;
-
-      case "spelling_recognition":
-        targetedLessonFile = "phonics";
-        break;
-
-      default:
-        targetedLessonFile = "phonics";
+    if (weakPatterns.includes("phon%")) {
+      recommendedLesson = "phonics";
     }
 
-    router.replace({
+    if (weakPatterns.includes("decoding")) {
+      recommendedLesson = "decoding";
+    }
+
+    if (weakPatterns.includes("vowel_processing")) {
+      recommendedLesson = "vowel_processing";
+    }
+
+    router.push({
       pathname: "/dyslexic/module/[level1]/[lesson]",
       params: {
         level1: routeLevel,
-        lesson: targetedLessonFile,
+        lesson: recommendedLesson,
       },
     });
   };
