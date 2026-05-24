@@ -1,162 +1,151 @@
 const lesson = {
-  id: "chunking",
+  id: "decoding",
 
-  title: "Chunking Words",
+  title: "Decoding Words",
 
-  subtitle:
-    "Learn how to break long words into smaller sound parts called chunks.",
+  subtitle: "Learn how to sound out letters and blend them to read new words.",
 
   objectives: [
-    "Understand what chunking means",
-    "Identify smaller sound parts inside words",
-    "Read long words more easily",
-    "Improve spelling and pronunciation",
+    "Recognize letter sounds",
+    "Blend sounds together",
+    "Read unfamiliar words",
+    "Improve reading confidence",
   ],
 
   explanation: [
     {
       type: "text",
       content:
-        "Chunking is a reading strategy where we break a big word into smaller parts.",
+        "Decoding means figuring out how a word sounds by looking at its letters.",
     },
 
     {
       type: "text",
       content:
-        "Smaller chunks are easier for our brain to read, remember, and pronounce.",
+        "Readers decode by saying each sound slowly and blending the sounds together.",
     },
 
     {
       type: "text",
-      content:
-        "Chunks can be syllables, word families, prefixes, suffixes, or smaller known words.",
+      content: "Example: c-a-t → cat",
     },
 
     {
       type: "text",
-      content: "Example: bas-ket-ball → basketball",
-    },
-
-    {
-      type: "text",
-      content:
-        "When we read chunk by chunk, long words feel less scary and easier to understand.",
+      content: "Decoding helps us read words we have never seen before.",
     },
 
     {
       type: "tip",
-      content:
-        "Tip: Look for small words you already know inside a bigger word.",
+      content: "Tip: Start with the first sound and move from left to right.",
     },
   ],
 
   vocabulary: [
     {
-      word: "Chunk",
-      meaning: "A smaller part of a word.",
+      word: "Decode",
+      meaning: "To figure out a word by using letter sounds.",
     },
+
     {
-      word: "Syllable",
-      meaning: "A beat or sound part in a word.",
+      word: "Blend",
+      meaning: "To join sounds together smoothly.",
     },
+
     {
-      word: "Compound Word",
-      meaning: "A word made from two smaller words.",
+      word: "Sound",
+      meaning: "The noise a letter or group of letters makes.",
     },
   ],
 
   examples: [
     {
-      letter: "sun",
-      word: "sunflower",
-      chunked: "sun-flower",
-      emoji: "🌻",
-      meaning: "A flower that looks like the sun.",
+      word: "cat",
+      sounds: ["c", "a", "t"],
+      blended: "cat",
+      emoji: "🐱",
     },
 
     {
-      letter: "foot",
-      word: "football",
-      chunked: "foot-ball",
-      emoji: "⚽",
-      meaning: "A sport played with a ball.",
+      word: "dog",
+      sounds: ["d", "o", "g"],
+      blended: "dog",
+      emoji: "🐶",
     },
 
     {
-      letter: "rain",
-      word: "raincoat",
-      chunked: "rain-coat",
-      emoji: "🧥",
-      meaning: "A coat worn in the rain.",
+      word: "sun",
+      sounds: ["s", "u", "n"],
+      blended: "sun",
+      emoji: "☀️",
     },
 
     {
-      letter: "cup",
-      word: "cupcake",
-      chunked: "cup-cake",
-      emoji: "🧁",
-      meaning: "A small sweet cake.",
+      word: "fish",
+      sounds: ["f", "i", "sh"],
+      blended: "fish",
+      emoji: "🐟",
     },
   ],
 
   stepByStep: [
     {
       step: 1,
-      instruction: "Look at the whole word.",
+      instruction: "Look at the first letter.",
     },
 
     {
       step: 2,
-      instruction: "Find smaller words or sound parts inside it.",
+      instruction: "Say each sound slowly.",
     },
 
     {
       step: 3,
-      instruction: "Read each chunk slowly.",
+      instruction: "Blend the sounds together.",
     },
 
     {
       step: 4,
-      instruction: "Blend the chunks together to read the full word.",
+      instruction: "Read the whole word smoothly.",
     },
   ],
 
   guidedPractice: [
     {
-      question: "How would you chunk 'rainbow'?",
-      options: ["rain-bow", "ra-in-bow", "rain-b-ow"],
-      answer: "rain-bow",
-      explanation: "'Rain' and 'bow' are two smaller familiar words.",
+      question: "Which sounds make the word 'map'?",
+      options: ["m-a-p", "ma-p", "m-p-a"],
+      answer: "m-a-p",
+      explanation: "We say each sound from left to right.",
     },
 
     {
-      question: "Which is the correct chunking for 'cupcake'?",
-      options: ["cup-cake", "cu-pcake", "cupc-ake"],
-      answer: "cup-cake",
-      explanation: "'Cup' and 'cake' are both real smaller words.",
+      question: "Blend these sounds: d-o-g",
+      options: ["dig", "dog", "dug"],
+      answer: "dog",
+      explanation: "The sounds d-o-g blend together to make 'dog'.",
     },
 
     {
-      question: "How would you chunk 'sunset'?",
-      options: ["sun-set", "su-nset", "s-uns-et"],
-      answer: "sun-set",
-      explanation: "'Sun' and 'set' are easy chunks to read.",
+      question: "What word do these sounds make: s-u-n?",
+      options: ["sun", "son", "sin"],
+      answer: "sun",
+      explanation: "Blending the sounds creates the word 'sun'.",
     },
   ],
+
+  challenge: {
+    instruction: "Try decoding these words on your own:",
+    words: ["hat", "pen", "shop", "frog"],
+  },
 
   funFact: {
     title: "Did You Know?",
     content:
-      "Good readers often chunk words automatically without even noticing!",
-  },
-
-  challenge: {
-    instruction: "Try chunking these words by yourself:",
-    words: ["playground", "toothbrush", "rainstorm"],
+      "Strong readers decode words very quickly, almost like a superpower!",
   },
 
   completionMessage:
-    "Excellent work! You are learning how to break big words into smaller chunks like a smart reader!",
+    "Awesome work! You practiced sounding out and blending words like a real reader!",
 };
 
 export default lesson;
