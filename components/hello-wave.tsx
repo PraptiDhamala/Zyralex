@@ -8,7 +8,7 @@ export function HelloWave() {
       style={styles.video}
       autoPlay
       loop
-      resizeMode="contain"   // ✅ use string, not ResizeMode.CONTAIN
+      resizeMode="contain"  
     />
   );
 }

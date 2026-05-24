@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function EmojiGame() {
+export default function PuzzleGame() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Emoji Riddles</Text>
