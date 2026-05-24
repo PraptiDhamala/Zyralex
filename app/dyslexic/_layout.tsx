@@ -21,10 +21,25 @@ function CustomHeader({ handleReset }: { handleReset: () => void }) {
 
         {/* Header icons */}
         <View style={styles.headerIcons}>
-          <Ionicons name="settings-outline" size={22} color="#6b7280" style={styles.hIcon} />
-          <Ionicons name="shield-outline" size={22} color="#8b5cf6" style={styles.hIcon} />
+          <Ionicons
+            name="settings-outline"
+            size={22}
+            color="#6b7280"
+            style={styles.hIcon}
+          />
+          <Ionicons
+            name="shield-outline"
+            size={22}
+            color="#8b5cf6"
+            style={styles.hIcon}
+          />
           <Pressable onPress={handleReset}>
-            <Ionicons name="exit-outline" size={22} color="#3b82f6" style={styles.hIcon} />
+            <Ionicons
+              name="exit-outline"
+              size={22}
+              color="#3b82f6"
+              style={styles.hIcon}
+            />
           </Pressable>
         </View>
       </View>
@@ -52,33 +67,39 @@ export default function DyslexicLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => <Ionicons name="home" color={color} size={20} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" color={color} size={20} />
+          ),
         }}
       />
       <Tabs.Screen
         name="learn"
         options={{
-          title: "Learn",
-          tabBarIcon: ({ color }) => <Ionicons name="book" color={color} size={20} />,
+          title: "Assesment",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="book" color={color} size={20} />
+          ),
         }}
       />
       <Tabs.Screen
         name="practice"
         options={{
           title: "Practice",
-          tabBarIcon: ({ color }) => <Ionicons name="create" color={color} size={20} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="create" color={color} size={20} />
+          ),
         }}
       />
       <Tabs.Screen
         name="games"
         options={{
           title: "Games",
-          tabBarIcon: ({ color }) => <Ionicons name="game-controller" color={color} size={20} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="game-controller" color={color} size={20} />
+          ),
         }}
       />
-      
     </Tabs>
-  
   );
 }
 
@@ -103,7 +124,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-     backgroundColor: "navy",
+    backgroundColor: "navy",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
