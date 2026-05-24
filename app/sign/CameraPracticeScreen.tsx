@@ -32,7 +32,7 @@ export default function CameraPracticeScreen() {
       "Do you want to leave the practice session?",
       [
         { text: "Cancel", style: "cancel" },
-        { text: "Yes, Exit", style: "destructive", onPress: () => router.push("/sign/practice") }
+        { text: "Yes, Exit", style: "destructive", onPress: () => router.push("/sign/practicegrid") }
       ]
     );
   };

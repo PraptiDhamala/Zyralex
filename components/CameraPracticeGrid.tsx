@@ -18,7 +18,7 @@ export const CameraPracticeGrid: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Camera Practice</Text>
+      
       <Text style={styles.subtitle}>Test your signs with AI recognition</Text>
 
       <View style={styles.grid}>
