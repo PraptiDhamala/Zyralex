@@ -8,14 +8,18 @@ import {
   View,
 } from "react-native";
 
-// IMPORT BOTH LESSON OPTIONS
 import letterReversal from "../../../../data/easy/letter_reversal";
 import phonics from "../../../../data/easy/phonics";
+import vowel_processing from "../../../../data/easy/vowel_processing";
+import chunking from "../../../../data/medium/chunking";
+import decoding from "../../../../data/medium/decoding";
 
-// THE CORE MAPPER DICTIONARY
 const curriculumMap: Record<string, any> = {
   letter_reversal: letterReversal,
   phonics: phonics,
+  vowel_processing: vowel_processing,
+  chunking: chunking,
+  decoding: decoding,
 };
 
 export default function LessonScreen() {
@@ -31,15 +35,16 @@ export default function LessonScreen() {
   const lessonData =
     curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
 
-  const totalSteps =
-    lessonData.explanation.length +
-    lessonData.examples.length +
-    lessonData.guidedPractice.length;
+  const explanationLength = lessonData.explanation?.length || 0;
+
+  const examplesLength = lessonData.examples?.length || 0;
+
+  const practiceLength = lessonData.guidedPractice?.length || 0;
+
+  const totalSteps = explanationLength + examplesLength + practiceLength;
 
   const currentPractice =
-    lessonData.guidedPractice[
-      step - lessonData.explanation.length - lessonData.examples.length
-    ];
+    lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
   const handleNext = () => {
     if (step + 1 >= totalSteps) {
@@ -74,8 +79,9 @@ export default function LessonScreen() {
     }
 
     // EXAMPLES SECTION
-    if (step < lessonData.explanation.length + lessonData.examples.length) {
-      const exampleIndex = step - lessonData.explanation.length;
+    if (lessonData.examples && step < explanationLength + examplesLength) {
+      const exampleIndex = step - explanationLength;
+
       const example = lessonData.examples[exampleIndex];
       return (
         <View style={styles.card}>
@@ -91,7 +97,7 @@ export default function LessonScreen() {
     }
 
     // GUIDED PRACTICE SECTION
-    if (currentPractice) {
+    if (lessonData.guidedPractice && currentPractice) {
       return (
         <View style={styles.card}>
           <Text style={styles.question}>{currentPractice.question}</Text>
