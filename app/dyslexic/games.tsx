@@ -14,7 +14,11 @@ export default function DyslexicGames() {
         <Text style={styles.title}>Fun Learning Games</Text>
 
         <View style={styles.grid}>
+<<<<<<< HEAD
       
+=======
+          {/* 🔗 Match */}
+>>>>>>> 6097b69f081cb4f26953e51f9a90873f49888e81
           <Link href="/game/match" asChild>
             <TouchableOpacity style={styles.baseButton}>
               <LinearGradient colors={["#7dbef7", "#74e7ef"]} style={styles.cardRow}>
@@ -34,12 +38,21 @@ export default function DyslexicGames() {
             </TouchableOpacity>
           </Link>
 
+<<<<<<< HEAD
          
           <Link href="/game/puzzle" asChild>
             <TouchableOpacity style={styles.baseButton}>
               <LinearGradient colors={["#adf2c6", "#8fd3f4"]} style={styles.cardRow}>
                 <Image source={require("../../assets/mimo3.png")} style={styles.icon} resizeMode="contain" />
                 <Text style={styles.buttonText}>Puzzle</Text>
+=======
+          {/* 🔤 Unscramble */}
+          <Link href="/game/unscramble" asChild>
+            <TouchableOpacity style={styles.baseButton}>
+              <LinearGradient colors={["#adf2c6", "#8fd3f4"]} style={styles.cardRow}>
+                <Image source={require("../../assets/mimo3.png")} style={styles.icon} resizeMode="contain" />
+                <Text style={styles.buttonText}>Unscramble Words</Text>
+>>>>>>> 6097b69f081cb4f26953e51f9a90873f49888e81
               </LinearGradient>
             </TouchableOpacity>
           </Link>
@@ -54,11 +67,20 @@ export default function DyslexicGames() {
             </TouchableOpacity>
           </Link>
 
+<<<<<<< HEAD
           <Link href="/game/unscramble" asChild>
             <TouchableOpacity style={styles.baseButton}>
               <LinearGradient colors={["#a18cd1", "#fbc2eb"]} style={styles.cardRow}>
                 <Image source={require("../../assets/mimo2.png")} style={styles.icon} resizeMode="contain" />
                 <Text style={styles.buttonText}>Unscramble  Words</Text>
+=======
+          {/* 😊 Emoji */}
+          <Link href="/game/emoji" asChild>
+            <TouchableOpacity style={styles.baseButton}>
+              <LinearGradient colors={["#a18cd1", "#fbc2eb"]} style={styles.cardRow}>
+                <Image source={require("../../assets/mimo2.png")} style={styles.icon} resizeMode="contain" />
+                <Text style={styles.buttonText}>Emoji Riddles</Text>
+>>>>>>> 6097b69f081cb4f26953e51f9a90873f49888e81
               </LinearGradient>
             </TouchableOpacity>
           </Link>
