@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
-
 const questionPool = [
   {
     question: "Which word rhymes with 'Cake'?",
@@ -146,6 +145,40 @@ const questionPool = [
     pattern: "decoding",
   },
   {
+    question: "What does C-A-P spell?",
+    options: ["Cup", "Cap", "Cop", "Clip"],
+    answer: "Cap",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does H-A-T spell?",
+    options: ["Hot", "Hat", "Hit", "Hop"],
+    answer: "Hat",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does B-E-D spell?",
+    options: ["Bed", "Bad", "Bid", "Bud"],
+    answer: "Bed",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does F-R-O-G spell?",
+    options: ["Flag", "Frog", "Free", "Frame"],
+    answer: "Frog",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does T-R-E-E spell?",
+    options: ["Tree", "Train", "Trap", "Track"],
+    answer: "Tree",
+    pattern: "decoding",
+  },
+  {
     question: "What does S-T-A-R spell?",
     options: ["Start", "Store", "Star", "Stair"],
     answer: "Star",
@@ -226,6 +259,7 @@ export default function LearnScreen() {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [weakPatterns, setWeakPatterns] = useState<string[]>([]);
+  const [primaryWeakArea, setPrimaryWeakArea] = useState("");
 
   const startTime = useRef<number>(Date.now());
 
@@ -302,20 +336,26 @@ export default function LearnScreen() {
       const patternFrequency: Record<string, number> = {};
 
       currentWeakAreas.forEach((pattern) => {
-        patternFrequency[pattern] = (patternFrequency[pattern] || 0) + 1;
+        const normalizedPattern = pattern.trim().toLowerCase();
+
+        patternFrequency[normalizedPattern] =
+          (patternFrequency[normalizedPattern] || 0) + 1;
       });
 
-      let primaryWeakArea = "None Identified";
+      // let primaryWeakArea = "None Identified";
+      let detectedWeakArea = "None Identified";
 
       let highestCount = 0;
 
       for (const pattern in patternFrequency) {
         if (patternFrequency[pattern] > highestCount) {
           highestCount = patternFrequency[pattern];
-          primaryWeakArea = pattern;
+          detectedWeakArea = pattern;
         }
       }
 
+      setPrimaryWeakArea(detectedWeakArea);
+      // setPrimaryWeakArea(primaryWeakArea);
       let dynamicReview = "Excellent decoding fluency!";
 
       if (assignedLevel === "easy") {
@@ -360,31 +400,49 @@ export default function LearnScreen() {
       level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
     let recommendedLesson = "letter_reversal";
-    if (level == "easy") {
-      if (weakPatterns.includes("phon%")) {
-        recommendedLesson = "phonics";
-      }
 
-      if (weakPatterns.includes("decoding")) {
-        recommendedLesson = "decoding";
-      }
+    // EASY LEVEL
+    if (level === "easy") {
+      switch (primaryWeakArea) {
+        case "phonological_awareness":
+        case "phoneme_manipulation":
+        case "phonics":
+          recommendedLesson = "phonics";
+          break;
 
-      if (weakPatterns.includes("vowel_processing")) {
-        recommendedLesson = "vowel_processing";
+        case "vowel_processing":
+          recommendedLesson = "vowel_processing";
+          break;
+
+        case "letter_reversal":
+          recommendedLesson = "letter_reversal";
+          break;
+
+        default:
+          recommendedLesson = "letter_reversal";
       }
     }
+
+    // MEDIUM LEVEL
     if (level === "medium") {
-      if (weakPatterns.includes("decoding")) {
-        recommendedLesson = "decoding";
-      } else if (
-        weakPatterns.includes("visual_tracking") ||
-        weakPatterns.includes("vowel_processing")
-      ) {
-        recommendedLesson = "chunking";
+      switch (primaryWeakArea) {
+        case "decoding":
+          recommendedLesson = "decoding";
+          break;
+
+        case "visual_tracking":
+        case "vowel_processing":
+          recommendedLesson = "chunking";
+          break;
+
+        default:
+          recommendedLesson = "chunking";
       }
     }
-    {
-      recommendedLesson = "chunking";
+
+    // HARD LEVEL
+    if (level === "hard") {
+      recommendedLesson = "advanced_morphology";
     }
 
     router.push({
