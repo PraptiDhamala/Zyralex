@@ -1,47 +1,117 @@
 import cv2
-import numpy as np 
+import numpy as np
 
-# video lai load gareko
-cap = cv2.VideoCapture("eyehehe.mp4")
+# camera ko default camera kholcha
+cap = cv2.VideoCapture(0)
+
+
+# yo sab is pretrained face and eyes detection model haar cascade
+face_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+)
+
+eye_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + "haarcascade_eye.xml"
+)
 
 while True:
+
+
     ret, frame = cap.read()
-#    roi = frame[50:2000, 200:1300] #from top to bottom, left to right, these number
+
     if not ret:
-        print("Video ended or cannot be read.")
         break
-    roi = frame[100:1200, 50:1300] #from top to bottom, left to right, these number 
-    rows, cols, _ = roi.shape
-    gray_roi = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY) #gray pardincha video
-    gray_roi = cv2.GaussianBlur(gray_roi, (7,7), 0)
-    _, threshold = cv2.threshold(gray_roi, 35, 255, cv2.THRESH_BINARY_INV)    # video sakiyo or read garna sakena vane break huncha
-    contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contours= sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)
-    print(contours)
-    for cnt in contours:
-        (x,y,w,h) = cv2.boundingRect(cnt)
-        #  cv2.drawContours(roi, [cnt], -1, (0,0,255), 3)
-        if cv2.contourArea(cnt) < 100:
-            continue
-        aspect_ratio = float(w) / h
-        if aspect_ratio < 0.4 or aspect_ratio > 2.3:
-            continue
-        cv2.rectangle(roi, (x,y) ,(x+w,y+h), (255,0,0), 2)
-        cv2.line(roi,(x+int(w/2),0),(x+int(w/2),rows),(0,255,0),2)
-        cv2.line(roi,(0, y+int(h/2)),(cols,y+int(h/2)),(0,255,0),2)
 
-        break
-  
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+# Searches the image for faces. Returns coordinates
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+# If multiple faces appear, process each one.
+    for (x, y, w, h) in faces:
 
-    # Display the frame, frame vaneko the same video we are talking about
-    cv2.imshow("Threshold",  threshold)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0,255,0), 2)
 
-    cv2.imshow("gray roi",  gray_roi)
+        face_roi_gray = gray[y:y+h, x:x+w]
+        face_roi_color = frame[y:y+h, x:x+w]
 
-    cv2.imshow("Roi", roi)
-    
-    key = cv2.waitKey(30)
-    
+        eyes = eye_cascade.detectMultiScale(face_roi_gray)
+
+        for (ex, ey, ew, eh) in eyes:
+
+            # Eye ROI
+            eye = face_roi_color[ey:ey+eh, ex:ex+ew]
+            eye_gray = cv2.cvtColor(eye, cv2.COLOR_BGR2GRAY)
+
+            eye_gray = cv2.GaussianBlur(eye_gray, (7,7), 0)
+
+            _, threshold = cv2.threshold(
+                eye_gray,
+                35,
+                255,
+                cv2.THRESH_BINARY_INV
+            )
+
+            # Find contours
+            contours, _ = cv2.findContours(
+                threshold,
+                cv2.RETR_TREE,
+                cv2.CHAIN_APPROX_SIMPLE
+            )
+
+            contours = sorted(
+                contours,
+                key=lambda x: cv2.contourArea(x),
+                reverse=True
+            )
+
+            for cnt in contours:
+
+                area = cv2.contourArea(cnt)
+
+                if area < 100:
+                    continue
+
+                (cx, cy, cw, ch) = cv2.boundingRect(cnt)
+
+                pupil_x = cx + cw//2
+                pupil_y = cy + ch//2
+
+                cv2.circle(
+                    eye,
+                    (pupil_x, pupil_y),
+                    5,
+                    (0,0,255),
+                    -1
+                )
+
+                eye_center = ew // 2
+
+                if pupil_x < eye_center - 10:
+                    text = "Looking Left"
+
+                elif pupil_x > eye_center + 10:
+                    text = "Looking Right"
+
+                else:
+                    text = "Looking Center"
+
+                cv2.putText(
+                    frame,
+                    text,
+                    (50,50),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (255,0,0),
+                    2
+                )
+
+                break
+
+            cv2.imshow("Threshold", threshold)
+
+    cv2.imshow("Gaze Detection", frame)
+
+    key = cv2.waitKey(1)
+
     if key == 27:
         break
 
