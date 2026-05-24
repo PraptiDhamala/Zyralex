@@ -1,35 +1,22 @@
-import { StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import LottieView from "lottie-react-native";
+import { StyleSheet } from "react-native";
 
 export function HelloWave() {
-  // Shared value for rotation
-  const rotation = useSharedValue(0);
-
-  // Animate rotation back and forth
-  rotation.value = withRepeat(
-    withTiming(25, { duration: 300 }),
-    4,
-    true // reverse direction
-  );
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotation.value}deg` }],
-    };
-  });
-
   return (
-    <Animated.Image
-      source={require('../assets/mimopeek.png')} 
-      style={[styles.image, animatedStyle]}
+    <LottieView
+      source={require("../assets/WAVE.json")}
+      style={styles.video}
+      autoPlay
+      loop
+      resizeMode="contain"   // ✅ use string, not ResizeMode.CONTAIN
     />
   );
 }
 
 const styles = StyleSheet.create({
-  image: {
-    width: 50,
-    height: 50,
+  video: {
+    width: 100,
+    height: 100,
     marginTop: -6,
   },
 });

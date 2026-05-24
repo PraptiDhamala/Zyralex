@@ -18,6 +18,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { HelloWave } from '../../components/hello-wave';
+import { COLORS } from '../../constants/colors';
 import { supabase } from "../../lib/supabase";
 
 export default function DyslexicHome() {
@@ -187,6 +189,13 @@ export default function DyslexicHome() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.welcomeSection}>
+                 <HelloWave />
+                  <Text style={styles.welcomeTitle}>Welcome Back!</Text>
+                  <Text style={styles.welcomeSubtitle}>
+                    Continue your learning journey
+                  </Text>
+                </View>
         {/* LEVEL CARD */}
         <View style={styles.mainCard}>
           <View style={styles.levelHeader}>
@@ -363,6 +372,27 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     alignItems: "center",
   },
+  welcomeSection: {
+      alignItems: 'center',
+      paddingVertical: 24,
+      paddingHorizontal: 16,
+    },
+    welcomeIcon: {
+      fontSize: 48,
+      marginBottom: 12,
+    },
+    welcomeTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: COLORS.darkGray,
+      marginBottom: 4,
+      textAlign: 'center',
+    },
+    welcomeSubtitle: {
+      fontSize: 14,
+      color: COLORS.textLight,
+      textAlign: 'center',
+    },
   mainCard: {
     backgroundColor: "white",
     width: "90%",
