@@ -10,10 +10,6 @@ import {
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 
-/* =========================
-   QUESTION POOL
-========================= */
-
 const questionPool = [
   {
     question: "Which word rhymes with 'Cake'?",
@@ -49,14 +45,14 @@ const questionPool = [
   },
 
   {
-    question: "Which letter faces right?",
+    question: "Which letter faces right and upward?",
     options: ["b", "d", "q", "p"],
     answer: "b",
     pattern: "letter_reversal",
   },
 
   {
-    question: "Which letter faces left?",
+    question: "Which letter faces left and is upward?",
     options: ["b", "d", "p", "q"],
     answer: "d",
     pattern: "letter_reversal",
@@ -183,10 +179,6 @@ const questionPool = [
   },
 ];
 
-/* =========================
-   HELPERS
-========================= */
-
 function shuffleArray<T>(array: T[]): T[] {
   return [...array].sort(() => Math.random() - 0.5);
 }
@@ -194,7 +186,6 @@ function shuffleArray<T>(array: T[]): T[] {
 function generateAssessmentQuestions() {
   const groupedQuestions: Record<string, any[]> = {};
 
-  // Group questions by pattern
   questionPool.forEach((question) => {
     if (!groupedQuestions[question.pattern]) {
       groupedQuestions[question.pattern] = [];
@@ -205,14 +196,12 @@ function generateAssessmentQuestions() {
 
   const selectedQuestions = [];
 
-  // Ensure each pattern appears at least once
   for (const pattern in groupedQuestions) {
     const shuffled = shuffleArray(groupedQuestions[pattern]);
 
     selectedQuestions.push(shuffled[0]);
   }
 
-  // Fill remaining slots randomly
   const remainingQuestions = questionPool.filter(
     (q) =>
       !selectedQuestions.some((selected) => selected.question === q.question),
@@ -226,11 +215,6 @@ function generateAssessmentQuestions() {
 
   return shuffleArray(selectedQuestions);
 }
-
-/* =========================
-   COMPONENT
-========================= */
-
 export default function LearnScreen() {
   const router = useRouter();
 
@@ -376,17 +360,31 @@ export default function LearnScreen() {
       level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
     let recommendedLesson = "letter_reversal";
+    if (level == "easy") {
+      if (weakPatterns.includes("phon%")) {
+        recommendedLesson = "phonics";
+      }
 
-    if (weakPatterns.includes("phon%")) {
-      recommendedLesson = "phonics";
+      if (weakPatterns.includes("decoding")) {
+        recommendedLesson = "decoding";
+      }
+
+      if (weakPatterns.includes("vowel_processing")) {
+        recommendedLesson = "vowel_processing";
+      }
     }
-
-    if (weakPatterns.includes("decoding")) {
-      recommendedLesson = "decoding";
+    if (level === "medium") {
+      if (weakPatterns.includes("decoding")) {
+        recommendedLesson = "decoding";
+      } else if (
+        weakPatterns.includes("visual_tracking") ||
+        weakPatterns.includes("vowel_processing")
+      ) {
+        recommendedLesson = "chunking";
+      }
     }
-
-    if (weakPatterns.includes("vowel_processing")) {
-      recommendedLesson = "vowel_processing";
+    {
+      recommendedLesson = "chunking";
     }
 
     router.push({
