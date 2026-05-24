@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,137 +10,256 @@ import {
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 
-// ==========================================
-// 1. LESSON DATA STORAGE (Embedded directly)
-// ==========================================
-interface LessonSlide {
-  title: string;
-  content: string;
-  example?: string;
+/* =========================
+   QUESTION POOL
+========================= */
+
+const questionPool = [
+  {
+    question: "Which word rhymes with 'Cake'?",
+    options: ["Bake", "Back", "Book", "Bird"],
+    answer: "Bake",
+    pattern: "phonological_awareness",
+  },
+  {
+    question: "Which word rhymes with 'Light'?",
+    options: ["Night", "Leaf", "Stone", "Jump"],
+    answer: "Night",
+    pattern: "phonological_awareness",
+  },
+
+  {
+    question: "Remove the 'S' sound from 'Smile'",
+    options: ["Mile", "Tile", "File", "Pile"],
+    answer: "Mile",
+    pattern: "phoneme_manipulation",
+  },
+  {
+    question: "Remove the 'B' sound from 'Black'",
+    options: ["Lack", "Clock", "Back", "Lock"],
+    answer: "Lack",
+    pattern: "phoneme_manipulation",
+  },
+
+  {
+    question: "Tap the letter q",
+    options: ["p", "d", "q", "b"],
+    answer: "q",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter faces right?",
+    options: ["b", "d", "q", "p"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter faces left?",
+    options: ["b", "d", "p", "q"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter hangs below the line?",
+    options: ["b", "d", "p", "m"],
+    answer: "p",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter has the circle first?",
+    options: ["b", "d", "p", "q"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter has the stick first?",
+    options: ["b", "d", "p", "q"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Find the matching letter for b",
+    options: ["d", "q", "b", "p"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Find the matching letter for d",
+    options: ["p", "d", "q", "b"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Complete the word: ___ed",
+    options: ["b", "d", "p", "q"],
+    answer: "b",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Complete the word: ___og",
+    options: ["d", "b", "p", "q"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+
+  {
+    question: "Which letter points upward and left?",
+    options: ["d", "b", "q", "p"],
+    answer: "d",
+    pattern: "letter_reversal",
+  },
+  {
+    question: "Choose the correct spelling",
+    options: ["Freind", "Friend", "Frend", "Frined"],
+    answer: "Friend",
+    pattern: "spelling_recognition",
+  },
+  {
+    question: "Choose the correct spelling",
+    options: ["Becuse", "Because", "Beacause", "Beacuse"],
+    answer: "Because",
+    pattern: "spelling_recognition",
+  },
+
+  {
+    question: "Which word has a long E sound?",
+    options: ["Chief", "Chef", "Chair", "Chat"],
+    answer: "Chief",
+    pattern: "phonics",
+  },
+  {
+    question: "Which word sounds like 'Tree'?",
+    options: ["Free", "Trap", "Frog", "Truck"],
+    answer: "Free",
+    pattern: "phonics",
+  },
+
+  {
+    question: "What does B-L-I-N-K spell?",
+    options: ["Blank", "Blink", "Blind", "Black"],
+    answer: "Blink",
+    pattern: "decoding",
+  },
+  {
+    question: "What does S-T-A-R spell?",
+    options: ["Start", "Store", "Star", "Stair"],
+    answer: "Star",
+    pattern: "decoding",
+  },
+
+  {
+    question: "Fill in the missing vowel: C___t",
+    options: ["oa", "ou", "ee", "ai"],
+    answer: "oa",
+    pattern: "vowel_processing",
+  },
+  {
+    question: "Fill in the missing vowel: Tr___n",
+    options: ["ai", "ee", "oa", "ou"],
+    answer: "ai",
+    pattern: "vowel_processing",
+  },
+
+  {
+    question: "Find the matching pattern b-d-p-q",
+    options: ["b-d-p-q", "d-b-q-p", "p-q-b-d", "q-p-d-b"],
+    answer: "b-d-p-q",
+    pattern: "visual_tracking",
+  },
+  {
+    question: "Choose the matching sequence",
+    options: ["m-w-n-u", "n-u-m-w", "w-m-u-n", "u-n-w-m"],
+    answer: "m-w-n-u",
+    pattern: "visual_tracking",
+  },
+];
+
+/* =========================
+   HELPERS
+========================= */
+
+function shuffleArray<T>(array: T[]): T[] {
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
-const lessonsDataset: Record<string, LessonSlide[]> = {
-  easy: [
-    {
-      title: "Phoneme Foundations: Tracking b vs d",
-      content: "The letter 'b' has a belly in front. The letter 'd' has a diaper in the back. Let's practice tracking them visually.",
-      example: "b -> bed, d -> dog"
-    },
-    {
-      title: "Short Vowel Isolations",
-      content: "Short vowel sounds can shift easily. Pay close attention to how your mouth changes shape between 'eh' (Net) and 'ih' (Nit).",
-      example: "Net vs. Nit"
+function generateAssessmentQuestions() {
+  const groupedQuestions: Record<string, any[]> = {};
+
+  // Group questions by pattern
+  questionPool.forEach((question) => {
+    if (!groupedQuestions[question.pattern]) {
+      groupedQuestions[question.pattern] = [];
     }
-  ],
-  medium: [
-    {
-      title: "Chunking & Syllables",
-      content: "Breaking longer complex words into tiny chunks makes reading smoother. Tap your fingers for every visual beat.",
-      example: "Cat-er-pil-lar (Caterpillar)"
-    },
-    {
-      title: "Vowel Teams (OA & OU)",
-      content: "When two vowels match up together, the first vowel sound is usually long while the second stays completely quiet.",
-      example: "C-OA-T (Coat)"
-    }
-  ],
-  hard: [
-    {
-      title: "Advanced Morphological Patterns",
-      content: "Isolating structural roots from prefixes and suffixes prevents visual crowding and improves total tracking speed.",
-      example: "Un-comfort-able"
-    }
-  ]
-};
+
+    groupedQuestions[question.pattern].push(question);
+  });
+
+  const selectedQuestions = [];
+
+  // Ensure each pattern appears at least once
+  for (const pattern in groupedQuestions) {
+    const shuffled = shuffleArray(groupedQuestions[pattern]);
+
+    selectedQuestions.push(shuffled[0]);
+  }
+
+  // Fill remaining slots randomly
+  const remainingQuestions = questionPool.filter(
+    (q) =>
+      !selectedQuestions.some((selected) => selected.question === q.question),
+  );
+
+  const shuffledRemaining = shuffleArray(remainingQuestions);
+
+  while (selectedQuestions.length < 10 && shuffledRemaining.length > 0) {
+    selectedQuestions.push(shuffledRemaining.pop());
+  }
+
+  return shuffleArray(selectedQuestions);
+}
+
+/* =========================
+   COMPONENT
+========================= */
 
 export default function LearnScreen() {
   const router = useRouter();
-  const [level, setLevel] = useState("easy");
+
+  const [questions] = useState(generateAssessmentQuestions());
+
+  const [level, setLevel] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [weakPatterns, setWeakPatterns] = useState<string[]>([]);
+
   const startTime = useRef<number>(Date.now());
-
-  // NEW STATES: Control the active lesson slides after the assessment ends
-  const [inLessonMode, setInLessonMode] = useState(false);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-
-  const questions = [
-    {
-      question: "Which word rhymes with 'Fright'?",
-      options: ["Flight", "Fridg", "Freit"],
-      answer: "Flight",
-      pattern: "phonological_awareness",
-    },
-    {
-      question: "What word do you get if you take the 'S' sound out of 'Scream'?",
-      options: ["Cream", "Creamy", "Seam"],
-      answer: "Cream",
-      pattern: "phoneme_manipulation",
-    },
-    {
-      question: "Which word rhymes with 'Stray'?",
-      options: ["Spit", "Weigh", "Straw"],
-      answer: "Weigh",
-      pattern: "phonological_awareness",
-    },
-    {
-      question: "Complete the word '___illiand' (Brilliant) using the correct facing letter:",
-      options: ["b", "d", "p"],
-      answer: "b",
-      pattern: "letter_reversal",
-    },
-    {
-      question: "Choose the correct spelling of this common word:",
-      options: ["Dose", "Does", "Deos"],
-      answer: "Does",
-      pattern: "spelling_recognition",
-    },
-    {
-      question: "Find the letter pattern that matches 'b-d-p-q':",
-      options: ["d-b-q-p", "b-d-p-q", "p-q-b-d"],
-      answer: "b-d-p-q",
-      pattern: "visual_tracking",
-    },
-    {
-      question: "Which of these is a REAL English word, not a made-up word?",
-      options: ["Trish", "Plung", "Thump"],
-      answer: "Thump",
-      pattern: "word_recognition",
-    },
-    {
-      question: "If 'G-L-I-N-T' spells Glint, what does 'B-L-I-N-K' spell?",
-      options: ["Blind", "Blink", "Blank"],
-      answer: "Blink",
-      pattern: "decoding",
-    },
-    {
-      question: "Select the missing vowel pair for 'C___at' (as in a jacket/coat):",
-      options: ["ou", "oa", "ao"],
-      answer: "oa",
-      pattern: "vowel_processing",
-    },
-    {
-      question: "Which word makes a long 'E' sound (like in 'Tree')?",
-      options: ["Chief", "Chef", "Chair"],
-      answer: "Chief",
-      pattern: "phonics",
-    },
-  ];
 
   const handleAnswer = async (selected: string) => {
     let updatedScore = score;
-    let localWeakPatterns = [...weakPatterns];
+
+    let currentWeakAreas = [...weakPatterns];
 
     if (selected === questions[currentQuestion].answer) {
       updatedScore += 1;
+
       setScore(updatedScore);
     } else {
-      const currentPattern = questions[currentQuestion].pattern;
-      localWeakPatterns.push(currentPattern);
-      setWeakPatterns((prev) => [...prev, currentPattern]);
+      const failedPattern = questions[currentQuestion].pattern;
+
+      currentWeakAreas.push(failedPattern);
+
+      setWeakPatterns((prev) => [...prev, failedPattern]);
     }
 
     const nextQuestion = currentQuestion + 1;
@@ -148,18 +268,20 @@ export default function LearnScreen() {
       setCurrentQuestion(nextQuestion);
     } else {
       setFinished(true);
+
       setLoading(true);
 
       const endTime = Date.now();
+
       const totalTimeSeconds = Math.max(
         1,
         Math.floor((endTime - startTime.current) / 1000),
       );
+
       const mistakes = questions.length - updatedScore;
-      const primaryWeakArea =
-        localWeakPatterns.length > 0 ? localWeakPatterns[0] : "None Identified";
 
       let assignedLevel = "easy";
+
       if (updatedScore >= 8 && totalTimeSeconds <= 22) {
         assignedLevel = "hard";
       } else if (updatedScore >= 4) {
@@ -167,92 +289,132 @@ export default function LearnScreen() {
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            score: updatedScore,
-            mistakes: mistakes,
-            reading_speed: totalTimeSeconds,
-          }),
-        });
+        const response = await fetch(
+          "https://grinch-cloak-grazing.ngrok-free.app/predict",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              score: updatedScore,
+              mistakes,
+              reading_speed: totalTimeSeconds,
+            }),
+          },
+        );
 
         const data = await response.json();
+
         if (data.level) {
           assignedLevel = data.level;
         }
       } catch (error) {
-        console.warn(
-          "Backend dynamic prediction offline. Proceeding with frontend logic calculation.",
-        );
+        console.warn("Backend offline. Using local algorithm.");
       }
 
       setLevel(assignedLevel);
 
-      let dynamicReview = "Excellent decoding fluency!";
-      if (assignedLevel === "easy") dynamicReview = "Focus: Phoneme Foundations";
-      if (assignedLevel === "medium") dynamicReview = "Focus: Chunking & Syllables";
+      const patternFrequency: Record<string, number> = {};
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from("assessments").upsert(
-          {
-            user_id: user.id,
-            score: updatedScore,
-            level: assignedLevel,
-            weak_area: primaryWeakArea,
-            review: dynamicReview,
-          },
-          { onConflict: "user_id" },
-        );
+      currentWeakAreas.forEach((pattern) => {
+        patternFrequency[pattern] = (patternFrequency[pattern] || 0) + 1;
+      });
+
+      let primaryWeakArea = "None Identified";
+
+      let highestCount = 0;
+
+      for (const pattern in patternFrequency) {
+        if (patternFrequency[pattern] > highestCount) {
+          highestCount = patternFrequency[pattern];
+          primaryWeakArea = pattern;
+        }
       }
-      setLoading(false);
+
+      let dynamicReview = "Excellent decoding fluency!";
+
+      if (assignedLevel === "easy") {
+        dynamicReview = "Focus: Phoneme Foundations";
+      }
+
+      if (assignedLevel === "medium") {
+        dynamicReview = "Focus: Chunking & Syllables";
+      }
+
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const { error } = await supabase.from("assessments").upsert(
+            {
+              user_id: user.id,
+              score: updatedScore,
+              level: assignedLevel,
+              weak_area: primaryWeakArea,
+              review: dynamicReview,
+            },
+            {
+              onConflict: "user_id",
+            },
+          );
+
+          if (error) throw error;
+        }
+      } catch (dbErr) {
+        console.error("Database save failed:", dbErr);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  useEffect(() => {
-    checkAssessment();
-  }, []);
+  const startTargetedLesson = () => {
+    const routeLevel =
+      level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
-  const checkAssessment = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    let targetedLessonFile = "letter_reversal";
 
-    const { data } = await supabase
-      .from("assessments")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    switch (primaryWeakPattern) {
+      case "phonological_awareness":
+      case "phoneme_manipulation":
+      case "phonics":
+      case "decoding":
+        targetedLessonFile = "phonics";
+        break;
 
-    if (data) {
-      setLevel(data.level || "easy");
-      setScore(data.score || 0);
+      case "vowel_processing":
+        targetedLessonFile = "vowel_processing";
+        break;
+
+      case "letter_reversal":
+      case "visual_tracking":
+        targetedLessonFile = "letter_reversal";
+        break;
+
+      case "spelling_recognition":
+        targetedLessonFile = "phonics";
+        break;
+
+      default:
+        targetedLessonFile = "phonics";
     }
+
+    router.replace({
+      pathname: "/dyslexic/module/[level1]/[lesson]",
+      params: {
+        level1: routeLevel,
+        lesson: targetedLessonFile,
+      },
+    });
   };
-
-  const navigateToHome = () => {
-    router.replace("/dyslexic");
-  };
-
-  // NEW METHOD: Advances lessons or returns user to Home when slides finish
-  const handleNextSlide = (totalSlides: number) => {
-    if (currentSlideIndex < totalSlides - 1) {
-      setCurrentSlideIndex(prev => prev + 1);
-    } else {
-      navigateToHome();
-    }
-  };
-
-  // Locate current active slide sequence
-  const activeSlides = lessonsDataset[level] || lessonsDataset["easy"];
-  const currentSlide = activeSlides[currentSlideIndex];
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>ZyraLex Dyslexia Program</Text>
+      <Text style={styles.title}>ZyraLex Dyslexia Assessment</Text>
 
-      {/* STAGE 1: ASSESSMENT QUESTIONS */}
-      {!finished && !inLessonMode && (
+      {!finished && (
         <View style={styles.quizContainer}>
           <Text style={styles.progressText}>
             Task {currentQuestion + 1} of {questions.length}
@@ -273,69 +435,97 @@ export default function LearnScreen() {
         </View>
       )}
 
-      {/* STAGE 2: ASSESSMENT RESULTS PREVIEW */}
-      {finished && !inLessonMode && (
+      {finished && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultHeader}>Assessment Completed</Text>
 
           {loading ? (
-            <Text style={styles.loadingText}>Processing reading diagnostics...</Text>
+            <View style={{ marginVertical: 20 }}>
+              <ActivityIndicator size="large" color="#2563EB" />
+              <Text
+                style={[
+                  styles.loadingText,
+                  { textAlign: "center", marginTop: 10 },
+                ]}
+              >
+                Processing reading diagnostics...
+              </Text>
+            </View>
           ) : (
             <>
               <Text style={styles.levelBadge}>
-                Assigned Tier: {level.toUpperCase()}
+                Assigned Program: {level.toUpperCase()}
               </Text>
 
-              <View style={styles.lessonCard}>
-                <Text style={styles.lessonTitle}>Your Path is Ready</Text>
-                <Text style={styles.lessonText}>
-                  Based on your performance speed and patterns, we have curated a tracking program specifically for your profile.
-                </Text>
-              </View>
+              {level === "easy" && (
+                <View style={styles.lessonCard}>
+                  <Text style={styles.lessonTitle}>
+                    Focus: Phoneme Foundations
+                  </Text>
+                  <Text style={styles.lessonText}>
+                    We are starting with tracking letter sound alignments.
+                  </Text>
+                  <Text style={styles.lessonText}>
+                    Let's practice the difference between{" "}
+                    <Text style={styles.boldText}>b</Text> and{" "}
+                    <Text style={styles.boldText}>d</Text>:
+                  </Text>
+                  <Text style={styles.lessonText}>
+                    • <Text style={styles.highlight}>b</Text> has a belly
+                    (points right: <Text style={styles.boldText}>ba</Text>ll)
+                    {"\n"}• <Text style={styles.highlight}>d</Text> wears a
+                    diaper (points left: <Text style={styles.boldText}>do</Text>
+                    g)
+                  </Text>
+                </View>
+              )}
 
-              {/* Action Button to launch Lesson state inside this same file */}
+              {level === "medium" && (
+                <View style={styles.lessonCard}>
+                  <Text style={styles.lessonTitle}>
+                    Focus: Chunking & Syllables
+                  </Text>
+                  <Text style={styles.lessonText}>
+                    You have solid basic phoneme tracking. Let's build up
+                    complex vowel team segments.
+                  </Text>
+                </View>
+              )}
+
+              {level === "hard" && (
+                <View style={styles.lessonCard}>
+                  <Text style={styles.lessonTitle}>
+                    Focus: Advanced Morphological Patterns
+                  </Text>
+                  <Text style={styles.lessonText}>
+                    Excellent decoding fluency! Your path will optimize
+                    structural prefixes and suffixes.
+                  </Text>
+                </View>
+              )}
+
               <TouchableOpacity
-                style={[styles.homeButton, { backgroundColor: "#10B981", marginBottom: 12 }]}
-                onPress={() => setInLessonMode(true)}
+                style={styles.homeButton}
+                onPress={startTargetedLesson}
               >
-                <Text style={styles.homeButtonText}>Start Learning Modules</Text>
+                <Text style={styles.homeButtonText}>
+                  Start Your First Lesson
+                </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.secondaryButton} onPress={navigateToHome}>
-                <Text style={styles.secondaryButtonText}>Back to Dashboard</Text>
+              <TouchableOpacity
+                style={[
+                  styles.homeButton,
+                  { backgroundColor: "transparent", marginTop: 12 },
+                ]}
+                onPress={() => router.replace("/dyslexic")}
+              >
+                <Text style={{ color: "#475569", fontWeight: "600" }}>
+                  Go back to Dashboard
+                </Text>
               </TouchableOpacity>
             </>
           )}
-        </View>
-      )}
-
-      {/* STAGE 3: RUNTIME LESSON SLIDES */}
-      {inLessonMode && currentSlide && (
-        <View style={styles.lessonContainer}>
-          <Text style={styles.progressText}>
-            Slide {currentSlideIndex + 1} of {activeSlides.length} ({level.toUpperCase()})
-          </Text>
-
-          <View style={styles.slideCard}>
-            <Text style={styles.slideTitle}>{currentSlide.title}</Text>
-            <Text style={styles.slideContent}>{currentSlide.content}</Text>
-
-            {currentSlide.example && (
-              <View style={styles.exampleContainer}>
-                <Text style={styles.exampleHeader}>Visual Breakdown:</Text>
-                <Text style={styles.exampleText}>{currentSlide.example}</Text>
-              </View>
-            )}
-          </View>
-
-          <TouchableOpacity
-            style={styles.homeButton}
-            onPress={() => handleNextSlide(activeSlides.length)}
-          >
-            <Text style={styles.homeButtonText}>
-              {currentSlideIndex === activeSlides.length - 1 ? "Complete Curriculum" : "Next Segment"}
-            </Text>
-          </TouchableOpacity>
         </View>
       )}
     </ScrollView>
@@ -419,7 +609,10 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     color: "#475569",
     letterSpacing: 0.8,
+    marginBottom: 12,
   },
+  boldText: { fontWeight: "bold" },
+  highlight: { color: "#2563EB", fontWeight: "bold" },
   homeButton: {
     backgroundColor: "#2563EB",
     paddingVertical: 16,
@@ -427,35 +620,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   homeButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
-  secondaryButton: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-  },
-  secondaryButtonText: { color: "#475569", fontSize: 16, fontWeight: "600" },
-  
-  // Lesson Specific Styles
-  lessonContainer: { width: "100%" },
-  slideCard: {
-    backgroundColor: "#FFFFFF",
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    marginBottom: 24,
-  },
-  slideTitle: { fontSize: 22, fontWeight: "800", color: "#1E293B", marginBottom: 14 },
-  slideContent: { fontSize: 18, lineHeight: 28, color: "#475569", letterSpacing: 0.5 },
-  exampleContainer: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#F8FAFC",
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: "#10B981",
-  },
-  exampleHeader: { fontSize: 12, fontWeight: "700", color: "#64748B", textTransform: "uppercase" },
-  exampleText: { fontSize: 20, fontWeight: "700", color: "#1E293B", marginTop: 4, letterSpacing: 1 },
 });
