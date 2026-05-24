@@ -526,11 +526,15 @@ export default function LearnScreen() {
               {level === "medium" && (
                 <View style={styles.lessonCard}>
                   <Text style={styles.lessonTitle}>
-                    Focus: Chunking & Syllables
+                    {primaryWeakArea === "decoding"
+                      ? "Focus: Decoding Skills"
+                      : "Focus: Chunking & Syllables"}
                   </Text>
+
                   <Text style={styles.lessonText}>
-                    You have solid basic phoneme tracking. Let's build up
-                    complex vowel team segments.
+                    {primaryWeakArea === "decoding"
+                      ? "We detected difficulty blending letters and reading words smoothly. We will practice sounding out and decoding words step-by-step."
+                      : "You have solid basic phoneme tracking. Let's build up complex vowel team segments."}
                   </Text>
                 </View>
               )}
