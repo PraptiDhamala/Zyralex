@@ -5,7 +5,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "rea
 export default function DyslexicGames() {
   return (
     <LinearGradient
-      colors={["#f4f4f0", "#f8f9f6"]}
+      colors={["#fcfcd7", "#f8f5ba"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
@@ -14,7 +14,7 @@ export default function DyslexicGames() {
         <Text style={styles.title}>Fun Learning Games</Text>
 
         <View style={styles.grid}>
-          {/* 🔗 Match */}
+      
           <Link href="/game/match" asChild>
             <TouchableOpacity style={styles.baseButton}>
               <LinearGradient colors={["#7dbef7", "#74e7ef"]} style={styles.cardRow}>
@@ -34,12 +34,12 @@ export default function DyslexicGames() {
             </TouchableOpacity>
           </Link>
 
-          {/* 🔤 Unscramble */}
-          <Link href="/game/unscramble" asChild>
+         
+          <Link href="/game/puzzle" asChild>
             <TouchableOpacity style={styles.baseButton}>
               <LinearGradient colors={["#adf2c6", "#8fd3f4"]} style={styles.cardRow}>
                 <Image source={require("../../assets/mimo3.png")} style={styles.icon} resizeMode="contain" />
-                <Text style={styles.buttonText}>Unscramble Words</Text>
+                <Text style={styles.buttonText}>Puzzle</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Link>
@@ -54,12 +54,11 @@ export default function DyslexicGames() {
             </TouchableOpacity>
           </Link>
 
-          {/* 😊 Emoji */}
-          <Link href="/game/emoji" asChild>
+          <Link href="/game/unscramble" asChild>
             <TouchableOpacity style={styles.baseButton}>
               <LinearGradient colors={["#a18cd1", "#fbc2eb"]} style={styles.cardRow}>
                 <Image source={require("../../assets/mimo2.png")} style={styles.icon} resizeMode="contain" />
-                <Text style={styles.buttonText}>Emoji Riddles</Text>
+                <Text style={styles.buttonText}>Unscramble  Words</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Link>
