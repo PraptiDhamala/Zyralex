@@ -9,11 +9,6 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
-
-/* =========================
-   QUESTION POOL
-========================= */
-
 const questionPool = [
   {
     question: "Which word rhymes with 'Cake'?",
@@ -49,14 +44,14 @@ const questionPool = [
   },
 
   {
-    question: "Which letter faces right?",
+    question: "Which letter faces right and upward?",
     options: ["b", "d", "q", "p"],
     answer: "b",
     pattern: "letter_reversal",
   },
 
   {
-    question: "Which letter faces left?",
+    question: "Which letter faces left and is upward?",
     options: ["b", "d", "p", "q"],
     answer: "d",
     pattern: "letter_reversal",
@@ -150,6 +145,40 @@ const questionPool = [
     pattern: "decoding",
   },
   {
+    question: "What does C-A-P spell?",
+    options: ["Cup", "Cap", "Cop", "Clip"],
+    answer: "Cap",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does H-A-T spell?",
+    options: ["Hot", "Hat", "Hit", "Hop"],
+    answer: "Hat",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does B-E-D spell?",
+    options: ["Bed", "Bad", "Bid", "Bud"],
+    answer: "Bed",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does F-R-O-G spell?",
+    options: ["Flag", "Frog", "Free", "Frame"],
+    answer: "Frog",
+    pattern: "decoding",
+  },
+
+  {
+    question: "What does T-R-E-E spell?",
+    options: ["Tree", "Train", "Trap", "Track"],
+    answer: "Tree",
+    pattern: "decoding",
+  },
+  {
     question: "What does S-T-A-R spell?",
     options: ["Start", "Store", "Star", "Stair"],
     answer: "Star",
@@ -176,16 +205,12 @@ const questionPool = [
     pattern: "visual_tracking",
   },
   {
-    question: "Choose the matching sequence",
+    question: "Choose the matching sequence m-w-n-u",
     options: ["m-w-n-u", "n-u-m-w", "w-m-u-n", "u-n-w-m"],
     answer: "m-w-n-u",
     pattern: "visual_tracking",
   },
 ];
-
-/* =========================
-   HELPERS
-========================= */
 
 function shuffleArray<T>(array: T[]): T[] {
   return [...array].sort(() => Math.random() - 0.5);
@@ -194,7 +219,6 @@ function shuffleArray<T>(array: T[]): T[] {
 function generateAssessmentQuestions() {
   const groupedQuestions: Record<string, any[]> = {};
 
-  // Group questions by pattern
   questionPool.forEach((question) => {
     if (!groupedQuestions[question.pattern]) {
       groupedQuestions[question.pattern] = [];
@@ -205,14 +229,12 @@ function generateAssessmentQuestions() {
 
   const selectedQuestions = [];
 
-  // Ensure each pattern appears at least once
   for (const pattern in groupedQuestions) {
     const shuffled = shuffleArray(groupedQuestions[pattern]);
 
     selectedQuestions.push(shuffled[0]);
   }
 
-  // Fill remaining slots randomly
   const remainingQuestions = questionPool.filter(
     (q) =>
       !selectedQuestions.some((selected) => selected.question === q.question),
@@ -226,11 +248,6 @@ function generateAssessmentQuestions() {
 
   return shuffleArray(selectedQuestions);
 }
-
-/* =========================
-   COMPONENT
-========================= */
-
 export default function LearnScreen() {
   const router = useRouter();
 
@@ -242,6 +259,7 @@ export default function LearnScreen() {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [weakPatterns, setWeakPatterns] = useState<string[]>([]);
+  const [primaryWeakArea, setPrimaryWeakArea] = useState("");
 
   const startTime = useRef<number>(Date.now());
 
@@ -318,20 +336,26 @@ export default function LearnScreen() {
       const patternFrequency: Record<string, number> = {};
 
       currentWeakAreas.forEach((pattern) => {
-        patternFrequency[pattern] = (patternFrequency[pattern] || 0) + 1;
+        const normalizedPattern = pattern.trim().toLowerCase();
+
+        patternFrequency[normalizedPattern] =
+          (patternFrequency[normalizedPattern] || 0) + 1;
       });
 
-      let primaryWeakArea = "None Identified";
+      // let primaryWeakArea = "None Identified";
+      let detectedWeakArea = "None Identified";
 
       let highestCount = 0;
 
       for (const pattern in patternFrequency) {
         if (patternFrequency[pattern] > highestCount) {
           highestCount = patternFrequency[pattern];
-          primaryWeakArea = pattern;
+          detectedWeakArea = pattern;
         }
       }
 
+      setPrimaryWeakArea(detectedWeakArea);
+      // setPrimaryWeakArea(primaryWeakArea);
       let dynamicReview = "Excellent decoding fluency!";
 
       if (assignedLevel === "easy") {
@@ -375,38 +399,57 @@ export default function LearnScreen() {
     const routeLevel =
       level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
 
-    let targetedLessonFile = "letter_reversal";
+    let recommendedLesson = "letter_reversal";
 
-    switch (primaryWeakPattern) {
-      case "phonological_awareness":
-      case "phoneme_manipulation":
-      case "phonics":
-      case "decoding":
-        targetedLessonFile = "phonics";
-        break;
+    // EASY LEVEL
+    if (level === "easy") {
+      switch (primaryWeakArea) {
+        case "phonological_awareness":
+        case "phoneme_manipulation":
+        case "phonics":
+          recommendedLesson = "phonics";
+          break;
 
-      case "vowel_processing":
-        targetedLessonFile = "vowel_processing";
-        break;
+        case "vowel_processing":
+          recommendedLesson = "vowel_processing";
+          break;
 
-      case "letter_reversal":
-      case "visual_tracking":
-        targetedLessonFile = "letter_reversal";
-        break;
+        case "letter_reversal":
+          recommendedLesson = "letter_reversal";
+          break;
 
-      case "spelling_recognition":
-        targetedLessonFile = "phonics";
-        break;
-
-      default:
-        targetedLessonFile = "phonics";
+        default:
+          recommendedLesson = "letter_reversal";
+      }
     }
 
-    router.replace({
+    // MEDIUM LEVEL
+    if (level === "medium") {
+      switch (primaryWeakArea) {
+        case "decoding":
+          recommendedLesson = "decoding";
+          break;
+
+        case "visual_tracking":
+        case "vowel_processing":
+          recommendedLesson = "chunking";
+          break;
+
+        default:
+          recommendedLesson = "chunking";
+      }
+    }
+
+    // HARD LEVEL
+    if (level === "hard") {
+      recommendedLesson = "advanced_morphology";
+    }
+
+    router.push({
       pathname: "/dyslexic/module/[level1]/[lesson]",
       params: {
         level1: routeLevel,
-        lesson: targetedLessonFile,
+        lesson: recommendedLesson,
       },
     });
   };
@@ -483,11 +526,15 @@ export default function LearnScreen() {
               {level === "medium" && (
                 <View style={styles.lessonCard}>
                   <Text style={styles.lessonTitle}>
-                    Focus: Chunking & Syllables
+                    {primaryWeakArea === "decoding"
+                      ? "Focus: Decoding Skills"
+                      : "Focus: Chunking & Syllables"}
                   </Text>
+
                   <Text style={styles.lessonText}>
-                    You have solid basic phoneme tracking. Let's build up
-                    complex vowel team segments.
+                    {primaryWeakArea === "decoding"
+                      ? "We detected difficulty blending letters and reading words smoothly. We will practice sounding out and decoding words step-by-step."
+                      : "You have solid basic phoneme tracking. Let's build up complex vowel team segments."}
                   </Text>
                 </View>
               )}
