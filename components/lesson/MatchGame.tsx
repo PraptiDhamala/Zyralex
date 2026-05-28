@@ -86,7 +86,7 @@ export const MatchGame: React.FC<Props> = ({ signs, onComplete }) => {
             >
               {matched.has(sign.signId)
                 ? <Text style={styles.checkmark}>✓</Text>
-                : <Image source={sign.image} style={styles.matchImage} resizeMode="contain" />
+                : <Image source={{ uri: sign.image }} style={styles.matchImage} resizeMode="contain" />
               }
             </TouchableOpacity>
           ))}

@@ -26,6 +26,15 @@ export type Level = {
   lessons: Lesson[];
 };
 
+const CLOUD = 'https://res.cloudinary.com/dp53zinbe';
+
+// helpers
+const aslVideo = (name: string) =>
+  `https://res.cloudinary.com/dp53zinbe/video/upload/${name}.mp4`;
+
+const aslImage = (name: string) =>
+  `https://res.cloudinary.com/dp53zinbe/image/upload/${name}.jpg`;
+
 export const LESSON_LEVELS: Level[] = [
 // Level 1
   {

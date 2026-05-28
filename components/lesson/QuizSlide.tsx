@@ -61,7 +61,7 @@ export const QuizSlide: React.FC<Props> = ({
         <>
           <Text style={styles.question}>What does this sign show?</Text>
           <View style={styles.videoBox}>
-             <Video source={currentSign.video} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
+             <Video source={{ uri: currentSign.video }} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
                 shouldPlay // Auto-plays the video 
                 isLooping //Loops the video
                 /> 
@@ -95,7 +95,7 @@ export const QuizSlide: React.FC<Props> = ({
                 onPress={() => handleSelect(opt)}
                 activeOpacity={0.75}
               >
-                 <Video source={opt.video} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
+                 <Video source={{ uri: opt.video }} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
                     shouldPlay // Auto-plays the video 
                     isLooping //Loops the video
                     /> 
