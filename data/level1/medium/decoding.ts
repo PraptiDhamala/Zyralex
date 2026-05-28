@@ -3,149 +3,87 @@ const lesson = {
 
   title: "Decoding Words",
 
-  subtitle: "Learn how to sound out letters and blend them to read new words.",
+  subtitle: "Let’s sound out letters slowly and blend them into words! 🔊",
 
-  objectives: [
-    "Recognize letter sounds",
-    "Blend sounds together",
-    "Read unfamiliar words",
-    "Improve reading confidence",
-  ],
+  color: "#FDE68A",
+
+  mascot: "🦊",
 
   explanation: [
     {
       type: "text",
-      content:
-        "Decoding means figuring out how a word sounds by looking at its letters.",
+      content: "Decoding means reading a word by sounding out each letter.",
     },
 
     {
       type: "text",
-      content:
-        "Readers decode by saying each sound slowly and blending the sounds together.",
+      content: "We say each sound slowly, then blend the sounds together.",
     },
 
     {
-      type: "text",
-      content: "Example: c-a-t → cat",
-    },
-
-    {
-      type: "text",
-      content: "Decoding helps us read words we have never seen before.",
+      type: "story",
+      content: "c-a-t becomes CAT 🐱 when we blend the sounds together.",
     },
 
     {
       type: "tip",
-      content: "Tip: Start with the first sound and move from left to right.",
-    },
-  ],
-
-  vocabulary: [
-    {
-      word: "Decode",
-      meaning: "To figure out a word by using letter sounds.",
+      content: "Start from the left and move slowly to the right ➡️",
     },
 
     {
-      word: "Blend",
-      meaning: "To join sounds together smoothly.",
-    },
-
-    {
-      word: "Sound",
-      meaning: "The noise a letter or group of letters makes.",
+      type: "activity",
+      content: "Tap each sound with your finger while reading ✍️",
     },
   ],
 
   examples: [
     {
+      letter: "c",
       word: "cat",
-      sounds: ["c", "a", "t"],
-      blended: "cat",
       emoji: "🐱",
+      sentence: "C-A-T blends to make CAT.",
+      color: "#EF4444",
     },
 
     {
+      letter: "d",
       word: "dog",
-      sounds: ["d", "o", "g"],
-      blended: "dog",
       emoji: "🐶",
+      sentence: "D-O-G blends to make DOG.",
+      color: "#3B82F6",
     },
 
     {
+      letter: "s",
       word: "sun",
-      sounds: ["s", "u", "n"],
-      blended: "sun",
       emoji: "☀️",
-    },
-
-    {
-      word: "fish",
-      sounds: ["f", "i", "sh"],
-      blended: "fish",
-      emoji: "🐟",
-    },
-  ],
-
-  stepByStep: [
-    {
-      step: 1,
-      instruction: "Look at the first letter.",
-    },
-
-    {
-      step: 2,
-      instruction: "Say each sound slowly.",
-    },
-
-    {
-      step: 3,
-      instruction: "Blend the sounds together.",
-    },
-
-    {
-      step: 4,
-      instruction: "Read the whole word smoothly.",
+      sentence: "S-U-N blends to make SUN.",
+      color: "#F59E0B",
     },
   ],
 
   guidedPractice: [
     {
-      question: "Which sounds make the word 'map'?",
-      options: ["m-a-p", "ma-p", "m-p-a"],
-      answer: "m-a-p",
-      explanation: "We say each sound from left to right.",
-    },
-
-    {
-      question: "Blend these sounds: d-o-g",
+      question: "🐶 Blend these sounds: d-o-g",
       options: ["dig", "dog", "dug"],
       answer: "dog",
-      explanation: "The sounds d-o-g blend together to make 'dog'.",
     },
 
     {
-      question: "What word do these sounds make: s-u-n?",
+      question: "☀️ What word do these sounds make: s-u-n?",
       options: ["sun", "son", "sin"],
       answer: "sun",
-      explanation: "Blending the sounds creates the word 'sun'.",
+    },
+
+    {
+      question: "🧢 Which sounds make the word 'cap'?",
+      options: ["c-a-p", "ca-p", "c-p-a"],
+      answer: "c-a-p",
     },
   ],
 
-  challenge: {
-    instruction: "Try decoding these words on your own:",
-    words: ["hat", "pen", "shop", "frog"],
-  },
-
-  funFact: {
-    title: "Did You Know?",
-    content:
-      "Strong readers decode words very quickly, almost like a superpower!",
-  },
-
   completionMessage:
-    "Awesome work! You practiced sounding out and blending words like a real reader!",
+    "Awesome work! 🎉 You practiced sounding out and blending words!",
 };
 
 export default lesson;
