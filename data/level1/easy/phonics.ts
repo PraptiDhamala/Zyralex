@@ -1,56 +1,162 @@
 const lesson = {
   id: "phonics",
+
   title: "Phonics & Sound Blends",
-  subtitle: "Let's connect letter combinations to their natural sounds.",
+
+  subtitle: "Let’s hear, see, and play with sounds together! 🎵",
+
   color: "#FEF3C7",
+
+  mascot: "🐼",
+
+  progressColor: "#F59E0B",
+
   explanation: [
     {
       type: "text",
-      content:
-        "Phonics helps us link the shapes of letters with the sounds they make when spoken.",
+      content: "Letters can work together like teammates to create new sounds.",
     },
+
     {
-      type: "text",
-      content:
-        "When letters sit next to each other, they sometimes join up to create a brand new sound blend.",
+      type: "story",
+      title: "🚂 Sound Story",
+      content: "The CH sound is loud like a train going: CHOO CHOO!",
     },
-    {
-      type: "tip",
-      content: "The pair 'ch' makes a sharp sound, like in the word: CH-ip. 🍟",
-    },
+
     {
       type: "tip",
-      content:
-        "The pair 'sh' makes a quiet, soft sound, like in the word: SH-ip. 🚢",
+      title: "👂 Listening Tip",
+      content: "Put your hand near your mouth and say: CH CH CH",
+    },
+
+    {
+      type: "tip",
+      title: "🤫 Quiet Sound",
+      content: "The SH sound is soft and quiet like telling someone: SHHH 🤫",
+    },
+
+    {
+      type: "activity",
+      title: "✍️ Finger Trace",
+      content: "Trace the letters 'ch' in the air with your finger.",
     },
   ],
+
   examples: [
     {
       letter: "ch",
       word: "chair",
       emoji: "🪑",
+      sound: "ch",
+      sentence: "CH-air starts with the CH sound.",
+      color: "#EF4444",
     },
+
     {
       letter: "sh",
       word: "shoe",
       emoji: "👟",
+      sound: "sh",
+      sentence: "SH-oe starts with the SH sound.",
+      color: "#3B82F6",
+    },
+
+    {
+      letter: "ch",
+      word: "cheese",
+      emoji: "🧀",
+      sound: "ch",
+      sentence: "CH-eese starts with CH.",
+      color: "#EF4444",
+    },
+
+    {
+      letter: "sh",
+      word: "ship",
+      emoji: "🚢",
+      sound: "sh",
+      sentence: "SH-ip starts with SH.",
+      color: "#3B82F6",
     },
   ],
+
   guidedPractice: [
     {
-      question:
-        "Which letter pair makes the sound you hear at the start of 'Chief'?",
+      type: "game",
+
+      question: "🎯 Which sound starts the word CHIEF?",
+
       options: ["ch", "sh"],
+
       answer: "ch",
+
+      successMessage: "Excellent! 🌟 You found the CH sound!",
     },
+
     {
-      question: "Complete the word for something found at the beach: '___ell'",
+      type: "game",
+
+      question: "🏖️ Complete the beach word: ___ell",
+
       options: ["ch", "sh"],
+
       answer: "sh",
+
+      successMessage: "Amazing! 🐚 SHELL starts with SH!",
+    },
+
+    {
+      type: "game",
+
+      question: "🚢 Which sound belongs to SHIP?",
+
+      options: ["ch", "sh"],
+
+      answer: "sh",
+
+      successMessage: "Correct! 🚀 You are learning fast!",
     },
   ],
-  completionMessage:
-    "Fantastic work! You are mastering how letter sounds blend together cleanly.",
+
+  miniGame: {
+    title: "🪣 Sort the Sounds",
+
+    instruction: "Put words into the correct sound bucket.",
+
+    categories: ["CH", "SH"],
+
+    words: [
+      {
+        word: "chair",
+        answer: "CH",
+      },
+
+      {
+        word: "shoe",
+        answer: "SH",
+      },
+
+      {
+        word: "cheese",
+        answer: "CH",
+      },
+
+      {
+        word: "ship",
+        answer: "SH",
+      },
+    ],
+  },
+
+  rewards: {
+    stars: 3,
+
+    badge: "🎵 Sound Explorer",
+
+    message: "You unlocked the Sound Explorer badge!",
+  },
+
+  completionMessage: "Fantastic work! 🎉 You are becoming a sound detective 🔍",
 };
 
 export default lesson;

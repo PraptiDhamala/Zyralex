@@ -1,5 +1,7 @@
+import { Ionicons } from "@expo/vector-icons";
+import * as Speech from "expo-speech";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import { default as React, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -24,14 +26,24 @@ const curriculumMap: Record<string, any> = {
 
 export default function LessonScreen() {
   const router = useRouter();
-  const { level1, lesson } = useLocalSearchParams();
+
+  const { lesson } = useLocalSearchParams();
 
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
 
-  // DYNAMICALY LOOKUP DATA BASED ON THE URL STRING PARAMETER
+  const speakWord = (word: string) => {
+    Speech.speak(word, {
+      language: "en",
+      pitch: 1,
+      rate: 0.8,
+    });
+  };
+
+  // DYNAMIC LESSON LOOKUP
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
+
   const lessonData =
     curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
 
@@ -41,10 +53,13 @@ export default function LessonScreen() {
 
   const practiceLength = lessonData.guidedPractice?.length || 0;
 
-  const totalSteps = explanationLength + examplesLength + practiceLength;
+  const totalSteps =
+    explanationLength + examplesLength + practiceLength;
 
   const currentPractice =
-    lessonData.guidedPractice?.[step - explanationLength - examplesLength];
+    lessonData.guidedPractice?.[
+      step - explanationLength - examplesLength
+    ];
 
   const handleNext = () => {
     if (step + 1 >= totalSteps) {
@@ -54,10 +69,18 @@ export default function LessonScreen() {
     }
   };
 
-  const handlePracticeAnswer = (selected: string, correct: string) => {
+  const handlePracticeAnswer = (
+    selected: string,
+    correct: string,
+  ) => {
     if (selected === correct) {
       setScore((prev) => prev + 1);
+
+      Speech.speak("Amazing job!");
+    } else {
+      Speech.speak("Nice try!");
     }
+
     handleNext();
   };
 
@@ -65,32 +88,108 @@ export default function LessonScreen() {
     // EXPLANATION SECTION
     if (step < lessonData.explanation.length) {
       const item = lessonData.explanation[step];
+
       return (
         <View style={styles.card}>
-          <View style={[styles.badge, item.type === "tip" && styles.tipBadge]}>
-            <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
+          <View
+            style={[
+              styles.badge,
+              item.type === "tip" && styles.tipBadge,
+            ]}
+          >
+            <Text style={styles.badgeText}>
+              {item.type.toUpperCase()}
+            </Text>
           </View>
-          <Text style={styles.text}>{item.content}</Text>
-          <TouchableOpacity style={styles.button} onPress={handleNext}>
-            <Text style={styles.buttonText}>Continue</Text>
+
+          <Text style={styles.text}>
+            {item.content}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => speakWord(item.content)}
+          >
+            <View style={styles.audioRow}>
+              <Ionicons
+                name="volume-high"
+                size={20}
+                color="#fff"
+              />
+              <Text style={styles.buttonText}>
+                Hear It
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 14 }]}
+            onPress={handleNext}
+          >
+            <Text style={styles.buttonText}>
+              Continue
+            </Text>
           </TouchableOpacity>
         </View>
       );
     }
 
     // EXAMPLES SECTION
-    if (lessonData.examples && step < explanationLength + examplesLength) {
+    if (
+      lessonData.examples &&
+      step < explanationLength + examplesLength
+    ) {
       const exampleIndex = step - explanationLength;
 
       const example = lessonData.examples[exampleIndex];
+
       return (
         <View style={styles.card}>
-          <Text style={styles.bigLetter}>{example.letter}</Text>
-          <Text style={styles.word}>
-            {example.emoji} {example.word}
+          <Text style={styles.bigLetter}>
+            {example.emoji}
           </Text>
-          <TouchableOpacity style={styles.button} onPress={handleNext}>
-            <Text style={styles.buttonText}>I Understand</Text>
+
+          <Text style={styles.word}>
+            <Text
+              style={{
+                color: example.color || "#2563EB",
+                fontWeight: "bold",
+              }}
+            >
+              {example.letter}
+            </Text>
+
+            {example.word.slice(example.letter.length)}
+          </Text>
+
+          {example.sentence && (
+            <Text style={styles.exampleSentence}>
+              {example.sentence}
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={styles.audioButton}
+            onPress={() => speakWord(example.word)}
+          >
+            <Ionicons
+              name="volume-high"
+              size={20}
+              color="#2563EB"
+            />
+
+            <Text style={styles.audioText}>
+              Hear Sound
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleNext}
+          >
+            <Text style={styles.buttonText}>
+              I Understand
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -100,52 +199,83 @@ export default function LessonScreen() {
     if (lessonData.guidedPractice && currentPractice) {
       return (
         <View style={styles.card}>
-          <Text style={styles.question}>{currentPractice.question}</Text>
-          {currentPractice.options.map((option: string, index: number) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.option}
-              onPress={() =>
-                handlePracticeAnswer(option, currentPractice.answer)
-              }
-            >
-              <Text style={styles.optionText}>{option}</Text>
-            </TouchableOpacity>
-          ))}
+          <Text style={styles.question}>
+            {currentPractice.question}
+          </Text>
+
+          {currentPractice.options.map(
+            (option: string, index: number) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.option}
+                onPress={() =>
+                  handlePracticeAnswer(
+                    option,
+                    currentPractice.answer,
+                  )
+                }
+              >
+                <Text style={styles.optionText}>
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ),
+          )}
         </View>
       );
     }
+
     return null;
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{lessonData.title}</Text>
-      <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
+      <Text style={styles.title}>
+        {lessonData.title}
+      </Text>
+
+      <Text style={styles.subtitle}>
+        {lessonData.subtitle}
+      </Text>
+
+      {/* PROGRESS BAR */}
+      <View style={styles.progressBarBackground}>
+        <View
+          style={[
+            styles.progressBarFill,
+            {
+              width: `${((step + 1) / totalSteps) * 100}%`,
+            },
+          ]}
+        />
+      </View>
 
       {!finished ? (
         renderContent()
       ) : (
         <View style={styles.card}>
-          <Text style={styles.complete}>{lessonData.completionMessage}</Text>
-          <Text
-            style={{
-              textAlign: "center",
-              color: "#64748B",
-              marginTop: 8,
-              fontSize: 16,
-            }}
-          >
-            Score: {score} / {lessonData.guidedPractice.length}
+          <Text style={styles.complete}>
+            🎉 {lessonData.completionMessage}
           </Text>
+
+          <Text style={styles.score}>
+            Score: {score} /{" "}
+            {lessonData.guidedPractice.length}
+          </Text>
+
           <TouchableOpacity
             style={[
               styles.button,
-              { marginTop: 24, backgroundColor: "#16A34A" },
+              {
+                marginTop: 24,
+                backgroundColor: "#16A34A",
+              },
             ]}
             onPress={() => router.replace("/dyslexic")}
           >
-            <Text style={styles.buttonText}>Return Home</Text>
+            <Text style={styles.buttonText}>
+              Return Home
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -153,7 +283,6 @@ export default function LessonScreen() {
   );
 }
 
-// Keep your styles object downstream completely unchanged...
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -161,13 +290,35 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: "center",
   },
-  title: { fontSize: 30, fontWeight: "800", color: "#1E293B", marginBottom: 8 },
+
+  title: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: "#1E293B",
+    marginBottom: 8,
+  },
+
   subtitle: {
     fontSize: 18,
     color: "#64748B",
-    marginBottom: 32,
+    marginBottom: 20,
     lineHeight: 28,
   },
+
+  progressBarBackground: {
+    height: 14,
+    backgroundColor: "#E2E8F0",
+    borderRadius: 999,
+    overflow: "hidden",
+    marginBottom: 24,
+  },
+
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "#F59E0B",
+    borderRadius: 999,
+  },
+
   card: {
     backgroundColor: "white",
     borderRadius: 24,
@@ -177,6 +328,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
+
   badge: {
     backgroundColor: "#EFF6FF",
     alignSelf: "flex-start",
@@ -185,42 +337,117 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 16,
   },
-  tipBadge: { backgroundColor: "#FEF3C7" },
-  badgeText: { fontSize: 11, fontWeight: "bold", color: "#1E40AF" },
-  text: { fontSize: 22, lineHeight: 34, color: "#334155", marginBottom: 28 },
+
+  tipBadge: {
+    backgroundColor: "#FEF3C7",
+  },
+
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#1E40AF",
+  },
+
+  text: {
+    fontSize: 24,
+    lineHeight: 40,
+    letterSpacing: 1,
+    color: "#334155",
+    marginBottom: 28,
+  },
+
   bigLetter: {
-    fontSize: 120,
+    fontSize: 100,
     textAlign: "center",
-    fontWeight: "800",
-    color: "#2563EB",
     marginBottom: 20,
   },
-  word: { fontSize: 36, textAlign: "center", marginBottom: 28 },
+
+  word: {
+    fontSize: 42,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+
+  exampleSentence: {
+    fontSize: 20,
+    lineHeight: 32,
+    color: "#475569",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+
+  audioButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#DBEAFE",
+    alignSelf: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    marginBottom: 20,
+  },
+
+  audioText: {
+    marginLeft: 8,
+    color: "#2563EB",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
   button: {
     backgroundColor: "#2563EB",
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: "center",
   },
-  buttonText: { color: "white", fontSize: 18, fontWeight: "700" },
+
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+
+  audioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
   question: {
     fontSize: 24,
     fontWeight: "700",
     marginBottom: 24,
     color: "#1E293B",
+    lineHeight: 38,
   },
+
   option: {
-    backgroundColor: "#E2E8F0",
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 16,
+    backgroundColor: "#F8FAFC",
+    padding: 22,
+    borderRadius: 18,
+    marginBottom: 18,
+    borderWidth: 2,
+    borderColor: "#CBD5E1",
   },
-  optionText: { fontSize: 22, textAlign: "center", fontWeight: "600" },
+
+  optionText: {
+    fontSize: 22,
+    textAlign: "center",
+    fontWeight: "600",
+  },
+
   complete: {
     fontSize: 26,
     lineHeight: 38,
     textAlign: "center",
     color: "#16A34A",
     fontWeight: "700",
+  },
+
+  score: {
+    textAlign: "center",
+    color: "#64748B",
+    marginTop: 10,
+    fontSize: 18,
   },
 });
