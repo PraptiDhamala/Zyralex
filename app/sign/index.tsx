@@ -12,7 +12,9 @@ import {
 import { AITutorCard } from '../../components/AITutorCard';
 import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS, USER_STATS } from '../../constants/mockData';
+import { USER_STATS } from '../../constants/mockData';
+import { LESSON_LEVELS } from '../../constants/lessonData';
+
 //ActionButton Component
 function ActionButton({
   icon,
@@ -155,10 +157,17 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const getNextLesson = () => {
+    if (!LESSON_LEVELS || !Array.isArray(LESSON_LEVELS)) {
+      return null;
+    }
+
     for (const level of LESSON_LEVELS) {
-      for (const lesson of level.lessons) {
-        if (!lesson.completed) {
-          return lesson;
+      // To ensure level and level.lessons exist before running internal loops
+      if (level && Array.isArray(level.lessons)) {
+        for (const lesson of level.lessons) {
+          if (lesson && !lesson.completed) {
+            return lesson;
+          }
         }
       }
     }

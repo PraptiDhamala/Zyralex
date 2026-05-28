@@ -1,9 +1,8 @@
-import { ResizeMode, Video } from 'expo-av';
 import React from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
-import { VideoView, useVideoPlayer } from 'expo-video';
+import { ResizeMode, Video } from 'expo-av';
 import { SignItem } from '../../constants/lessonData';
 import { COLORS } from '../../constants/colors';
 
@@ -15,22 +14,6 @@ interface Props {
   onNext: () => void;
 }
 
-// Sign Video
-const SignVideo: React.FC<{ uri: string }> = ({ uri }) => {
-  const player = useVideoPlayer(uri, p => {
-    p.loop = true;
-    p.play();
-  });
-
-  return (
-    <VideoView
-      player={player}
-      style={styles.video}
-      contentFit="contain"
-      allowsFullscreen={false}
-    />
-  );
-};
 
 export const TeachSlide: React.FC<Props> = ({ sign, index, total, onNext }) => (
   <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -42,7 +25,17 @@ export const TeachSlide: React.FC<Props> = ({ sign, index, total, onNext }) => (
 
     {/* Sign video */}
     <View style={styles.videoBox}>
-      <SignVideo uri={sign.video} />
+      {sign && sign.video ? (
+        <Video 
+          source={{ uri: sign.video }} 
+          style={styles.video} 
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay 
+          isLooping
+        />
+      ) : (
+        <Text style={styles.errorText}>Video missing</Text>
+      )}
     </View>
 
     {/* Tip box */}
