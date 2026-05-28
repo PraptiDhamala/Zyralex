@@ -32,7 +32,7 @@ export default function PracticeScreen() {
       id: 'flashcards',
       title: 'Flash Cards',
       description: 'Test your memory with flash card practice',
-      route: '/sign/FlashCardsScreen',
+      route: '/sign/FlashCardScreen',
     },
     {
       id: 'random',
