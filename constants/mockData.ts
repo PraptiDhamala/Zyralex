@@ -35,13 +35,14 @@ export const PRACTICE_SESSIONS: PracticeSession[] = [
 ];
 
 export const CAMERA_PRACTICE_ITEMS = [
-  { id: 'sign-a', label: 'Sign "A"' },
-  { id: 'sign-b', label: 'Sign "B"' },
-  { id: 'sign-c', label: 'Sign "C"' },
-  { id: 'sign-d', label: 'Sign "D"' },
-  { id: 'sign-e', label: 'Sign "E"' },
-  { id: 'sign-f', label: 'Sign "F"' },
+  { id: 'sign-a', label: 'A-F!', lessonId: 'lesson-1',levelId:'level-1' },
+  { id: 'sign-b', label: 'G-L', lessonId: 'lesson-2',levelId:'level-1' },
+  { id: 'sign-c', label: 'M-R', lessonId: 'lesson-3',levelId:'level-1' },
+  { id: 'sign-d', label: 'S-Z', lessonId: 'lesson-4',levelId:'level-1' },
+  { id: 'sign-e', label: '1-10', lessonId: 'lesson-5',levelId:'level-1' },
+  { id: 'sign-f', label: 'Sign F', lessonId: 'lesson-6',levelId:'level-1' },
 ];
+
 
 export const USER_STATS = {
   dayStreak: 7,

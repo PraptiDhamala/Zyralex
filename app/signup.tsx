@@ -51,7 +51,6 @@ export default function SignUp() {
 
       Alert.alert("Success", "Account created!");
       router.replace("/onboarding");
-
     } catch (err) {
       console.log(err);
       Alert.alert("Error", "Something went wrong");

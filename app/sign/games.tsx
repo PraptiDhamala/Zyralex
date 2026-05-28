@@ -1,28 +1,24 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function DyslexicGames() {
   return (
     <LinearGradient
-      colors={["#f4f4f0", "#f8f9f6"]}
+      colors={["#fcfcd7", "#f8f5ba"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <View style={styles.inner}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Fun Learning Games</Text>
 
         <View style={styles.grid}>
-          
-          {/* 🔗 Match */}
+      
           <Link href="/game/match" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#7dbef7", "#74e7ef"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>🔗</Text>
+              <LinearGradient colors={["#7dbef7", "#74e7ef"]} style={styles.cardRow}>
+                <Image source={require("../../assets/mimo1.png")} style={styles.icon} resizeMode="contain" />
                 <Text style={styles.buttonText}>Match the Following</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -31,25 +27,19 @@ export default function DyslexicGames() {
           {/* 🃏 Memory */}
           <Link href="/game/memory" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#fadc7a", "#fda085"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>🃏</Text>
+              <LinearGradient colors={["#fadc7a", "#fda085"]} style={styles.cardRowReverse}>
                 <Text style={styles.buttonText}>Memory Cards</Text>
+                <Image source={require("../../assets/mimo5.png")} style={styles.icon} resizeMode="contain" />
               </LinearGradient>
             </TouchableOpacity>
           </Link>
 
-          {/* 🔤 Unscramble */}
-          <Link href="/game/unscramble" asChild>
+         
+          <Link href="/game/puzzle" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#adf2c6", "#8fd3f4"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>🔤</Text>
-                <Text style={styles.buttonText}>Unscramble Words</Text>
+              <LinearGradient colors={["#adf2c6", "#8fd3f4"]} style={styles.cardRow}>
+                <Image source={require("../../assets/mimo3.png")} style={styles.icon} resizeMode="contain" />
+                <Text style={styles.buttonText}>Puzzle</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Link>
@@ -57,25 +47,18 @@ export default function DyslexicGames() {
           {/* ✍️ Spelling */}
           <Link href="/game/spelling" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#ff9a9e", "#fad0c4"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>✍️</Text>
-                <Text style={styles.buttonText}>Spelling Bee </Text>
+              <LinearGradient colors={["#ff9a9e", "#fad0c4"]} style={styles.cardRowReverse}>
+                <Text style={styles.buttonText}>Spelling Bee</Text>
+                <Image source={require("../../assets/mimo4.png")} style={styles.icon} resizeMode="contain" />
               </LinearGradient>
             </TouchableOpacity>
           </Link>
 
-          {/* 😊 Emoji */}
-          <Link href="/game/emoji" asChild>
+          <Link href="/game/unscramble" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#a18cd1", "#fbc2eb"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>❓</Text>
-                <Text style={styles.buttonText}>Emoji Riddles</Text>
+              <LinearGradient colors={["#a18cd1", "#fbc2eb"]} style={styles.cardRow}>
+                <Image source={require("../../assets/mimo2.png")} style={styles.icon} resizeMode="contain" />
+                <Text style={styles.buttonText}>Unscramble  Words</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Link>
@@ -83,18 +66,14 @@ export default function DyslexicGames() {
           {/* 📚 Sentence */}
           <Link href="/game/sentence" asChild>
             <TouchableOpacity style={styles.baseButton}>
-              <LinearGradient
-                colors={["#ffecd2", "#fcb69f"]}
-                style={styles.card}
-              >
-                <Text style={styles.emoji}>📚</Text>
+              <LinearGradient colors={["#ffecd2", "#fcb69f"]} style={styles.cardRowReverse}>
                 <Text style={styles.buttonText}>Sentence Builder</Text>
+                <Image source={require("../../assets/mimo6.png")} style={styles.icon} resizeMode="contain" />
               </LinearGradient>
             </TouchableOpacity>
           </Link>
-
         </View>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -102,14 +81,11 @@ export default function DyslexicGames() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 12,
   },
-
-  inner: {
-    flex: 1,
-    justifyContent: "center",
+  scrollContent: {
+    padding: 16,
+    alignItems: "center",
   },
-
   title: {
     fontSize: 30,
     fontWeight: "700",
@@ -117,41 +93,50 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#264994",
   },
-
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
   },
-
   baseButton: {
-    width: "48%",
-    marginBottom: 15,
+    width: "100%",
+    marginBottom: 20,
     borderRadius: 12,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    
   },
-
-  card: {
-    padding: 20,
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
     alignItems: "center",
+    padding:8,
     borderRadius: 12,
-    height: 140, 
+    height: 140,
   },
-
-  emoji: {
-    fontSize: 40,
-    marginBottom: 8,
+  cardRowReverse: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 8,
+    borderRadius: 12,
+    height: 140,
   },
-
+  icon: {
+    width: 150,
+    height: 150,
+    marginLeft:0,
+    marginRight:2,
+  
+  },
   buttonText: {
+    marginLeft:10,
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "900",
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 20,
+    flexShrink: 1,
   },
 });

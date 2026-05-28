@@ -1,19 +1,22 @@
-import Animated from 'react-native-reanimated';
+import LottieView from "lottie-react-native";
+import { StyleSheet } from "react-native";
 
 export function HelloWave() {
   return (
-    <Animated.Text
-      style={{
-        fontSize: 28,
-        lineHeight: 32,
-        marginTop: -6,
-        animationName: {
-          '50%': { transform: [{ rotate: '25deg' }] },
-        },
-        animationIterationCount: 4,
-        animationDuration: '300ms',
-      }}>
-      👋
-    </Animated.Text>
+    <LottieView
+      source={require("../assets/WAVE.json")}
+      style={styles.video}
+      autoPlay
+      loop
+      resizeMode="contain"  
+    />
   );
 }
+
+const styles = StyleSheet.create({
+  video: {
+    width: 100,
+    height: 100,
+    marginTop: -6,
+  },
+});

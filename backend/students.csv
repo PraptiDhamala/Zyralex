@@ -1,0 +1,14 @@
+score,mistakes,reading_speed,level
+0,10,60,easy
+1,9,55,easy
+2,8,50,easy
+3,7,45,easy
+4,6,40,medium
+5,5,35,medium
+6,4,30,medium
+7,3,25,medium
+8,2,20,hard
+9,1,15,hard
+10,0,12,hard
+10,0,10,hard
+10,0,5,hard

@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 
 export default function RootLayout() {
   const router = useRouter();
+<<<<<<< HEAD
   
   // Reference to the navigation state
   const rootNavigationRef = useNavigationContainerRef();
@@ -23,6 +24,13 @@ export default function RootLayout() {
   useEffect(() => {
     // Block execution until Expo Router is mounted and ready for redirects
     if (!isNavigationReady) return;
+=======
+  const segments = useSegments();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+>>>>>>> b24f91a1fd335f1304f0dc9d0bd09accbea2e373
 
     const checkAuth = async () => {
       try {
@@ -30,6 +38,7 @@ export default function RootLayout() {
           data: { session },
         } = await supabase.auth.getSession();
 
+<<<<<<< HEAD
         if (!session) {
           router.replace("/signup");
           return;
@@ -39,12 +48,44 @@ export default function RootLayout() {
 
         if (!choice) {
           router.replace("/onboarding");
+=======
+        if (!mounted) return;
+
+        const currentRoute = segments[0];
+
+        // USER NOT LOGGED IN
+        if (!session) {
+          if (currentRoute !== "signup") {
+            router.replace("/signup");
+          }
+
+          setLoading(false);
           return;
         }
 
-        if (choice === "dyslexic") {
+        // USER LOGGED IN
+        const choice = await AsyncStorage.getItem("moduleChoice");
+
+        if (!mounted) return;
+
+        if (!choice) {
+          if (segments[0] !== "onboarding") {
+            router.replace("/onboarding");
+          }
+          setLoading(false);
+          return;
+        }
+        if (segments[0] === "game") {
+  
+          setLoading(false);
+>>>>>>> b24f91a1fd335f1304f0dc9d0bd09accbea2e373
+          return;
+        }
+
+        // --- FIXED PATHS & SEGMENT GUARDS ---
+        if (choice === "dyslexic" && segments[0] !== "dyslexic") {
           router.replace("/dyslexic");
-        } else if (choice === "sign") {
+        } else if (choice === "sign" && segments[0] !== "sign") {
           router.replace("/sign");
         } else {
           router.replace("/onboarding");
@@ -58,15 +99,23 @@ export default function RootLayout() {
     };
 
     checkAuth();
+<<<<<<< HEAD
   }, [isNavigationReady]); //Runs once the navigation tree is safe
+=======
+  }, [segments]); // Added segments array here to listen safely to route mutations
+>>>>>>> b24f91a1fd335f1304f0dc9d0bd09accbea2e373
 
   // Always render the loading screen(slot) to let the navigator mount
   if (!ready) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+<<<<<<< HEAD
         {/*Wrap Slot here hidden or just let it mount so navigation loads */}
         <View style={{ display: 'none' }}><Slot /></View>
         <ActivityIndicator size="large" color="#007AFF" />
+=======
+        <Text>Loading...</Text>
+>>>>>>> b24f91a1fd335f1304f0dc9d0bd09accbea2e373
       </View>
     );
   }

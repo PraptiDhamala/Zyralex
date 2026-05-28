@@ -2,7 +2,11 @@
 
 import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
 import { Lesson } from '../../constants/lessonData';
@@ -15,10 +19,11 @@ interface Props {
   nextLesson: Lesson | null;
   onRetake: () => void;
   onNextLesson: (id: string) => void;
+  onPractice: () => void;
 }
 
 export const ResultsScreen: React.FC<Props> = ({
-  lessonTitle, score, total, xp, nextLesson, onRetake, onNextLesson,
+  lessonTitle, score, total, xp, nextLesson, onRetake, onNextLesson,onPractice
 }) => {
   const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
@@ -85,6 +90,14 @@ export const ResultsScreen: React.FC<Props> = ({
         activeOpacity={0.8}
       >
         <Text style={styles.retakeBtnText}>🔄 Retake Lesson</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.practiceBtn}
+        onPress={onPractice}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.practiceBtnText}>📝 Practice Lesson</Text>
       </TouchableOpacity>
 
     </ScrollView>
@@ -155,10 +168,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: COLORS.border,
+    marginBottom: 12,
+
   },
   retakeBtnText: {
     color: COLORS.primary,
     fontSize: 16,
     fontWeight: '600',
   },
+  practiceBtn: {
+  width: '100%',
+  backgroundColor: COLORS.primary,
+  borderRadius: 14,
+  paddingVertical: 16,
+  alignItems: 'center',
+  marginBottom: 12,
+  borderWidth:1.5,
+  borderColor:'#fff'
+
+},
+practiceBtnText: {
+  color: '#fff',
+  fontSize: 17,
+  fontWeight: '600',
+},
+
 });

@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  SafeAreaView,
-  TouchableOpacity,
-  StatusBar,
-} from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS } from '../../constants/colors';
-import { USER_STATS } from '../../constants/mockData';
-import { LESSON_LEVELS } from '../../constants/lessonData';
+import React from 'react';
+import {
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { AITutorCard } from '../../components/AITutorCard';
-
+import { HelloWave } from '../../components/hello-wave';
+import { COLORS } from '../../constants/colors';
+import { LESSON_LEVELS, USER_STATS } from '../../constants/mockData';
 //ActionButton Component
 function ActionButton({
   icon,
   label,
   onPress,
-}: {
+}: 
+{
   icon: string;
   label: string;
   onPress: () => void;
@@ -173,7 +173,7 @@ export default function HomeScreen() {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeIcon}>👋</Text>
+         <HelloWave />
           <Text style={styles.welcomeTitle}>Welcome Back!</Text>
           <Text style={styles.welcomeSubtitle}>
             Continue your learning journey
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.cream,
   },
 
   //Welcome
@@ -275,13 +275,14 @@ const styles = StyleSheet.create({
 
   // Level Progress Card
   levelProgressContainer: {
-    backgroundColor: COLORS.cream,
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
+    elevation: 4,
   },
   levelHeader: {
     flexDirection: 'row',
@@ -428,7 +429,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: COLORS.cream,
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     paddingVertical: 16,
     borderWidth: 1,
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.cream,
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,

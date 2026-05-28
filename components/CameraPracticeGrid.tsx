@@ -18,7 +18,7 @@ export const CameraPracticeGrid: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Camera Practice</Text>
+      
       <Text style={styles.subtitle}>Test your signs with AI recognition</Text>
 
       <View style={styles.grid}>
@@ -27,11 +27,12 @@ export const CameraPracticeGrid: React.FC = () => {
             key={item.id}
             style={styles.gridItem}
             activeOpacity={0.7}
-            onPress={() => {
-              router.push('/sign/CameraPracticeScreen');
-
-
-            }}
+             onPress={() => {
+    router.push({
+      pathname: '/sign/CameraPracticeScreen',
+      params: { lessonId: item.lessonId ,levelId:item.levelId},
+    });
+    }}
           >
             <View style={styles.itemContent}>
               <Text style={styles.handIcon}>👋</Text>
