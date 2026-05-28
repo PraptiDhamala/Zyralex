@@ -1,32 +1,46 @@
 import React from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { SignItem } from '../../constants/lessonData';
 import { COLORS } from '../../constants/colors';
 
 interface Props {
-    sign: SignItem;
-    index: number;
-    total: number;
-    onNext: () => void;
+  sign: SignItem;
+  index: number;
+  total: number;
+  onNext: () => void;
 }
 
-export const TeachSlide: React.FC<Props>=({ sign, index, total, onNext }) => (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-    {/* Sign Counter(3 of 6)*/}
-    <Text style={styles.counter}> {index+1} of {total} </Text>
+// Sign Video
+const SignVideo: React.FC<{ uri: string }> = ({ uri }) => {
+  const player = useVideoPlayer(uri, p => {
+    p.loop = true;
+    p.play();
+  });
+
+  return (
+    <VideoView
+      player={player}
+      style={styles.video}
+      contentFit="contain"
+      allowsFullscreen={false}
+    />
+  );
+};
+
+export const TeachSlide: React.FC<Props> = ({ sign, index, total, onNext }) => (
+  <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    {/* Sign Counter (3 of 6) */}
+    <Text style={styles.counter}>{index + 1} of {total}</Text>
 
     {/* Big letter label */}
     <Text style={styles.letter}>{sign.label}</Text>
 
-    {/* Sign video from dataset */}
-    <View style={styles.videoBox}> 
-    <Video source={sign.video} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
-    shouldPlay // Auto-plays the video 
-    isLooping //Loops the video
-    /> 
+    {/* Sign video */}
+    <View style={styles.videoBox}>
+      <SignVideo uri={sign.video} />
     </View>
 
     {/* Tip box */}
