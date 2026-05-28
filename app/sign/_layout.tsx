@@ -78,6 +78,7 @@ export default function SignLayout() {
       <Tabs.Screen name="CameraPracticeScreen" options={{ href: null }} />
       <Tabs.Screen name="lesson" options={{ href: null }} />
        <Tabs.Screen name="practicegrid" options={{ href: null }} />
+       <Tabs.Screen name="FlashCardScreen" options={{ href: null }} />
     </Tabs>
   );
 }

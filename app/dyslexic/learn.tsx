@@ -72,7 +72,7 @@ const questionPool = [
   },
 
   {
-    question: "Which letter has the stick first?",
+    question: "Which letter has the stick first and upward?",
     options: ["b", "d", "p", "q"],
     answer: "b",
     pattern: "letter_reversal",

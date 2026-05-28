@@ -77,7 +77,7 @@ export default function DyslexicLayout() {
         options={{
           title: "Assesment",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="book" color={color} size={20} />
+            <Ionicons name="clipboard-outline" color={color} size={20} />
           ),
         }}
       />
@@ -96,6 +96,15 @@ export default function DyslexicLayout() {
           title: "Games",
           tabBarIcon: ({ color }) => (
             <Ionicons name="game-controller" color={color} size={20} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="module/[level1]/[lesson]"
+        options={{
+          title: "Learn",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="book" color={color} size={20} />
           ),
         }}
       />

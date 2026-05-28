@@ -12,9 +12,14 @@ import {
 import { AITutorCard } from '../../components/AITutorCard';
 import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
+<<<<<<< HEAD
 import { USER_STATS } from '../../constants/mockData';
 import { LESSON_LEVELS } from '../../constants/lessonData';
 
+=======
+import { LESSON_LEVELS } from '../../constants/lessonData';
+import { USER_STATS } from '../../constants/mockData';
+>>>>>>> bb23f8c1d134d6affc959890f4bc839af418670f
 //ActionButton Component
 function ActionButton({
   icon,
