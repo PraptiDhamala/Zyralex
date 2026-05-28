@@ -90,7 +90,7 @@ export default function FlashCardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#d2f9d9",
+    backgroundColor: "#edf7f0",
     paddingHorizontal: 20,
     paddingTop: 15,
   },

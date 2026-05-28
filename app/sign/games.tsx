@@ -5,7 +5,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "rea
 export default function SignGames() {
   return (
     <LinearGradient
-      colors={["#d2f7d9", "#d2f9d9"]}
+      colors={["#e6feed", "#d2f9d9"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
