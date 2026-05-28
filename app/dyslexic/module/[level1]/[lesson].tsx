@@ -8,11 +8,11 @@ import {
   View,
 } from "react-native";
 
-import letterReversal from "../../../../data/easy/letter_reversal";
-import phonics from "../../../../data/easy/phonics";
-import vowel_processing from "../../../../data/easy/vowel_processing";
-import chunking from "../../../../data/medium/chunking";
-import decoding from "../../../../data/medium/decoding";
+import letterReversal from "../../../../data/level1/easy/letter_reversal";
+import phonics from "../../../../data/level1/easy/phonics";
+import vowel_processing from "../../../../data/level1/easy/vowel_processing";
+import chunking from "../../../../data/level1/medium/chunking";
+import decoding from "../../../../data/level1/medium/decoding";
 
 const curriculumMap: Record<string, any> = {
   letter_reversal: letterReversal,
