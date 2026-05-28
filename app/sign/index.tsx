@@ -12,7 +12,8 @@ import {
 import { AITutorCard } from '../../components/AITutorCard';
 import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS, USER_STATS } from '../../constants/mockData';
+import { LESSON_LEVELS } from '../../constants/lessonData';
+import { USER_STATS } from '../../constants/mockData';
 //ActionButton Component
 function ActionButton({
   icon,
