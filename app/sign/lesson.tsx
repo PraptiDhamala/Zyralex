@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Mascot } from '../../components/lesson/Mascot';
 import { MatchGame } from '../../components/lesson/MatchGame';
 import { QuizSlide } from '../../components/lesson/QuizSlide';
@@ -74,9 +73,9 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
 
   if (!lessonData) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
         <Text style={styles.error}>Lesson not found.</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -242,7 +241,7 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
 
   //render
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <View style={styles.header}>
@@ -320,7 +319,7 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
