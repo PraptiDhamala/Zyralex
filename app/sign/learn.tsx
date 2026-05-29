@@ -2,21 +2,19 @@
 
 import React from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
   ScrollView,
-  SafeAreaView,
-  TouchableOpacity,
   StatusBar,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
-import { LESSON_LEVELS } from '../../constants/lessonData';
 import { LevelCollapsible } from '../../components/LevelCollapsible';
 import { COLORS } from '../../constants/colors';
+import { LESSON_LEVELS } from '../../constants/lessonData';
 
 export default function LearnScreen() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
        
@@ -35,7 +33,7 @@ export default function LearnScreen() {
         {/* Bottom Padding */}
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -92,12 +90,15 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 12,
+  marginBottom:20,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.primary,
+   
+
   },
   lessonsContainer: {
     paddingHorizontal: 16,

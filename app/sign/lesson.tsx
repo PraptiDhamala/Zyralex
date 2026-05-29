@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   Alert,
-  SafeAreaView,
+
   StatusBar,
   StyleSheet,
   Text,
@@ -73,9 +73,9 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
 
   if (!lessonData) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
         <Text style={styles.error}>Lesson not found.</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -241,7 +241,7 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
 
   //render
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <View style={styles.header}>
@@ -319,7 +319,7 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

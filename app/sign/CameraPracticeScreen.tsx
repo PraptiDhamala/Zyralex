@@ -70,7 +70,7 @@ export default function CameraPracticeScreen() {
 
       {/* Top-right overlay for sign image */}
       <View style={styles.topOverlay}>
-        <Video source={currentSign.video} style={styles.signImage} resizeMode={ResizeMode.CONTAIN}
+        <Video source={{ uri: currentSign.video }} style={styles.signImage} resizeMode={ResizeMode.CONTAIN}
           shouldPlay 
           isLooping/>
         <Text style={styles.caption}>{currentSign.label}</Text>

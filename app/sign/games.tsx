@@ -2,10 +2,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function DyslexicGames() {
+export default function SignGames() {
   return (
     <LinearGradient
-      colors={["#fcfcd7", "#f8f5ba"]}
+      colors={["#e6feed", "#d2f9d9"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}

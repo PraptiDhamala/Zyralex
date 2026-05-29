@@ -4,12 +4,9 @@
  
 import { LinearGradient } from "expo-linear-gradient"
 import {
-  Brain,
   ChevronRight,
-  LogOut,
   Mic,
-  Settings,
-  Volume2,
+  Volume2
 } from "lucide-react-native"
 import React, { useState } from "react"
 import {
@@ -154,22 +151,7 @@ export default function DyslexicPractice() {
     <View style={s.screen}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
  
-        {/* ── Header ── */}
-        <View style={s.header}>
-          <View style={s.logoRow}>
-            <View style={s.logoBox}>
-              <Brain size={18} color="#fff" />
-            </View>
-            <View>
-              <Text style={s.appName}>Dyslexic Learn</Text>
-              <Text style={s.appSub}>Anusha's Journey ✨</Text>
-            </View>
-          </View>
-          <View style={s.hIcons}>
-            <View style={s.hIco}><Settings size={14} color="#6B9EC8" /></View>
-            <View style={s.hIco}><LogOut   size={14} color="#2563EB" /></View>
-          </View>
-        </View>
+        
  
         <Text style={s.pageTitle}>Practice Sessions</Text>
  
