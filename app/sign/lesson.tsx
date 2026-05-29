@@ -4,13 +4,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   Alert,
-  SafeAreaView,
+
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Mascot } from '../../components/lesson/Mascot';
 import { MatchGame } from '../../components/lesson/MatchGame';
 import { QuizSlide } from '../../components/lesson/QuizSlide';

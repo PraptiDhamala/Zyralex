@@ -1,7 +1,6 @@
 import { RelativePathString, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -43,7 +42,7 @@ export default function PracticeScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         
@@ -84,7 +83,7 @@ export default function PracticeScreen() {
         {/* Bottom Padding */}
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
