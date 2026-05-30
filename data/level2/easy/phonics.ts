@@ -82,7 +82,7 @@ const level2Phonics = {
     {
       question: "Which blend is in 'train'?",
 
-      options: ["tr", "sh", "ch"],
+      options: ["tr", "sh", "ch", "fg"],
 
       answer: "tr",
     },
