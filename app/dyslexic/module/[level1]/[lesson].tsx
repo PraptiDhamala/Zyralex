@@ -15,6 +15,8 @@ import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
 import chunking from "../../../../data/level1/medium/chunking";
 import decoding from "../../../../data/level1/medium/decoding";
+import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
+
 const curriculumMap: Record<string, any> = {
   letter_reversal: letterReversal,
   phonics: phonics,
