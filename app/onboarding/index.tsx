@@ -74,7 +74,7 @@ export default function Onboarding() {
         style={styles.cardWrapper}
       >
         <LinearGradient
-          colors={["#f29d15", "#f4b562"]} // gradient shades of orange
+          colors={["#70944b", "#a0bb7f"]} // gradient shades of orange
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.cardGradient}
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   mascot: { width: 200, height: 200 },
   speechBubble: {
-    backgroundColor: "#f1e195",
+    backgroundColor: "#eee3ab",
     padding: 10,
     borderRadius: 20,
     elevation: 3,
