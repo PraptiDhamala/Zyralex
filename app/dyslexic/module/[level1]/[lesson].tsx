@@ -18,18 +18,23 @@ import decoding from "../../../../data/level1/medium/decoding";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 
 const curriculumMap: Record<string, any> = {
-  letter_reversal: letterReversal,
-  phonics: phonics,
-  vowel_processing: vowel_processing,
-  chunking: chunking,
-  decoding: decoding,
+  level1: {
+    letter_reversal: letterReversal,
+    phonics,
+    vowel_processing,
+    chunking,
+    decoding,
+  },
+
+  level2: {
+    letter_reversal: level2LetterReversal,
+  },
 };
 
 export default function LessonScreen() {
   const router = useRouter();
 
-  const { lesson } = useLocalSearchParams();
-
+  const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
@@ -45,9 +50,10 @@ export default function LessonScreen() {
   // DYNAMIC LESSON LOOKUP
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
 
+  // const lessonData =
+  //   curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
   const lessonData =
-    curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
-
+    curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
   const explanationLength = lessonData.explanation?.length || 0;
 
   const examplesLength = lessonData.examples?.length || 0;
