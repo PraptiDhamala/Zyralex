@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import * as Speech from "expo-speech";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Speech from "expo-speech";
 import { default as React, useState } from "react";
 import {
   ScrollView,
@@ -15,7 +15,6 @@ import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
 import chunking from "../../../../data/level1/medium/chunking";
 import decoding from "../../../../data/level1/medium/decoding";
-
 const curriculumMap: Record<string, any> = {
   letter_reversal: letterReversal,
   phonics: phonics,
@@ -53,13 +52,10 @@ export default function LessonScreen() {
 
   const practiceLength = lessonData.guidedPractice?.length || 0;
 
-  const totalSteps =
-    explanationLength + examplesLength + practiceLength;
+  const totalSteps = explanationLength + examplesLength + practiceLength;
 
   const currentPractice =
-    lessonData.guidedPractice?.[
-      step - explanationLength - examplesLength
-    ];
+    lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
   const handleNext = () => {
     if (step + 1 >= totalSteps) {
@@ -69,10 +65,7 @@ export default function LessonScreen() {
     }
   };
 
-  const handlePracticeAnswer = (
-    selected: string,
-    correct: string,
-  ) => {
+  const handlePracticeAnswer = (selected: string, correct: string) => {
     if (selected === correct) {
       setScore((prev) => prev + 1);
 
@@ -91,34 +84,19 @@ export default function LessonScreen() {
 
       return (
         <View style={styles.card}>
-          <View
-            style={[
-              styles.badge,
-              item.type === "tip" && styles.tipBadge,
-            ]}
-          >
-            <Text style={styles.badgeText}>
-              {item.type.toUpperCase()}
-            </Text>
+          <View style={[styles.badge, item.type === "tip" && styles.tipBadge]}>
+            <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
           </View>
 
-          <Text style={styles.text}>
-            {item.content}
-          </Text>
+          <Text style={styles.text}>{item.content}</Text>
 
           <TouchableOpacity
             style={styles.button}
             onPress={() => speakWord(item.content)}
           >
             <View style={styles.audioRow}>
-              <Ionicons
-                name="volume-high"
-                size={20}
-                color="#fff"
-              />
-              <Text style={styles.buttonText}>
-                Hear It
-              </Text>
+              <Ionicons name="volume-high" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Hear It</Text>
             </View>
           </TouchableOpacity>
 
@@ -126,28 +104,21 @@ export default function LessonScreen() {
             style={[styles.button, { marginTop: 14 }]}
             onPress={handleNext}
           >
-            <Text style={styles.buttonText}>
-              Continue
-            </Text>
+            <Text style={styles.buttonText}>Continue</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
     // EXAMPLES SECTION
-    if (
-      lessonData.examples &&
-      step < explanationLength + examplesLength
-    ) {
+    if (lessonData.examples && step < explanationLength + examplesLength) {
       const exampleIndex = step - explanationLength;
 
       const example = lessonData.examples[exampleIndex];
 
       return (
         <View style={styles.card}>
-          <Text style={styles.bigLetter}>
-            {example.emoji}
-          </Text>
+          <Text style={styles.bigLetter}>{example.emoji}</Text>
 
           <Text style={styles.word}>
             <Text
@@ -163,33 +134,20 @@ export default function LessonScreen() {
           </Text>
 
           {example.sentence && (
-            <Text style={styles.exampleSentence}>
-              {example.sentence}
-            </Text>
+            <Text style={styles.exampleSentence}>{example.sentence}</Text>
           )}
 
           <TouchableOpacity
             style={styles.audioButton}
             onPress={() => speakWord(example.word)}
           >
-            <Ionicons
-              name="volume-high"
-              size={20}
-              color="#2563EB"
-            />
+            <Ionicons name="volume-high" size={20} color="#2563EB" />
 
-            <Text style={styles.audioText}>
-              Hear Sound
-            </Text>
+            <Text style={styles.audioText}>Hear Sound</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleNext}
-          >
-            <Text style={styles.buttonText}>
-              I Understand
-            </Text>
+          <TouchableOpacity style={styles.button} onPress={handleNext}>
+            <Text style={styles.buttonText}>I Understand</Text>
           </TouchableOpacity>
         </View>
       );
@@ -199,28 +157,19 @@ export default function LessonScreen() {
     if (lessonData.guidedPractice && currentPractice) {
       return (
         <View style={styles.card}>
-          <Text style={styles.question}>
-            {currentPractice.question}
-          </Text>
+          <Text style={styles.question}>{currentPractice.question}</Text>
 
-          {currentPractice.options.map(
-            (option: string, index: number) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.option}
-                onPress={() =>
-                  handlePracticeAnswer(
-                    option,
-                    currentPractice.answer,
-                  )
-                }
-              >
-                <Text style={styles.optionText}>
-                  {option}
-                </Text>
-              </TouchableOpacity>
-            ),
-          )}
+          {currentPractice.options.map((option: string, index: number) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.option}
+              onPress={() =>
+                handlePracticeAnswer(option, currentPractice.answer)
+              }
+            >
+              <Text style={styles.optionText}>{option}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       );
     }
@@ -230,13 +179,9 @@ export default function LessonScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>
-        {lessonData.title}
-      </Text>
+      <Text style={styles.title}>{lessonData.title}</Text>
 
-      <Text style={styles.subtitle}>
-        {lessonData.subtitle}
-      </Text>
+      <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
 
       {/* PROGRESS BAR */}
       <View style={styles.progressBarBackground}>
@@ -254,13 +199,10 @@ export default function LessonScreen() {
         renderContent()
       ) : (
         <View style={styles.card}>
-          <Text style={styles.complete}>
-            🎉 {lessonData.completionMessage}
-          </Text>
+          <Text style={styles.complete}>🎉 {lessonData.completionMessage}</Text>
 
           <Text style={styles.score}>
-            Score: {score} /{" "}
-            {lessonData.guidedPractice.length}
+            Score: {score} / {lessonData.guidedPractice.length}
           </Text>
 
           <TouchableOpacity
@@ -273,9 +215,7 @@ export default function LessonScreen() {
             ]}
             onPress={() => router.replace("/dyslexic")}
           >
-            <Text style={styles.buttonText}>
-              Return Home
-            </Text>
+            <Text style={styles.buttonText}>Return Home</Text>
           </TouchableOpacity>
         </View>
       )}
