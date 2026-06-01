@@ -31,7 +31,7 @@ const curriculumMap: Record<string, any> = {
   level2: {
     letter_reversal: level2LetterReversal,
     phonics: level2Phonics,
-    visual_tracking: level2VisualTracking,
+    vowel_processing: level2VisualTracking,
     // chunking: chunking,
     // decoding: decoding,
   },
@@ -196,6 +196,8 @@ export default function LessonScreen() {
       <Text style={styles.title}>{lessonData.title}</Text>
 
       <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
+
+      {/* PROGRESS BAR */}
 
       {/* PROGRESS BAR */}
       <View style={styles.progressBarBackground}>
