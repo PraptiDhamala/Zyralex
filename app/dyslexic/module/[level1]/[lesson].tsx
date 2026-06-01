@@ -31,7 +31,7 @@ const curriculumMap: Record<string, any> = {
   level2: {
     letter_reversal: level2LetterReversal,
     phonics: level2Phonics,
-    vowel_processing: level2VisualTracking,
+    visual_tracking: level2VisualTracking,
     // chunking: chunking,
     // decoding: decoding,
   },
@@ -218,28 +218,29 @@ export default function LessonScreen() {
           <Text style={styles.score}>
             Score: {score} / {lessonData.guidedPractice.length}
           </Text>
+
           <TouchableOpacity
             style={[
               styles.button,
               {
                 marginTop: 24,
-                backgroundColor: "#16A34A",
+                backgroundColor: "#2563EB",
               },
             ]}
             onPress={() => {
-              let nextLesson = "letter_reversal";
+              // Reset local states before navigating back to the same component layout
+              setStep(0);
+              setFinished(false);
+              setScore(0);
 
-              // Determine Level 2 lesson based on current lesson
-              if (lessonKey === "letter_reversal") {
-                nextLesson = "letter_reversal";
-              } else if (lessonKey === "phonics") {
-                nextLesson = "phonics";
-              } else {
+              // Safely map visual_tracking parameters if coming from vowel_processing
+              let nextLesson = lessonKey;
+              if (lessonKey === "vowel_processing") {
                 nextLesson = "visual_tracking";
               }
 
               router.replace({
-                pathname: "/dyslexic/module/[level1]/[lesson]",
+                pathname: "/dyslexic/module/[level1]/[lesson]", // <-- Added slash between parameters
                 params: {
                   level1: "level2",
                   lesson: nextLesson,
@@ -412,7 +413,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     lineHeight: 38,
     textAlign: "center",
-    color: "#16A34A",
+    color: "#2563EB",
     fontWeight: "700",
   },
 
