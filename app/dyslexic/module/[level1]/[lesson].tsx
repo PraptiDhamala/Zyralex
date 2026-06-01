@@ -15,19 +15,25 @@ import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
 import chunking from "../../../../data/level1/medium/chunking";
 import decoding from "../../../../data/level1/medium/decoding";
+// import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
-
+import level2Phonics from "../../../../data/level2/easy/phonics";
+import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
 const curriculumMap: Record<string, any> = {
   level1: {
     letter_reversal: letterReversal,
-    phonics,
-    vowel_processing,
-    chunking,
-    decoding,
+    phonics: phonics,
+    vowel_processing: vowel_processing,
+    chunking: chunking,
+    decoding: decoding,
   },
 
   level2: {
     letter_reversal: level2LetterReversal,
+    phonics: level2Phonics,
+    vowel_processing: level2VisualTracking,
+    // chunking: chunking,
+    // decoding: decoding,
   },
 };
 
@@ -212,7 +218,6 @@ export default function LessonScreen() {
           <Text style={styles.score}>
             Score: {score} / {lessonData.guidedPractice.length}
           </Text>
-
           <TouchableOpacity
             style={[
               styles.button,
@@ -221,9 +226,28 @@ export default function LessonScreen() {
                 backgroundColor: "#16A34A",
               },
             ]}
-            onPress={() => router.replace("/dyslexic")}
+            onPress={() => {
+              let nextLesson = "letter_reversal";
+
+              // Determine Level 2 lesson based on current lesson
+              if (lessonKey === "letter_reversal") {
+                nextLesson = "letter_reversal";
+              } else if (lessonKey === "phonics") {
+                nextLesson = "phonics";
+              } else {
+                nextLesson = "visual_tracking";
+              }
+
+              router.replace({
+                pathname: "/dyslexic/module/[level1]/[lesson]",
+                params: {
+                  level1: "level2",
+                  lesson: nextLesson,
+                },
+              });
+            }}
           >
-            <Text style={styles.buttonText}>Return Home</Text>
+            <Text style={styles.buttonText}>Start Level 2</Text>
           </TouchableOpacity>
         </View>
       )}
