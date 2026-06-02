@@ -15,19 +15,32 @@ import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
 import chunking from "../../../../data/level1/medium/chunking";
 import decoding from "../../../../data/level1/medium/decoding";
+// import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
+import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
+import level2Phonics from "../../../../data/level2/easy/phonics";
+import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
 const curriculumMap: Record<string, any> = {
-  letter_reversal: letterReversal,
-  phonics: phonics,
-  vowel_processing: vowel_processing,
-  chunking: chunking,
-  decoding: decoding,
+  level1: {
+    letter_reversal: letterReversal,
+    phonics: phonics,
+    vowel_processing: vowel_processing,
+    chunking: chunking,
+    decoding: decoding,
+  },
+
+  level2: {
+    letter_reversal: level2LetterReversal,
+    phonics: level2Phonics,
+    vowel_processing: level2VisualTracking,
+    // chunking: chunking,
+    // decoding: decoding,
+  },
 };
 
 export default function LessonScreen() {
   const router = useRouter();
 
-  const { lesson } = useLocalSearchParams();
-
+  const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
@@ -43,9 +56,10 @@ export default function LessonScreen() {
   // DYNAMIC LESSON LOOKUP
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
 
+  // const lessonData =
+  //   curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
   const lessonData =
-    curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
-
+    curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
   const explanationLength = lessonData.explanation?.length || 0;
 
   const examplesLength = lessonData.examples?.length || 0;
@@ -184,6 +198,8 @@ export default function LessonScreen() {
       <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
 
       {/* PROGRESS BAR */}
+
+      {/* PROGRESS BAR */}
       <View style={styles.progressBarBackground}>
         <View
           style={[
@@ -210,12 +226,31 @@ export default function LessonScreen() {
               styles.button,
               {
                 marginTop: 24,
-                backgroundColor: "#16A34A",
+                backgroundColor: "#2563EB",
               },
             ]}
-            onPress={() => router.replace("/dyslexic")}
+            onPress={() => {
+              // Reset local states before navigating back to the same component layout
+              setStep(0);
+              setFinished(false);
+              setScore(0);
+
+              // Safely map visual_tracking parameters if coming from vowel_processing
+              let nextLesson = lessonKey;
+              if (lessonKey === "vowel_processing") {
+                nextLesson = "visual_tracking";
+              }
+
+              router.replace({
+                pathname: "/dyslexic/module/[level1]/[lesson]", // <-- Added slash between parameters
+                params: {
+                  level1: "level2",
+                  lesson: nextLesson,
+                },
+              });
+            }}
           >
-            <Text style={styles.buttonText}>Return Home</Text>
+            <Text style={styles.buttonText}>Start Level 2</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -380,7 +415,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     lineHeight: 38,
     textAlign: "center",
-    color: "#16A34A",
+    color: "#2563EB",
     fontWeight: "700",
   },
 
