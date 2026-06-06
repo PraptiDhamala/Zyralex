@@ -43,7 +43,7 @@ export default function CameraPracticeScreen() {
   } else {
     Alert.alert(
       "Lesson Complete",
-      "🎉 You’ve finished all signs in this lesson!",
+      " You’ve finished all signs in this lesson!",
       [
         {
           text: "Practice again",
@@ -134,10 +134,10 @@ const styles = StyleSheet.create({
 
   controls: { flexDirection: 'row', gap: 150 },
   btnContainer: {
-    backgroundColor: '#f5e686',
+    backgroundColor: '#d2f9d9',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  btn: { fontSize: 14, fontWeight: '600', color: '#0d0d0d' },
+  btn: { fontSize: 14, fontWeight: '600', color: '#090808' },
 });

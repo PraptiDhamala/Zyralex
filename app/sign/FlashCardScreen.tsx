@@ -9,6 +9,7 @@ export default function FlashCardScreen() {
   const flashcard = {
     question: "What does this sign mean?",
     answer: "Environment",
+   
   };
 
   const handleAnswer = (action: string) => {
@@ -57,7 +58,7 @@ export default function FlashCardScreen() {
       </Pressable>
 
       <View style={styles.tipBox}>
-        <Text style={styles.tipText}>Try recalling the sign before revealing.</Text>
+        <Text style={styles.tipText}>Try recalling the sign before revealing the answer.</Text>
       </View>
 
       <View style={styles.buttonsRow}>
