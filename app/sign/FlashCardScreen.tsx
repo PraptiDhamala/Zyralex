@@ -1,16 +1,25 @@
+import { LESSON_MAP } from "@/constants/lessonData";
+import { FlashCARD } from "@/models/flashcard";
+import { createFlashCards } from "@/utlis/flashcardHelp";
+import { ResizeMode, Video } from "expo-av";
+import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function FlashCardScreen() {
+const { levelId, lessonId } = useLocalSearchParams<{
+    levelId: string;
+    lessonId: string;
+  }>();
+  const lessonKey = `${levelId}_${lessonId}`;   
+  const lesson = LESSON_MAP[lessonKey];
+  const flashcards: FlashCARD[] = createFlashCards(lesson);
   const [flipped, setFlipped] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
-  const totalCards = 25;
+  const totalCards = flashcards.length;
 
-  const flashcard = {
-    question: "What does this sign mean?",
-    answer: "Environment",
-   
-  };
+  const card = flashcards[currentCard];
+
 
   const handleAnswer = (action: string) => {
     if (action === "again") {
@@ -37,22 +46,47 @@ export default function FlashCardScreen() {
       </View>
 
       <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>{currentCard} / {totalCards}</Text>
+        <Text style={styles.progressText}>{currentCard+1} / {totalCards}</Text>
         <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${(currentCard / totalCards) * 100}%` }]} />
+          <View style={[styles.progressBarFill, { width: `${((currentCard+1) / totalCards) * 100}%` }]} />
         </View>
       </View>
 
       <Pressable style={styles.card} onPress={() => setFlipped(!flipped)}>
         {!flipped ? (
           <>
-            <Text style={styles.questionText}>{flashcard.question}</Text>
+            <Text style={styles.questionText}>{card.question}</Text>
+            {card.mode === "imageToWord" && card.image && (
+              <Video
+                source={{ uri: card.video }}
+                style={styles.video}
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay 
+                isLooping
+              />
+            )} 
+            {card.mode === "wordToImage" && (
+              <Text style={styles.answerText}></Text>
+            )}
             <Text style={styles.tapText}>Tap to reveal answer</Text>
           </>
         ) : (
           <>
             <Text style={styles.answerLabel}>Answer</Text>
-            <Text style={styles.answerText}>{flashcard.answer}</Text>
+           {card.mode === "imageToWord" && (
+              <Text style={styles.answerText}>{card.answer}</Text>
+            )}
+            {card.mode === "wordToImage" && card.video && (
+            <Video
+              source={{ uri: card.video }}
+              style={styles.video}
+              
+              resizeMode={ResizeMode.CONTAIN}
+              shouldPlay
+              isLooping
+            />
+            )}
+
           </>
         )}
       </Pressable>
@@ -103,4 +137,10 @@ const styles = StyleSheet.create({
   againText: { color: "#E05A5A", fontWeight: "700" },
   skipText: { color: "#D18A00", fontWeight: "700" },
   nextText: { color: "#16A34A", fontWeight: "700" },
+  video: {
+  width: 300,
+  height: 200,
+  marginTop: 20,
+},
+
 });

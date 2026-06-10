@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import { RelativePathString, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -10,14 +12,32 @@ import {
 import { DifficultySelector } from '../../components/DifficultySelector';
 import { PracticeSessionCard } from '../../components/PracticeSessionCard';
 import { COLORS } from '../../constants/colors';
-
 type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
 
 export default function PracticeScreen() {
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<DifficultyLevel>('Beginner');
-
+  const [currentLesson, setCurrentLesson] = useState<{ levelId: string; lessonId: string } | null>(null);
   const router = useRouter();
+
+  
+useFocusEffect(
+  React.useCallback(() => {
+    const loadLesson = async () => {
+      const stored = await AsyncStorage.getItem("currentLesson");
+      if (stored) {
+        setCurrentLesson(JSON.parse(stored));
+      }
+    };
+    loadLesson();
+  }, [])
+);
+
+  if (!currentLesson) {
+    return <Text>No lesson selected yet</Text>;
+  }
+
+  const { levelId, lessonId } = currentLesson;
 
   // Define the three practice modes as rows
   const PRACTICE_MODES = [
@@ -73,7 +93,7 @@ export default function PracticeScreen() {
               onPress={() =>
                 router.push({
                   pathname: mode.route as RelativePathString,
-                  params: { practiceType: mode.id, difficulty: selectedDifficulty },
+                  params: { practiceType: mode.id, difficulty: selectedDifficulty,levelId,lessonId },
                 })
               }
             />
