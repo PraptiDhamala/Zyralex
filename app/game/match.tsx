@@ -19,7 +19,7 @@ function getRandomPairs<T>(source: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
-// ⭐ NEW: ensures no correct pair appears in same row
+
 function shuffleAvoidingMatches(
   names: string[],
   emojis: string[],
@@ -103,12 +103,12 @@ export default function MatchGame() {
   const [matched, setMatched] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
 
-  // ✅ Shuffle names FIRST
+  
   const [names] = useState(() =>
     fisherYatesShuffle(pairs.map((p) => p.name))
   );
 
-  // ✅ Shuffle emojis WITHOUT same-row matches
+ 
   const [emojisOnly] = useState(() =>
     shuffleAvoidingMatches(
       names,
