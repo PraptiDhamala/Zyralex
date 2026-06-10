@@ -1,16 +1,24 @@
+import { LESSON_MAP } from "@/constants/lessonData";
+import { FlashCARD } from "@/models/flashcard";
+import { createFlashCards } from "@/utlis/flashcardHelp";
+import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function FlashCardScreen() {
+const { levelId, lessonId } = useLocalSearchParams<{
+    levelId: string;
+    lessonId: string;
+  }>();
+  const lessonKey = `${levelId}_${lessonId}`;   
+  const lesson = LESSON_MAP[lessonKey];
+  const flashcards: FlashCARD[] = createFlashCards(lesson);
   const [flipped, setFlipped] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
-  const totalCards = 25;
+  const totalCards = flashcards.length;
 
-  const flashcard = {
-    question: "What does this sign mean?",
-    answer: "Environment",
-   
-  };
+  const card = flashcards[currentCard];
+
 
   const handleAnswer = (action: string) => {
     if (action === "again") {
@@ -37,22 +45,22 @@ export default function FlashCardScreen() {
       </View>
 
       <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>{currentCard} / {totalCards}</Text>
+        <Text style={styles.progressText}>{currentCard+1} / {totalCards}</Text>
         <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${(currentCard / totalCards) * 100}%` }]} />
+          <View style={[styles.progressBarFill, { width: `${((currentCard+1) / totalCards) * 100}%` }]} />
         </View>
       </View>
 
       <Pressable style={styles.card} onPress={() => setFlipped(!flipped)}>
         {!flipped ? (
           <>
-            <Text style={styles.questionText}>{flashcard.question}</Text>
+            <Text style={styles.questionText}>{card.question}</Text>
             <Text style={styles.tapText}>Tap to reveal answer</Text>
           </>
         ) : (
           <>
             <Text style={styles.answerLabel}>Answer</Text>
-            <Text style={styles.answerText}>{flashcard.answer}</Text>
+            <Text style={styles.answerText}>{card.answer}</Text>
           </>
         )}
       </Pressable>

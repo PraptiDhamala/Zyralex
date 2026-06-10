@@ -1,15 +1,15 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  ScrollView,
+  View
 } from 'react-native';
+import { COLORS } from '../constants/colors';
 import { Level } from '../constants/lessonData';
 import { LessonCard } from './LessonCard';
-import { COLORS } from '../constants/colors';
-import { useRouter } from 'expo-router';
 
 interface LevelCollapsibleProps {
   level: Level ;
@@ -45,8 +45,19 @@ export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => 
             <LessonCard
               key={lesson.lessonId}
               lesson={lesson}
-              onPress={() => router.push({pathname: '/sign/lesson',params: { levelId: level.levelId, lessonId: lesson.lessonId },})
-              }
+              onPress={async() =>
+                {
+                  try {
+                    // Save current lesson globally
+                    await AsyncStorage.setItem(
+                      "currentLesson",
+                      JSON.stringify({ levelId: level.levelId, lessonId: lesson.lessonId })
+                    );
+                  } catch (e) {
+                    console.error("Failed to save lesson", e);
+                  }
+                 router.push({pathname: '/sign/lesson',params: { levelId: level.levelId, lessonId: lesson.lessonId },})
+              }}
             />
           ))}
         </View>
