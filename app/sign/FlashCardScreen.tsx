@@ -1,6 +1,7 @@
 import { LESSON_MAP } from "@/constants/lessonData";
 import { FlashCARD } from "@/models/flashcard";
 import { createFlashCards } from "@/utlis/flashcardHelp";
+import { ResizeMode, Video } from "expo-av";
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -55,12 +56,37 @@ const { levelId, lessonId } = useLocalSearchParams<{
         {!flipped ? (
           <>
             <Text style={styles.questionText}>{card.question}</Text>
+            {card.mode === "imageToWord" && card.image && (
+              <Video
+                source={{ uri: card.video }}
+                style={styles.video}
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay 
+                isLooping
+              />
+            )} 
+            {card.mode === "wordToImage" && (
+              <Text style={styles.answerText}></Text>
+            )}
             <Text style={styles.tapText}>Tap to reveal answer</Text>
           </>
         ) : (
           <>
             <Text style={styles.answerLabel}>Answer</Text>
-            <Text style={styles.answerText}>{card.answer}</Text>
+           {card.mode === "imageToWord" && (
+              <Text style={styles.answerText}>{card.answer}</Text>
+            )}
+            {card.mode === "wordToImage" && card.video && (
+            <Video
+              source={{ uri: card.video }}
+              style={styles.video}
+              
+              resizeMode={ResizeMode.CONTAIN}
+              shouldPlay
+              isLooping
+            />
+            )}
+
           </>
         )}
       </Pressable>
@@ -111,4 +137,10 @@ const styles = StyleSheet.create({
   againText: { color: "#E05A5A", fontWeight: "700" },
   skipText: { color: "#D18A00", fontWeight: "700" },
   nextText: { color: "#16A34A", fontWeight: "700" },
+  video: {
+  width: 300,
+  height: 200,
+  marginTop: 20,
+},
+
 });
