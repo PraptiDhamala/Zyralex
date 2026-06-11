@@ -4,7 +4,19 @@ import { createFlashCards } from "@/utlis/flashcardHelp";
 import { ResizeMode, Video } from "expo-av";
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+
+
 
 export default function FlashCardScreen() {
 const { levelId, lessonId } = useLocalSearchParams<{
@@ -13,7 +25,10 @@ const { levelId, lessonId } = useLocalSearchParams<{
   }>();
   const lessonKey = `${levelId}_${lessonId}`;   
   const lesson = LESSON_MAP[lessonKey];
-  const flashcards: FlashCARD[] = createFlashCards(lesson);
+  const [flashcards] = useState<FlashCARD[]>(() => 
+  shuffleArray(createFlashCards(lesson))
+);
+
   const [flipped, setFlipped] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
   const totalCards = flashcards.length;
@@ -31,7 +46,7 @@ const { levelId, lessonId } = useLocalSearchParams<{
         setCurrentCard(currentCard + 1);
       }
     } else if (action === "next") {
-      if (currentCard < totalCards) {
+      if (currentCard < totalCards-1) {
         setCurrentCard(currentCard + 1);
       }
     }
@@ -39,7 +54,7 @@ const { levelId, lessonId } = useLocalSearchParams<{
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Flash Cards</Text>
         <Text style={styles.subtitle}>Learn • Practice • Remember</Text>
@@ -66,16 +81,24 @@ const { levelId, lessonId } = useLocalSearchParams<{
               />
             )} 
             {card.mode === "wordToImage" && (
-              <Text style={styles.answerText}></Text>
+              <>
+              <Text style={styles.wordToImageQuestion}>"{card.answer}"</Text>
+             <Image source={require("../../assets/mimo1.png")} style={styles.icon} resizeMode="contain" />
+              </>
             )}
+            
             <Text style={styles.tapText}>Tap to reveal answer</Text>
           </>
         ) : (
           <>
             <Text style={styles.answerLabel}>Answer</Text>
-           {card.mode === "imageToWord" && (
-              <Text style={styles.answerText}>{card.answer}</Text>
-            )}
+              {card.mode === "imageToWord" && (
+                <>
+                  <Text style={styles.answerTexts}>{card.answer}</Text>
+                  <Text style={styles.answerText}>{card.hint}</Text>
+                </>
+              )}
+
             {card.mode === "wordToImage" && card.video && (
             <Video
               source={{ uri: card.video }}
@@ -106,7 +129,7 @@ const { levelId, lessonId } = useLocalSearchParams<{
           <Text style={styles.nextText}>Next</Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -120,17 +143,44 @@ const styles = StyleSheet.create({
   progressBarBackground: { height: 10, backgroundColor: "#E6E1FF", borderRadius: 20, overflow: "hidden" },
   progressBarFill: { height: "100%", backgroundColor: "#7ec096", borderRadius: 20 },
   card: {
-    flex: 1, backgroundColor: "#FFFFFF", borderRadius: 32, justifyContent: "center", alignItems: "center", padding: 30,
-    shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 4,
+    flexGrow: 1,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 32,
+  justifyContent: "flex-start",   
+  alignItems: "center",
+  padding: 20,
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 20 },
+  elevation: 4,
+  minHeight: 300,                 
+  width: "100%",
+},
+wordToImageQuestion: {
+  fontSize: 40,          // bigger text
+  fontWeight: "800",
+  color: "#1F1F39",
+  textAlign: "center",
+  marginVertical: 20,    // spacing top/bottom
+  flexShrink: 1,         // allow wrapping if long
+},
+icon: {
+    width: 150,
+    height: 100,
+    marginLeft:0,
+    marginRight:2,
+  
   },
-  questionText: { fontSize: 30, fontWeight: "700", textAlign: "center", color: "#1F1F39", marginBottom: 25 },
-  tapText: { fontSize: 16, color: "#88a6ed", fontWeight: "600" },
+  questionText: { fontSize: 25, fontWeight: "700", textAlign: "center", color: "#1F1F39", marginBottom: 5 },
+  tapText: { fontSize: 16, color: "#88a6ed", fontWeight: "600",marginTop:10 },
   answerLabel: { fontSize: 16, color: "#8B80F9", marginBottom: 12, fontWeight: "600" },
-  answerText: { fontSize: 36, fontWeight: "800", color: "#1F1F39", textAlign: "center" },
-  tipBox: { backgroundColor: "#e0e5f4", padding: 16, borderRadius: 18, marginTop: 25 },
+  answerTexts: { fontSize: 40, fontWeight: "800", color: "#1F1F39", textAlign: "center",marginBottom:10 },
+  answerText: { fontSize: 30, fontWeight: "500", color: "#7b7b80", textAlign: "center" },
+  tipBox: { backgroundColor: "#e0e5f4", padding: 5, borderRadius: 18, marginTop: 25 },
   tipText: { textAlign: "center", color: "#7C72E8", fontWeight: "500" },
   buttonsRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 25, gap: 12 },
-  levelButton: { flex: 1, paddingVertical: 16, borderRadius: 18, alignItems: "center", marginBottom: 15 },
+  levelButton: { flex: 1, paddingVertical: 16, borderRadius: 18, alignItems: "center", marginBottom: 40},
   againButton: { backgroundColor: "#FFE5E5" },
   skipButton: { backgroundColor: "#FFF3D9" },
   nextButton: { backgroundColor: "#bbe3d3" },
@@ -138,9 +188,10 @@ const styles = StyleSheet.create({
   skipText: { color: "#D18A00", fontWeight: "700" },
   nextText: { color: "#16A34A", fontWeight: "700" },
   video: {
-  width: 300,
-  height: 200,
-  marginTop: 20,
+  width: 200,
+  height: 150,
+  borderRadius: 16,
+  marginTop: 10,
 },
 
 });
