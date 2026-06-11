@@ -18,8 +18,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { HelloWave } from '../../components/hello-wave';
-import { COLORS } from '../../constants/colors';
+import { HelloWave } from "../../components/hello-wave";
+import { COLORS } from "../../constants/colors";
 import { supabase } from "../../lib/supabase";
 
 export default function DyslexicHome() {
@@ -190,12 +190,12 @@ export default function DyslexicHome() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.welcomeSection}>
-                 <HelloWave />
-                  <Text style={styles.welcomeTitle}>Welcome Back!</Text>
-                  <Text style={styles.welcomeSubtitle}>
-                    Continue your learning journey
-                  </Text>
-                </View>
+          <HelloWave />
+          <Text style={styles.welcomeTitle}>Welcome Back!</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Continue your learning journey
+          </Text>
+        </View>
         {/* LEVEL CARD */}
         <View style={styles.mainCard}>
           <View style={styles.levelHeader}>
@@ -302,13 +302,15 @@ export default function DyslexicHome() {
         <View style={styles.statsWrapper}>
           <View style={styles.statsGrid}>
             <View style={styles.newStatCard}>
-              <Text style={styles.newStatEmoji}>🏆</Text>
+              <Ionicons name="trending-up" size={24} color="#3b82f6" />
+
+              {/* <Text style={styles.newStatEmoji}></Text> */}
               <Text style={styles.newStatNumber}>{score}/10</Text>
               <Text style={styles.newStatLabel}>Latest Score</Text>
             </View>
 
             <View style={styles.newStatCard}>
-              <Text style={styles.newStatEmoji}>🔍</Text>
+              <Ionicons name="alert-circle" size={24} color="#3b82f6" />
               <Text
                 style={{
                   fontSize: 10,
@@ -324,7 +326,7 @@ export default function DyslexicHome() {
             </View>
 
             <View style={styles.newStatCard}>
-              <Text style={styles.newStatEmoji}>📈</Text>
+              <Ionicons name="rocket" size={24} color="#3b82f6" />
               <Text style={styles.newStatNumber}>{progressPercent}%</Text>
               <Text style={styles.newStatLabel}>Completion</Text>
             </View>
@@ -343,8 +345,15 @@ export default function DyslexicHome() {
 
             <Pressable style={styles.actionButton} onPress={pickDocument}>
               <View style={styles.actionButtonContent}>
-                <Feather name="upload-cloud" size={24} color="#22c55e" />
+                <Feather name="upload-cloud" size={24} color="#3b82f6" />
                 <Text style={styles.actionButtonLabel}>Easy Read PDF</Text>
+              </View>
+            </Pressable>
+
+            <Pressable style={styles.actionButton} onPress={pickDocument}>
+              <View style={styles.actionButtonContent}>
+                <Feather name="layers" size={24} color="#3b82f6" />
+                <Text style={styles.actionButtonLabel}>Flashcard</Text>
               </View>
             </Pressable>
           </View>
@@ -373,26 +382,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   welcomeSection: {
-      alignItems: 'center',
-      paddingVertical: 24,
-      paddingHorizontal: 16,
-    },
-    welcomeIcon: {
-      fontSize: 48,
-      marginBottom: 12,
-    },
-    welcomeTitle: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: COLORS.darkGray,
-      marginBottom: 4,
-      textAlign: 'center',
-    },
-    welcomeSubtitle: {
-      fontSize: 14,
-      color: COLORS.textLight,
-      textAlign: 'center',
-    },
+    alignItems: "center",
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+  },
+  welcomeIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  welcomeTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.darkGray,
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  welcomeSubtitle: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    textAlign: "center",
+  },
   mainCard: {
     backgroundColor: "white",
     width: "90%",
