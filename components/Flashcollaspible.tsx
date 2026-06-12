@@ -2,14 +2,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Level } from '../constants/lessonData';
-import { LessonCard } from './LessonCard';
+import { PracticeCard } from './Cardforpractice';
 
 interface LevelCollapsibleProps {
   level: Level;
@@ -42,7 +42,7 @@ export const FlashCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => 
       {isExpanded && (
         <View style={styles.content}>
           {level.lessons.map((lesson) => (
-            <LessonCard
+            <PracticeCard
               key={lesson.lessonId}
               lesson={lesson}
               onPress={async () => {

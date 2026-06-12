@@ -3,7 +3,7 @@ import { FlashCARD } from "@/models/flashcard";
 import { createFlashCards } from "@/utlis/flashcardHelp";
 import { ResizeMode, Video } from "expo-av";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -21,13 +21,23 @@ export default function FlashCardScreen() {
   const lesson = LESSON_MAP[lessonKey];
   const router = useRouter();
 
+  const [flashcards, setFlashcards] = useState<FlashCARD[]>([]);
+  const [flipped, setFlipped] = useState(false);
+  const [currentCard, setCurrentCard] = useState(0);
+
+  
+  useEffect(() => {
+    if (lesson) {
+      setFlashcards(shuffleArray(createFlashCards(lesson)));
+      setCurrentCard(0);
+      setFlipped(false);
+    }
+  }, [lessonId, levelId]);
+
   if (!lesson) {
     return <Text style={{ margin: 16 }}>Lesson not found</Text>;
   }
 
-  const [flashcards] = useState<FlashCARD[]>(() => shuffleArray(createFlashCards(lesson)));
-  const [flipped, setFlipped] = useState(false);
-  const [currentCard, setCurrentCard] = useState(0);
   const totalCards = flashcards.length;
   const card = flashcards[currentCard];
 
@@ -63,51 +73,53 @@ export default function FlashCardScreen() {
         </View>
       </View>
 
-      <Pressable style={styles.card} onPress={() => setFlipped(!flipped)}>
-        {!flipped ? (
-          <>
-            <Text style={styles.questionText}>{card.question}</Text>
-            {card.mode === "imageToWord" && card.image && (
-              <Video
-                source={{ uri: card.video }}
-                style={styles.video}
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay
-                isLooping
-              />
-            )}
-            {card.mode === "wordToImage" && (
-              <>
-                <Text style={styles.wordToImageQuestion}>"{card.answer}"</Text>
-                <Image source={require("../../assets/mimo1.png")} style={styles.icon} resizeMode="contain" />
-              </>
-            )}
-            <Text style={styles.tapText}>Tap to reveal answer</Text>
-          </>
-        ) : (
-          <>
-            <Text style={styles.answerLabel}>Answer</Text>
-            {card.mode === "imageToWord" && (
-              <>
-                <Text style={styles.answerTexts}>{card.answer}</Text>
-                <Text style={styles.answerText}>{card.hint}</Text>
-              </>
-            )}
-            {card.mode === "wordToImage" && card.video && (
-              <>
-              <Video
-                source={{ uri: card.video }}
-                style={styles.video}
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay
-                isLooping
-              />
-              <Text style={styles.answertext}>{card.answer}</Text>
-              </>
-            )}
-          </>
-        )}
-      </Pressable>
+      {card && (
+        <Pressable style={styles.card} onPress={() => setFlipped(!flipped)}>
+          {!flipped ? (
+            <>
+              <Text style={styles.questionText}>{card.question}</Text>
+              {card.mode === "imageToWord" && card.image && (
+                <Video
+                  source={{ uri: card.video }}
+                  style={styles.video}
+                  resizeMode={ResizeMode.CONTAIN}
+                  shouldPlay
+                  isLooping
+                />
+              )}
+              {card.mode === "wordToImage" && (
+                <>
+                  <Text style={styles.wordToImageQuestion}>"{card.answer}"</Text>
+                  <Image source={require("../../assets/mimo1.png")} style={styles.icon} resizeMode="contain" />
+                </>
+              )}
+              <Text style={styles.tapText}>Tap to reveal answer</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.answerLabel}>Answer</Text>
+              {card.mode === "imageToWord" && (
+                <>
+                  <Text style={styles.answerTexts}>{card.answer}</Text>
+                  <Text style={styles.answerText}>{card.hint}</Text>
+                </>
+              )}
+              {card.mode === "wordToImage" && card.video && (
+                <>
+                  <Video
+                    source={{ uri: card.video }}
+                    style={styles.video}
+                    resizeMode={ResizeMode.CONTAIN}
+                    shouldPlay
+                    isLooping
+                  />
+                  <Text style={styles.answertext}>{card.answer}</Text>
+                </>
+              )}
+            </>
+          )}
+        </Pressable>
+      )}
 
       <View style={styles.tipBox}>
         <Text style={styles.tipText}>Try recalling the sign before revealing the answer.</Text>
@@ -127,6 +139,7 @@ export default function FlashCardScreen() {
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#edf7f0", paddingHorizontal: 20, paddingTop: 15 },
