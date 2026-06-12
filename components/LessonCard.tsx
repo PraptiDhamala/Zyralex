@@ -1,13 +1,13 @@
 import React from 'react';
 import {
+  GestureResponderEvent,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  GestureResponderEvent,
+  View,
 } from 'react-native';
-import { Lesson } from '../constants/lessonData';
 import { COLORS } from '../constants/colors';
+import { Lesson } from '../constants/lessonData';
 
 interface LessonCardProps {
   lesson: Lesson;
