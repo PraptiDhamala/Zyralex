@@ -5,7 +5,7 @@ import { FlashCollapsible } from '../../components/Flashcollaspible';
 import { COLORS } from '../../constants/colors';
 import { LESSON_LEVELS } from '../../constants/lessonData';
 
-export default function CameraPracticeScreen() {
+export default function FlashPracticeScreen() {
   const { lessonId, levelId } = useLocalSearchParams<{ lessonId?: string; levelId?: string }>();
 
   return (
