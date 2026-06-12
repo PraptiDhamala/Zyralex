@@ -6,11 +6,12 @@ import {
 } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
-import { useFocusEffect, useRouter } from "expo-router"; // 2. Add useFocusEffect
+import { useFocusEffect, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import React, { useCallback, useState } from "react"; // 1. Add useCallback
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -30,6 +31,17 @@ export default function DyslexicHome() {
   const [loading, setLoading] = useState(false);
   const [simplifiedText, setSimplifiedText] = useState("");
 
+  // FLASHCARD LAB STATES
+  const [flashcardModalVisible, setFlashcardModalVisible] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [activeSyllableIndex, setActiveSyllableIndex] = useState<number | null>(
+    null,
+  );
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  // Mocked scanned word split into syllables
+  const sampleSyllables = ["be", "au", "ti", "ful"];
+
   // DYNAMIC METRICS FROM SUPABASE
   const [dbLoading, setDbLoading] = useState(true);
   const [score, setScore] = useState<number>(0);
@@ -47,6 +59,7 @@ export default function DyslexicHome() {
       fetchUserData();
     }, []),
   );
+
   const fetchUserData = async () => {
     try {
       setDbLoading(true);
@@ -55,7 +68,6 @@ export default function DyslexicHome() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Force clear sort order to get the absolute newest entry
       const { data: assessmentData, error: assessmentError } = await supabase
         .from("assessments")
         .select("score, level, weak_area, review")
@@ -72,14 +84,12 @@ export default function DyslexicHome() {
         setWeakArea(latest.weak_area || "None");
         setReviewMessage(latest.review || "Take your assessment to begin.");
       } else {
-        // Set fallbacks if no assessment entries exist yet
         setScore(0);
         setLevel("Beginner");
         setWeakArea("None");
         setReviewMessage("Take your assessment to begin.");
       }
 
-      // 2. Track Progress from user_progress
       const { data: progressData } = await supabase
         .from("user_progress")
         .select("completed")
@@ -99,6 +109,38 @@ export default function DyslexicHome() {
       setDbLoading(false);
     }
   };
+
+  // TRIGGER FLASHCARD FLOW
+  const handleFlashcardPress = () => {
+    setFlashcardModalVisible(true);
+    setIsScanning(true);
+    setActiveSyllableIndex(null);
+
+    // Simulate camera/OCR scan time
+    setTimeout(() => {
+      setIsScanning(false);
+    }, 2000);
+  };
+
+  // PLAY AUDIO / AUDIO FOCUS ANIMATION SEQUENCER
+  const handlePlayPronunciation = () => {
+    if (isPlayingAudio) return;
+    setIsPlayingAudio(true);
+    let currentIdx = 0;
+
+    // Sequentially highlight each syllable to replicate audio focus tracking
+    const interval = setInterval(() => {
+      if (currentIdx < sampleSyllables.length) {
+        setActiveSyllableIndex(currentIdx);
+        currentIdx++;
+      } else {
+        clearInterval(interval);
+        setActiveSyllableIndex(null); // Clear highlight when done
+        setIsPlayingAudio(false);
+      }
+    }, 600); // 600ms per syllable cadence
+  };
+
   // PICK DOCUMENT
   const pickDocument = async () => {
     try {
@@ -196,13 +238,13 @@ export default function DyslexicHome() {
             Continue your learning journey
           </Text>
         </View>
+
         {/* LEVEL CARD */}
         <View style={styles.mainCard}>
           <View style={styles.levelHeader}>
             <View style={styles.iconCircleBlue}>
               <FontAwesome5 name="seedling" size={24} color="white" />
             </View>
-
             <View style={styles.levelTextContainer}>
               <Text style={styles.levelTitle}>{level.toUpperCase()}</Text>
               <Text style={styles.levelSubtitle}>
@@ -211,7 +253,6 @@ export default function DyslexicHome() {
                   : "Current Path Tracking"}
               </Text>
             </View>
-
             <View style={styles.xpContainer}>
               <Text style={styles.xpText}>{completedLessonsCount * 25} XP</Text>
               <Text style={styles.xpSubtext}>
@@ -219,7 +260,6 @@ export default function DyslexicHome() {
               </Text>
             </View>
           </View>
-
           <View style={styles.progressBarBg}>
             <View
               style={[styles.progressBarFill, { width: `${progressPercent}%` }]}
@@ -228,7 +268,6 @@ export default function DyslexicHome() {
           <Text style={styles.progressPercent}>
             {progressPercent}% milestones completed
           </Text>
-
           <View style={styles.bubbleRow}>
             <View style={[styles.bubble, styles.activeBubble]}>
               <FontAwesome5 name="seedling" size={16} color="white" />
@@ -262,7 +301,6 @@ export default function DyslexicHome() {
           <Text style={styles.aiSubtitle}>
             Personalized for your reading patterns
           </Text>
-
           <View style={styles.simplificationRow}>
             <View style={styles.toggleLabelGroup}>
               <MaterialCommunityIcons
@@ -281,7 +319,6 @@ export default function DyslexicHome() {
               value={isSimplified}
             />
           </View>
-
           <View style={styles.aiBubble}>
             <View style={styles.strategyRow}>
               <FontAwesome5 name="seedling" size={14} color="#22c55e" />
@@ -303,12 +340,9 @@ export default function DyslexicHome() {
           <View style={styles.statsGrid}>
             <View style={styles.newStatCard}>
               <Ionicons name="trending-up" size={24} color="#3b82f6" />
-
-              {/* <Text style={styles.newStatEmoji}></Text> */}
               <Text style={styles.newStatNumber}>{score}/10</Text>
               <Text style={styles.newStatLabel}>Latest Score</Text>
             </View>
-
             <View style={styles.newStatCard}>
               <Ionicons name="alert-circle" size={24} color="#3b82f6" />
               <Text
@@ -324,7 +358,6 @@ export default function DyslexicHome() {
               </Text>
               <Text style={styles.newStatLabel}>Weak Area</Text>
             </View>
-
             <View style={styles.newStatCard}>
               <Ionicons name="rocket" size={24} color="#3b82f6" />
               <Text style={styles.newStatNumber}>{progressPercent}%</Text>
@@ -350,7 +383,11 @@ export default function DyslexicHome() {
               </View>
             </Pressable>
 
-            <Pressable style={styles.actionButton} onPress={pickDocument}>
+            {/* CONNECTED FLASHCARD BUTTON */}
+            <Pressable
+              style={styles.actionButton}
+              onPress={handleFlashcardPress}
+            >
               <View style={styles.actionButtonContent}>
                 <Feather name="layers" size={24} color="#3b82f6" />
                 <Text style={styles.actionButtonLabel}>Flashcard</Text>
@@ -368,6 +405,97 @@ export default function DyslexicHome() {
           </View>
         )}
       </ScrollView>
+
+      {/* FLASHCARD MODAL SUB-MODULE VIEW */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={flashcardModalVisible}
+        onRequestClose={() => setFlashcardModalVisible(false)}
+      >
+        <View style={styles.flashcardContainerCanvas}>
+          <Text style={styles.labHeaderTitle}>FLASHCARD CAM LAB</Text>
+
+          <View style={styles.dyslexiaMainCardBody}>
+            {isScanning ? (
+              <View style={{ alignItems: "center" }}>
+                <ActivityIndicator size="large" color="#2563eb" />
+                <Text
+                  style={{ marginTop: 14, color: "#475569", fontWeight: "600" }}
+                >
+                  Scanning Flashcard Document...
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.syllableRenderingRow}>
+                {sampleSyllables.map((syllable, index) => {
+                  const isFocused = activeSyllableIndex === index;
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        styles.syllablePillBlock,
+                        { backgroundColor: isFocused ? "#dbeafe" : "#f1f5f9" },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dyslexiaFontWord,
+                          {
+                            color: isFocused ? "#2563eb" : "#1e293b",
+                            fontWeight: isFocused ? "bold" : "normal",
+                          },
+                        ]}
+                      >
+                        {syllable}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+
+          {!isScanning && (
+            <View style={styles.flashcardControlPanelActionRow}>
+              <Pressable
+                style={[
+                  styles.soundButtonTrigger,
+                  { opacity: isPlayingAudio ? 0.6 : 1 },
+                ]}
+                onPress={handlePlayPronunciation}
+                disabled={isPlayingAudio}
+              >
+                <Ionicons
+                  name={
+                    isPlayingAudio ? "volume-high" : "volume-medium-outline"
+                  }
+                  size={22}
+                  color="white"
+                />
+                <Text style={styles.soundBtnLabelText}>
+                  {isPlayingAudio ? "Pronouncing..." : "Listen & Follow"}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.recycleScanButton}
+                onPress={handleFlashcardPress}
+              >
+                <Ionicons name="scan-outline" size={20} color="#3b82f6" />
+                <Text style={styles.recycleTextLabel}>Scan Another Card</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.dismissLabBtn}
+                onPress={() => setFlashcardModalVisible(false)}
+              >
+                <Text style={styles.dismissBtnLabel}>Close</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -385,10 +513,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 24,
     paddingHorizontal: 16,
-  },
-  welcomeIcon: {
-    fontSize: 48,
-    marginBottom: 12,
   },
   welcomeTitle: {
     fontSize: 22,
@@ -584,10 +708,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
-  newStatEmoji: {
-    fontSize: 22,
-    marginBottom: 4,
-  },
   newStatNumber: {
     fontSize: 16,
     fontWeight: "700",
@@ -636,6 +756,99 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: "#3b82f6",
+    fontWeight: "600",
+  },
+  flashcardContainerCanvas: {
+    flex: 1,
+    backgroundColor: "#f0f9ff",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  labHeaderTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#94a3b8",
+    letterSpacing: 2,
+    marginBottom: 20,
+  },
+  dyslexiaMainCardBody: {
+    width: "95%",
+    backgroundColor: "white",
+    borderRadius: 28,
+    paddingVertical: 50,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    marginBottom: 35,
+  },
+  syllableRenderingRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+  syllablePillBlock: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  dyslexiaFontWord: {
+    fontFamily: "OpenDyslexic",
+    fontSize: 34,
+    textAlign: "center",
+    letterSpacing: 1,
+  },
+  flashcardControlPanelActionRow: {
+    width: "95%",
+    gap: 14,
+  },
+  soundButtonTrigger: {
+    backgroundColor: "#2563eb",
+    flexDirection: "row",
+    height: 58,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+    elevation: 2,
+  },
+  soundBtnLabelText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  recycleScanButton: {
+    backgroundColor: "white",
+    flexDirection: "row",
+    height: 54,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 2,
+    borderColor: "#3b82f6",
+  },
+  recycleTextLabel: {
+    color: "#3b82f6",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  dismissLabBtn: {
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  dismissBtnLabel: {
+    color: "#64748b",
+    fontSize: 14,
     fontWeight: "600",
   },
 });

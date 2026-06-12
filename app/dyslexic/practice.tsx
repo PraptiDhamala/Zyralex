@@ -1,25 +1,27 @@
-// app/dyslexic/practice.tsx
+
 // Enhanced Practice Screen — Blue & White Theme
-// Features: Difficulty Levels (Locked), Lesson Practice, Read Aloud + Coach Panda, Phonics
+// Features: Difficulty Levels (Locked), Lesson Practice with Learn Gate & Progress Controls
  
-import { LinearGradient } from "expo-linear-gradient"
 import {
   ChevronRight,
   Mic,
   Volume2
-} from "lucide-react-native"
-import React, { useState } from "react"
+} from "lucide-react-native";
+import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
-} from "react-native"
-import { beginnerWords } from "../../data/lesson"
-import { speakWord } from "../../services/speech"
-import { startListening } from "../../services/voice"
- 
+} from "react-native";
+import LetterRecognitionGame from "../../components/LetterRecognitionGame";
+import SimpleWordsGame from "../../components/SimpleWordsGame";
+import SyllableBasicsGame from "../../components/SyllableBasicsGame";
+import { beginnerWords } from "../../data/lesson";
+import { useAppProgress } from "../../hooks/useAppProgress";
+import { speakWord } from "../../services/speech";
+import { startListening } from "../../services/voice";
 // ─── Types ────────────────────────────────────────────────────────────────────
 type FeedbackType = "ok" | "warn" | "err"
  
@@ -33,15 +35,15 @@ interface CoachFeedback {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const DIFFICULTIES = [
   { id: "beginner",     label: "Beginner",     emoji: "🌱", words: 20, unlocked: true  },
-  { id: "intermediate", label: "Intermediate", emoji: "🔥", words: 30, unlocked: true  },
+  { id: "intermediate", label: "Intermediate", emoji: "🔥", words: 30, unlocked: false }, 
   { id: "advanced",     label: "Advanced",     emoji: "⚡", words: 40, unlocked: false },
   { id: "expert",       label: "Expert",       emoji: "🏆", words: 50, unlocked: false },
 ]
  
 const LESSON_ITEMS = [
-  { icon: "🔤", name: "Letter Recognition", meta: "Identify letters A–Z",      bg: "#EFF6FF" },
-  { icon: "✍️",  name: "Simple Words",       meta: "3–4 letter basic words",    bg: "#FDF4FF" },
-  { icon: "🗣️", name: "Syllable Basics",    meta: "Break words into parts",    bg: "#F0FFF4" },
+  { id: "LETTER_RECOGNITION", icon: "🔤", name: "Letter Recognition", meta: "Identify letters A–Z",      bg: "#EFF6FF" },
+  { id: "SIMPLE_WORDS",       icon: "✍️",  name: "Simple Words",       meta: "3–4 letter basic words",    bg: "#FDF4FF" },
+  { id: "SYLLABLE_BASICS",    icon: "🗣️", name: "Syllable Basics",    meta: "Break words into parts",    bg: "#F0FFF4" },
 ]
  
 const PHONICS_LETTERS = [
@@ -58,62 +60,55 @@ const COACH_FEEDBACKS: CoachFeedback[] = [
     comment: "Your pronunciation was clear and confident. You matched the word perfectly — keep this energy!",
     tags: ["Clear voice", "Perfect match", "Keep it up!"],
   },
-  {
-    type: "warn",
-    result: "So close! Almost there 💪",
-    comment: "You got the start right but were a little slow at the ending. Try to keep the whole word smooth and connected.",
-    tags: ["Good start", "Work on ending", "Try once more"],
-  },
-  {
-    type: "err",
-    result: "Let's try again! 🔄",
-    comment: "That didn't quite match. Press Listen to hear it again, then focus on each sound one by one before speaking.",
-    tags: ["Listen again", "Go slower", "You can do it"],
-  },
-  {
-    type: "ok",
-    result: "Excellent work! ⭐",
-    comment: "Confident and clear — your voice was steady and the word was spot on. Outstanding effort!",
-    tags: ["Spot on", "Confident", "Outstanding"],
-  },
-  {
-    type: "warn",
-    result: "Good effort! 🙌",
-    comment: "You rushed through the middle a little. Slow down and break the word sound by sound.",
-    tags: ["Good pace", "Slow the middle", "Almost!"],
-  },
 ]
  
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DyslexicPractice() {
-  const [selectedDifficulty, setSelectedDifficulty] = useState("beginner")
+  // Integrate our Progress Engine Hook
+  const {
+    currentLevel,
+    setCurrentLevel,
+    currentFeatureStep,
+    isLearnGatePassed,
+    advanceToNextFeature,
+    wordsCompletedCount,
+    debugCompleteLearnModule
+  } = useAppProgress()
+
   const [wordIndex, setWordIndex]                   = useState(0)
   const [spokenText, setSpokenText]                 = useState("")
   const [coachFeedback, setCoachFeedback]           = useState<CoachFeedback | null>(null)
   const [selectedLetter, setSelectedLetter]         = useState<string | null>(null)
   const [phonicPlaying, setPhonicPlaying]           = useState(false)
   const [lockHint, setLockHint]                     = useState("")
+  
+  // Active game navigation state
+  const [activeLessonGame, setActiveLessonGame]     = useState<string | null>(null)
  
   const currentWord = beginnerWords?.[wordIndex] ?? "CAT"
-  const currentDiff = DIFFICULTIES.find((d) => d.id === selectedDifficulty)!
-  const wordsCompleted = 5 // placeholder — wire to backend later
- 
+  const currentDiff = DIFFICULTIES.find((d) => d.id === currentLevel)!
+
   // ── Handlers ──
   const handleSelectDifficulty = (diff: typeof DIFFICULTIES[0]) => {
-    if (!diff.unlocked) {
-      const idx = DIFFICULTIES.findIndex((d) => d.id === diff.id)
-      const req = DIFFICULTIES[idx - 1]?.label ?? "previous level"
-      setLockHint(`🔒 Complete ${req} first to unlock ${diff.label}`)
+    if (!diff.unlocked && diff.id !== "beginner") {
+      setLockHint(`🔒 Complete previous levels first to unlock ${diff.label}`)
       return
     }
-    setSelectedDifficulty(diff.id)
     setLockHint("")
   }
+
+  // Learn Gate requirement completely bypassed for seamless testing!
+  const handleFeatureRowPress = (featureId: string) => {
+    setActiveLessonGame(featureId)
+  }
+
+  const handleGameComplete = () => {
+    setActiveLessonGame(null);
+    advanceToNextFeature(); 
+  };
  
   const goToNextWord = () => {
-    setWordIndex((prev) =>
-      prev < beginnerWords.length - 1 ? prev + 1 : 0
-    )
+    setWordIndex((prev) => (prev < 2 ? prev + 1 : 0))
     setSpokenText("")
     setCoachFeedback(null)
   }
@@ -121,8 +116,7 @@ export default function DyslexicPractice() {
   const handleSpeak = (text: any) => {
     const safeText = typeof text === "string" ? text : ""
     setSpokenText(safeText)
-    const fb = COACH_FEEDBACKS[wordIndex % COACH_FEEDBACKS.length]
-    setCoachFeedback(fb)
+    setCoachFeedback(COACH_FEEDBACKS[0])
   }
  
   const handlePhonic = () => {
@@ -130,28 +124,81 @@ export default function DyslexicPractice() {
     setTimeout(() => setPhonicPlaying(false), 1200)
   }
  
-  // ── Coach tag colors ──
   const tagStyle = (type: FeedbackType) => ({
     ok:   { bg: "#DCFCE7", text: "#15803D" },
     warn: { bg: "#FEF3C7", text: "#92400E" },
     err:  { bg: "#FEE2E2", text: "#991B1B" },
   }[type])
  
-  const coachBorder = (type: FeedbackType) =>
-    ({ ok: "#86EFAC", warn: "#FDE68A", err: "#FECACA" }[type])
- 
-  const coachBg = (type: FeedbackType) =>
-    ({ ok: "#F0FFF4", warn: "#FFFBEB", err: "#FFF5F5" }[type])
- 
-  const coachResultColor = (type: FeedbackType) =>
-    ({ ok: "#16A34A", warn: "#D97706", err: "#DC2626" }[type])
- 
+  // Intercept screen rendering if Letter Recognition mini-game is active
+  if (activeLessonGame === "LETTER_RECOGNITION") {
+    return (
+      <LetterRecognitionGame 
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    );
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
+  // ... other code above ...
+
+  // Intercept screen rendering if Letter Recognition mini-game is active
+  if (activeLessonGame === "LETTER_RECOGNITION") {
+    return (
+      <LetterRecognitionGame 
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    );
+  }
+
+  // 👇 PASTE THE NEW BLOCK RIGHT HERE:
+  if (activeLessonGame === "SIMPLE_WORDS") {
+    return (
+      <SimpleWordsGame 
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    );
+  }
+// Intercept screen rendering if Simple Words mini-game is active
+     if (activeLessonGame === "SIMPLE_WORDS") {
+       return (
+         <SimpleWordsGame 
+           onComplete={handleGameComplete} 
+           onClose={() => setActiveLessonGame(null)} 
+         />
+       );
+     }
+
+     // 🔥 ADD THIS NEW INTERCEPT BLOCK RIGHT HERE:
+     if (activeLessonGame === "SYLLABLE_BASICS") {
+       return (
+         <SyllableBasicsGame 
+           onComplete={handleGameComplete} 
+           onClose={() => setActiveLessonGame(null)} 
+         />
+       );
+     }
+  // ... the rest of the file continues below with "return (" ...
   return (
     <View style={s.screen}>
+      
+      {/* 🛠️ TESTING HUD (TEMPORARY) */}
+      <View style={s.debugHud}>
+        <Text style={s.debugText}>
+          Learn Status: {isLearnGatePassed(currentLevel) ? "✅ COMPLETED" : "❌ NOT LEARNED YET"}
+        </Text>
+        <TouchableOpacity 
+          style={s.debugBtn} 
+          onPress={() => debugCompleteLearnModule(currentLevel)}
+        >
+          <Text style={s.debugBtnText}>🔧 Clear Learn Gate</Text>
+        </TouchableOpacity> 
+      </View>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
- 
-        
  
         <Text style={s.pageTitle}>Practice Sessions</Text>
  
@@ -161,8 +208,8 @@ export default function DyslexicPractice() {
  
           <View style={s.diffRow}>
             {DIFFICULTIES.map((d) => {
-              const isActive  = selectedDifficulty === d.id
-              const isLocked  = !d.unlocked
+              const isActive  = currentLevel === d.id
+              const isLocked  = d.id !== "beginner" && !d.unlocked
               return (
                 <TouchableOpacity
                   key={d.id}
@@ -174,16 +221,10 @@ export default function DyslexicPractice() {
                     isLocked  && s.diffLocked,
                   ]}
                 >
-                  {isLocked && (
-                    <Text style={s.lockIco}>🔒</Text>
-                  )}
+                  {isLocked && <Text style={s.lockIco}>🔒</Text>}
                   <Text style={s.diffEmoji}>{d.emoji}</Text>
-                  <Text style={[s.diffLabel, isActive && s.diffLabelActive]}>
-                    {d.label}
-                  </Text>
-                  <Text style={[s.diffWords, isActive && s.diffWordsActive]}>
-                    {d.words} words
-                  </Text>
+                  <Text style={[s.diffLabel, isActive && s.diffLabelActive]}>{d.label}</Text>
+                  <Text style={[s.diffWords, isActive && s.diffWordsActive]}>{d.words} words</Text>
                 </TouchableOpacity>
               )
             })}
@@ -192,30 +233,21 @@ export default function DyslexicPractice() {
           {/* Progress bar */}
           <View style={s.progRow}>
             <View style={s.progBar}>
-              <View
-                style={[
-                  s.progFill,
-                  { width: `${(wordsCompleted / currentDiff.words) * 100}%` },
-                ]}
-              />
+              <View style={[s.progFill, { width: `${(wordsCompletedCount / currentDiff.words) * 100}%` }]} />
             </View>
-            <Text style={s.progTxt}>
-              {wordsCompleted} / {currentDiff.words} words
-            </Text>
+            <Text style={s.progTxt}>{wordsCompletedCount} / {currentDiff.words} words</Text>
           </View>
- 
-          {lockHint ? (
-            <Text style={s.lockHint}>{lockHint}</Text>
-          ) : null}
+          {lockHint ? <Text style={s.lockHint}>{lockHint}</Text> : null}
         </View>
  
-        {/* ── Lesson Practice ── */}
+        {/* ── Lesson Practice Section ── */}
         <View style={s.card}>
           <Text style={s.cardTitle}>📚 LESSON PRACTICE</Text>
           {LESSON_ITEMS.map((item, i) => (
             <TouchableOpacity
-              key={item.name}
+              key={item.id}
               activeOpacity={0.7}
+              onPress={() => handleFeatureRowPress(item.id)}
               style={[s.pRow, i === LESSON_ITEMS.length - 1 && { borderBottomWidth: 0 }]}
             >
               <View style={s.pLeft}>
@@ -234,165 +266,38 @@ export default function DyslexicPractice() {
           ))}
         </View>
  
-        {/* ── Read Aloud ── */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>🎙️ READ ALOUD</Text>
- 
-          {/* Word display */}
+        {/* ── Read Aloud Section ── */}
+        <View style={[s.card, currentFeatureStep !== "READ_ALOUD" && currentFeatureStep !== "PHONICS" && currentFeatureStep !== "COMPLETED" && s.featureLockedDim]}>
+          <Text style={s.cardTitle}>🎙️ READ ALOUD {currentFeatureStep !== "READ_ALOUD" && "🔒"}</Text>
           <View style={s.wordBox}>
             <Text style={s.bigWord}>{currentWord.toUpperCase()}</Text>
             <Text style={s.wordSub}>Listen first · then Speak</Text>
           </View>
- 
-          {/* Listen + Speak twin buttons */}
           <View style={s.btnPair}>
-            <TouchableOpacity
-              style={s.btnListen}
-              activeOpacity={0.75}
-              onPress={() => speakWord(currentWord)}
-            >
-              <Volume2 size={16} color="#2563EB" />
-              <Text style={s.btnListenText}>Listen</Text>
+            <TouchableOpacity style={s.btnListen} onPress={() => speakWord(currentWord)}>
+              <Volume2 size={16} color="#2563EB" /><Text style={s.btnListenText}>Listen</Text>
             </TouchableOpacity>
- 
-            <TouchableOpacity
-              style={s.btnSpeak}
-              activeOpacity={0.75}
-              onPress={() => startListening(handleSpeak)}
-            >
-              <Mic size={16} color="#2563EB" />
-              <Text style={s.btnSpeakText}>Speak</Text>
+            <TouchableOpacity style={s.btnSpeak} onPress={() => startListening(handleSpeak)}>
+              <Mic size={16} color="#2563EB" /><Text style={s.btnSpeakText}>Speak</Text>
             </TouchableOpacity>
           </View>
- 
-          {/* Next word */}
-          <TouchableOpacity style={s.btnNext} activeOpacity={0.75} onPress={goToNextWord}>
+          <TouchableOpacity style={s.btnNext} onPress={goToNextWord}>
             <Text style={s.btnNextText}>Next Word →</Text>
           </TouchableOpacity>
- 
-          {/* Big Tap to Speak CTA */}
-          <TouchableOpacity
-            activeOpacity={0.82}
-            onPress={() => startListening(handleSpeak)}
-          >
-            <LinearGradient
-              colors={["#2563EB", "#1D4ED8"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={s.tapCTA}
-            >
-              <View style={s.tapLeft}>
-                <View style={s.micRing}>
-                  <View style={s.micRingInner}>
-                    <Mic size={20} color="#fff" />
-                  </View>
-                </View>
-                <View>
-                  <Text style={s.tapTitle}>Tap to Speak</Text>
-                  <Text style={s.tapSub}>Say the word out loud clearly</Text>
-                </View>
-              </View>
-              <View style={s.tapArrow}>
-                <ChevronRight size={16} color="#fff" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
- 
-          {/* You Said box */}
-          <View style={s.youSaidBox}>
-            <View style={s.ysBadgeRow}>
-              <View style={s.ysBadge}>
-                <Text style={s.ysBadgeText}>🎤  YOU SAID</Text>
-              </View>
-            </View>
-            <Text style={s.ysWord}>
-              {spokenText ? spokenText.toUpperCase() : "— waiting —"}
-            </Text>
-            <Text style={s.ysHint}>
-              {spokenText
-                ? `Matched against: "${currentWord.toUpperCase()}" ✓`
-                : "Tap the blue button above to begin"}
-            </Text>
-          </View>
- 
-          {/* Coach Panda */}
-          {coachFeedback && (
-            <View
-              style={[
-                s.coachBox,
-                {
-                  borderColor: coachBorder(coachFeedback.type),
-                  backgroundColor: coachBg(coachFeedback.type),
-                },
-              ]}
-            >
-              <View style={s.coachTop}>
-                <View style={s.coachAvatar}>
-                  <Text style={{ fontSize: 20 }}>🐼</Text>
-                </View>
-                <View>
-                  <Text style={s.coachName}>Coach Panda says</Text>
-                  <Text style={[s.coachResult, { color: coachResultColor(coachFeedback.type) }]}>
-                    {coachFeedback.result}
-                  </Text>
-                </View>
-              </View>
-              <Text style={s.coachComment}>{coachFeedback.comment}</Text>
-              <View style={s.coachTags}>
-                {coachFeedback.tags.map((tag) => (
-                  <View
-                    key={tag}
-                    style={[s.tag, { backgroundColor: tagStyle(coachFeedback.type).bg }]}
-                  >
-                    <Text style={[s.tagText, { color: tagStyle(coachFeedback.type).text }]}>
-                      {tag}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
         </View>
  
-        {/* ── Phonics ── */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>🔊 PHONICS</Text>
- 
-          <TouchableOpacity activeOpacity={0.82} onPress={handlePhonic}>
-            <LinearGradient
-              colors={["#2563EB", "#1D4ED8"]}
-              style={s.phonicHdr}
-            >
-              <Text style={{ fontSize: 26, marginBottom: 4 }}>🔈</Text>
-              <Text style={s.phonicHint}>Tap to play sound</Text>
-              <Text style={s.phonicName}>
-                {phonicPlaying
-                  ? "▶ Playing sound..."
-                  : selectedLetter
-                  ? `Playing — "${selectedLetter}"`
-                  : "Vowel sounds — A  E  I  O  U"}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
- 
+        {/* ── Phonics Section ── */}
+        <View style={[s.card, currentFeatureStep !== "PHONICS" && currentFeatureStep !== "COMPLETED" && s.featureLockedDim]}>
+          <Text style={s.cardTitle}>🔊 PHONICS {currentFeatureStep !== "PHONICS" && "🔒"}</Text>
           <View style={s.letterGrid}>
             {PHONICS_LETTERS.map((l) => (
-              <TouchableOpacity
-                key={l.char}
-                onPress={() => setSelectedLetter(l.char)}
-                activeOpacity={0.75}
-                style={[
-                  s.lCard,
-                  selectedLetter === l.char && s.lCardActive,
-                ]}
-              >
+              <TouchableOpacity key={l.char} onPress={() => setSelectedLetter(l.char)} style={[s.lCard, selectedLetter === l.char && s.lCardActive]}>
                 <Text style={s.lChar}>{l.char}</Text>
                 <Text style={s.lSound}>{l.sound}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
- 
       </ScrollView>
     </View>
   )
@@ -400,274 +305,194 @@ export default function DyslexicPractice() {
  
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
- 
-  screen: {
-    flex: 1,
-    backgroundColor: "#EFF6FF",
-    paddingHorizontal: 14,
-    paddingTop: 14,
+  // Main Layout Spacing (Generous padding to reduce cognitive load)
+  screen: { 
+    flex: 1, 
+    backgroundColor: "#EFF6FF", 
+    paddingHorizontal: 20, 
+    paddingTop: 20 
   },
- 
-  // Header
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+  pageTitle: { 
+    fontSize: 22,            // Increased from 16 for better visibility
+    fontWeight: "700", 
+    color: "#1E3A5F", 
+    marginBottom: 20,        // More whitespace
+    marginTop: 14,
+    letterSpacing: 0.5       // Decrowds letters
   },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  logoBox: {
-    width: 34,
-    height: 34,
-    backgroundColor: "#2563EB",
-    borderRadius: 10,
-    alignItems: "center",
+  
+  // Testing HUD
+  debugHud: { 
+    backgroundColor: "#DBEAFE", 
+    padding: 14, 
+    borderRadius: 12, 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    borderWidth: 1, 
+    borderColor: "#93C5FD", 
+    marginBottom: 20 
+  },
+  debugText: { 
+    fontSize: 13,            // Increased from 11
+    fontWeight: "600", 
+    color: "#1E40AF" 
+  },
+  debugBtn: { 
+    backgroundColor: "#2563EB", 
+    paddingVertical: 8,      // Increased target size
+    paddingHorizontal: 14, 
+    borderRadius: 8 
+  },
+  debugBtnText: { 
+    color: "#fff", 
+    fontSize: 12,            // Increased from 10
+    fontWeight: "bold" 
+  },
+
+  // Main Card containers
+  card: { 
+    backgroundColor: "#fff", 
+    borderRadius: 16, 
+    borderWidth: 1,          // Defined boundary lines more clearly
+    borderColor: "#BFDBFE", 
+    padding: 18,             // Increased from 13 for internal breathing room
+    marginBottom: 20         // Expanded vertical rhythm between sections
+  },
+  cardTitle: { 
+    fontSize: 13,            // Increased from 10 to clear up tiny headers
+    fontWeight: "700", 
+    color: "#6B9EC8", 
+    letterSpacing: 1,        // Extra spacing prevents letters blending together
+    marginBottom: 16 
+  },
+  featureLockedDim: { opacity: 0.4 },
+
+  // Difficulty Selector Section
+  // Difficulty Selector Section (Clean, Structured, and Oval)
+  diffRow: { 
+    flexDirection: "row", 
+    gap: 10,                    // Clear, consistent spacing between items
+    paddingVertical: 6,
+    paddingHorizontal: 2,       // Matches alignment from the reference image
+  },
+  diffItem: { 
+    borderRadius: 100,          // Complete circular rounding for smooth oval pills
+    borderWidth: 1.5, 
+    borderColor: "#BFDBFE", 
+    backgroundColor: "#fff",    // Clean white background for inactive states
+    paddingVertical: 10,        // Managed vertical padding for proper height
+    paddingHorizontal: 16,     // Wide horizontal padding for capsule structure
+    flexDirection: "row",       // Forces elements into a single organized flat line
+    alignItems: "center", 
     justifyContent: "center",
+    gap: 6,                     
+    position: "relative" 
   },
-  appName: { fontSize: 14, fontWeight: "500", color: "#1E3A5F" },
-  appSub:  { fontSize: 10, color: "#6B9EC8", marginTop: 1 },
-  hIcons:  { flexDirection: "row", gap: 8 },
-  hIco: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#fff",
-    borderWidth: 0.5,
-    borderColor: "#BFDBFE",
-    alignItems: "center",
-    justifyContent: "center",
+  diffActive: { 
+    backgroundColor: "#2563EB", // Preserves original active brand blue
+    borderColor: "#2563EB" 
   },
- 
-  pageTitle: { fontSize: 16, fontWeight: "500", color: "#1E3A5F", marginBottom: 12 },
- 
-  // Card
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    borderWidth: 0.5,
-    borderColor: "#BFDBFE",
-    padding: 13,
-    marginBottom: 12,
+  diffLocked: { 
+    backgroundColor: "#fff", 
+    borderColor: "#E2E8F0",     // Muted outline for structured locked style
+    opacity: 0.6 
   },
-  cardTitle: {
-    fontSize: 10,
-    fontWeight: "500",
-    color: "#6B9EC8",
-    letterSpacing: 0.5,
-    marginBottom: 10,
+  diffEmoji: { 
+    fontSize: 16                // Balanced emoji size for inline tracking
   },
- 
-  // Difficulty
-  diffRow: { flexDirection: "row", gap: 5 },
-  diffItem: {
-    flex: 1,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: "#BFDBFE",
-    backgroundColor: "#F0F7FF",
-    paddingVertical: 8,
-    paddingHorizontal: 3,
-    alignItems: "center",
-    gap: 2,
-    position: "relative",
+  diffLabel: { 
+    fontSize: 14,               // Clear, comfortable text scale for dyslexia
+    fontWeight: "600", 
+    color: "#1E3A5F", 
+    textAlign: "center" 
   },
-  diffActive: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
-  diffLocked: { backgroundColor: "#F8FAFC", borderColor: "#E2E8F0", opacity: 0.6 },
-  lockIco:    { position: "absolute", top: 3, right: 3, fontSize: 7 },
-  diffEmoji:  { fontSize: 17 },
-  diffLabel:  { fontSize: 8, fontWeight: "500", color: "#1E3A5F", textAlign: "center" },
   diffLabelActive: { color: "#fff" },
-  diffWords:  { fontSize: 7, color: "#6B9EC8", textAlign: "center" },
+  diffWords: { 
+    fontSize: 12, 
+    color: "#6B9EC8", 
+    textAlign: "center",
+    fontWeight: "500"
+  },
   diffWordsActive: { color: "#BFDBFE" },
- 
-  progRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },
-  progBar: {
-    flex: 1,
-    height: 4,
-    backgroundColor: "#BFDBFE",
-    borderRadius: 99,
-    overflow: "hidden",
+  lockIco: { 
+    fontSize: 12,
+    marginLeft: 2               // Shifts lock directly inside the text row tracking
   },
-  progFill: { height: 4, backgroundColor: "#2563EB", borderRadius: 99 },
-  progTxt:  { fontSize: 9, color: "#6B9EC8" },
-  lockHint: { fontSize: 10, color: "#EF4444", marginTop: 6, textAlign: "center" },
- 
-  // Lesson Practice
-  pRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#DBEAFE",
+  
+  // Progress & Inline Hints
+  progRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 14, marginBottom: 10 },
+  progBar: { flex: 1, height: 6, backgroundColor: "#BFDBFE", borderRadius: 99, overflow: "hidden" },
+  progFill: { height: 6, backgroundColor: "#2563EB", borderRadius: 99 },
+  progTxt: { fontSize: 12, color: "#6B9EC8", fontWeight: "600" },
+  lockHint: { fontSize: 12, color: "#EF4444", marginTop: 4, textAlign: "center" },
+  
+  celebrationSheet: { borderWidth: 1 },
+  bonusCard: { borderWidth: 1 },
+
+
+
+
+  // Lesson Practice Rows
+  pRow: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    paddingVertical: 16,     // Increased row height for easier reading track
+    borderBottomWidth: 1, 
+    borderBottomColor: "#DBEAFE", 
+    justifyContent: 'space-between' 
   },
-  pLeft:  { flexDirection: "row", alignItems: "center", gap: 10 },
-  pIcon:  { width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
-  pName:  { fontSize: 12, fontWeight: "500", color: "#1E3A5F" },
-  pMeta:  { fontSize: 9, color: "#6B9EC8", marginTop: 1 },
-  pArr:   { width: 24, height: 24, borderRadius: 7, backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center" },
- 
-  // Read Aloud
-  wordBox: {
-    backgroundColor: "#EFF6FF",
-    borderWidth: 1.5,
-    borderColor: "#BFDBFE",
-    borderRadius: 13,
-    padding: 20,
-    alignItems: "center",
-    marginBottom: 12,
+  pLeft: { flexDirection: "row", alignItems: "center", gap: 14 },
+  pIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  pName: { 
+    fontSize: 15,            // Increased from 12
+    fontWeight: "600", 
+    color: "#1E3A5F" 
   },
-  bigWord: { fontSize: 34, fontWeight: "500", color: "#1E40AF", letterSpacing: 5 },
-  wordSub: { fontSize: 10, color: "#93C5FD", marginTop: 5 },
- 
-  // Twin buttons
-  btnPair: { flexDirection: "row", gap: 8, marginBottom: 10 },
-  btnListen: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    paddingVertical: 13,
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#2563EB",
+  pMeta: { 
+    fontSize: 12,            // Increased from 9
+    color: "#6B9EC8", 
+    marginTop: 3 
   },
-  btnListenText: { fontSize: 13, fontWeight: "500", color: "#2563EB" },
-  btnSpeak: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    paddingVertical: 13,
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#2563EB",
+  pArr: { width: 28, height: 28, borderRadius: 8, backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center" },
+  
+  // Read Aloud Section
+  wordBox: { 
+    backgroundColor: "#EFF6FF", 
+    borderWidth: 2, 
+    borderColor: "#BFDBFE", 
+    borderRadius: 16, 
+    padding: 24, 
+    alignItems: "center", 
+    marginBottom: 16 
   },
-  btnSpeakText: { fontSize: 13, fontWeight: "500", color: "#2563EB" },
- 
-  // Next word
-  btnNext: {
-    backgroundColor: "#F0F7FF",
-    borderWidth: 1.5,
-    borderColor: "#BFDBFE",
-    borderRadius: 11,
-    paddingVertical: 10,
-    alignItems: "center",
-    marginBottom: 12,
+  bigWord: { 
+    fontSize: 42,            // Increased from 34 for high focus recognition
+    fontWeight: "700", 
+    color: "#1E40AF", 
+    letterSpacing: 6         // Wide track letter-spacing directly helps dyslexia
   },
-  btnNextText: { fontSize: 11, color: "#1E3A5F" },
- 
-  // Tap to Speak CTA
-  tapCTA: {
-    borderRadius: 16,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  tapLeft:   { flexDirection: "row", alignItems: "center", gap: 14 },
-  micRing: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  micRingInner: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tapTitle: { fontSize: 15, fontWeight: "500", color: "#fff" },
-  tapSub:   { fontSize: 11, color: "#BFDBFE", marginTop: 3 },
-  tapArrow: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
- 
-  // You Said box
-  youSaidBox: {
-    backgroundColor: "#1E3A8A",
-    borderRadius: 13,
-    padding: 14,
-    marginBottom: 10,
-  },
-  ysBadgeRow: { marginBottom: 8 },
-  ysBadge: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 7,
-    paddingVertical: 3,
-    paddingHorizontal: 9,
-    alignSelf: "flex-start",
-  },
-  ysBadgeText: { fontSize: 9, color: "#93C5FD", fontWeight: "500", letterSpacing: 0.4 },
-  ysWord: { fontSize: 24, fontWeight: "500", color: "#fff", letterSpacing: 3, marginBottom: 4 },
-  ysHint: { fontSize: 10, color: "#60A5FA" },
- 
-  // Coach Panda
-  coachBox: {
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1.5,
-    marginTop: 2,
-  },
-  coachTop:    { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
-  coachAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "#EFF6FF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  coachName:    { fontSize: 9, color: "#6B9EC8", fontWeight: "500" },
-  coachResult:  { fontSize: 12, fontWeight: "500", marginTop: 1 },
-  coachComment: {
-    fontSize: 11,
-    color: "#374151",
-    lineHeight: 17,
-    marginLeft: 42,
-    marginBottom: 8,
-  },
-  coachTags: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginLeft: 42 },
-  tag: { borderRadius: 99, paddingVertical: 3, paddingHorizontal: 9 },
-  tagText: { fontSize: 9, fontWeight: "500" },
- 
-  // Phonics
-  phonicHdr: {
-    borderRadius: 13,
-    padding: 18,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  phonicHint: { fontSize: 9, color: "#BFDBFE", marginBottom: 2 },
-  phonicName: { fontSize: 12, fontWeight: "500", color: "#fff", marginTop: 2 },
- 
-  letterGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  lCard: {
-    width: "48%",
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: "#BFDBFE",
-    backgroundColor: "#F0F7FF",
-    padding: 13,
-    alignItems: "center",
+  wordSub: { fontSize: 12, color: "#7DD3FC", marginTop: 8, fontWeight: "500" },
+  btnPair: { flexDirection: "row", gap: 10, marginBottom: 14 },
+  btnListen: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 12, backgroundColor: "#fff", borderWidth: 2, borderColor: "#2563EB" },
+  btnListenText: { fontSize: 15, fontWeight: "600", color: "#2563EB" },
+  btnSpeak: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 12, backgroundColor: "#fff", borderWidth: 2, borderColor: "#2563EB" },
+  btnSpeakText: { fontSize: 15, fontWeight: "600", color: "#2563EB" },
+  btnNext: { backgroundColor: "#F0F7FF", borderWidth: 2, borderColor: "#BFDBFE", borderRadius: 12, paddingVertical: 12, alignItems: "center", marginBottom: 6 },
+  btnNextText: { fontSize: 13, fontWeight: "600", color: "#1E3A5F" },
+  
+  // Phonics Section
+  letterGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  lCard: { 
+    width: "48%", 
+    borderRadius: 12, 
+    borderWidth: 2, 
+    borderColor: "#BFDBFE", 
+    backgroundColor: "#F0F7FF", 
+    padding: 16, 
+    alignItems: "center" 
   },
   lCardActive: { borderColor: "#2563EB", backgroundColor: "#DBEAFE" },
-  lChar:  { fontSize: 24, fontWeight: "500", color: "#1E40AF" },
-  lSound: { fontSize: 9, color: "#6B9EC8", marginTop: 2 },
+  lChar: { fontSize: 28, fontWeight: "700", color: "#1E40AF" },
+  lSound: { fontSize: 12, color: "#6B9EC8", marginTop: 4, fontWeight: "500" },
 })
- 

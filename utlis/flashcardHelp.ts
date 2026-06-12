@@ -13,7 +13,7 @@ export const createFlashCards = (lesson: Lesson): FlashCARD[] => {
 
   const recall = lesson.signs.map((sign): FlashCARD => ({
     mode: "wordToImage",   
-    question: `How do you sign "${sign.label}"?`,
+    question: `How do you sign `,
     answer: sign.label,
     image: sign.image,
     video: sign.video,
