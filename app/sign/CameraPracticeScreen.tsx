@@ -12,7 +12,7 @@ export default function CameraPracticeScreen() {
   const { levelId, lessonId } = useLocalSearchParams<{ levelId: string; lessonId: string }>();
   const lessonKey = `${levelId}_${lessonId}`;
   const lesson = LESSON_MAP[lessonKey];
-   const router = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -26,7 +26,8 @@ export default function CameraPracticeScreen() {
   if (!lesson) return <Text>Lesson not found</Text>;
 
   const currentSign = lesson.signs[index];
-   const handleExit = () => {
+
+  const handleExit = () => {
     Alert.alert(
       "Exit Practice",
       "Do you want to leave the practice session?",
@@ -37,58 +38,60 @@ export default function CameraPracticeScreen() {
     );
   };
 
- const handleNext = () => {
-  if (index < lesson.signs.length - 1) {
-    setIndex(index + 1);
-  } else {
-    Alert.alert(
-      "Lesson Complete",
-      " You’ve finished all signs in this lesson!",
-      [
-        {
-          text: "Practice again",
-          style: "cancel",
-          onPress: () => setIndex(0), 
-        },
-        {
-          text: "Exit",
-          style: "destructive",
-          onPress: () => router.push("/sign/practice"), 
-        },
-      ]
-    );
-  }
-};
-
+  const handleNext = () => {
+    if (index < lesson.signs.length - 1) {
+      setIndex(index + 1);
+    } else {
+      Alert.alert(
+        "Lesson Complete",
+        "🎉 You’ve finished all signs in this lesson!",
+        [
+          { text: "Practice again", style: "cancel", onPress: () => setIndex(0) },
+          { text: "Exit", style: "destructive", onPress: () => router.push("/sign/practicegrid") }
+        ]
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
       <CameraView style={styles.camera} facing="front" />
-       <TouchableOpacity style={styles.exitBtn} onPress={handleExit}>
+
+      {/* Exit button */}
+      <TouchableOpacity style={styles.exitBtn} onPress={handleExit} accessibilityLabel="Exit practice">
         <Text style={styles.exitText}>✕</Text>
       </TouchableOpacity>
 
-      {/* Top-right overlay for sign image */}
+      {/* Top-right overlay for sign video + caption */}
       <View style={styles.topOverlay}>
-        <Video source={{ uri: currentSign.video }} style={styles.signImage} resizeMode={ResizeMode.CONTAIN}
-          shouldPlay 
-          isLooping/>
+        <Video
+          source={{ uri: currentSign.video }}
+          style={styles.signVideo}
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          isLooping
+        />
         <Text style={styles.caption}>{currentSign.label}</Text>
       </View>
 
-      {/* Bottom overlay for hint + controls */}
+      
       <View style={styles.bottomOverlay}>
         <Text style={styles.hint}>{currentSign.hint}</Text>
+        <Text style={styles.progressText}>
+          Sign {index + 1} of {lesson.signs.length}
+        </Text>
         <View style={styles.controls}>
           <TouchableOpacity
             style={styles.btnContainer}
             onPress={() => setIndex(Math.max(0, index - 1))}
+            accessibilityLabel="Previous sign"
           >
             <Text style={styles.btn}>← Prev</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.btnContainer}
-           onPress={handleNext}
+            onPress={handleNext}
+            accessibilityLabel="Next sign"
           >
             <Text style={styles.btn}>Next →</Text>
           </TouchableOpacity>
@@ -101,7 +104,8 @@ export default function CameraPracticeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   camera: { flex: 1 },
-   exitBtn: {
+
+  exitBtn: {
     position: 'absolute',
     top: 5,
     left: 10,
@@ -116,11 +120,16 @@ const styles = StyleSheet.create({
     right: 10,
     alignItems: 'center',
     overflow: 'hidden',
-    borderRadius:30 
-    
+    borderRadius: 30,
   },
-  signImage: { width: 200, height: 200, resizeMode: 'cover', marginBottom: 4,borderRadius:30,overflow:'hidden' },
-  caption: { fontSize: 50, fontWeight: '900', color: '#333' },
+  signVideo: {
+    width: 200,
+    height: 200,
+    marginBottom: 4,
+    borderRadius: 30,
+    overflow: 'hidden',
+  },
+  caption: { fontSize: 28, fontWeight: '900', color: '#333' },
 
   bottomOverlay: {
     position: 'absolute',
@@ -130,7 +139,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
   },
-  hint: { fontSize: 16, color: '#070707', textAlign: 'center', marginBottom: 12,fontWeight:900 },
+  hint: {
+    fontSize: 16,
+    color: '#070707',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: '700',
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 12,
+  },
 
   controls: { flexDirection: 'row', gap: 150 },
   btnContainer: {

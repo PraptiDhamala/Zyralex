@@ -2,9 +2,9 @@ import { LESSON_MAP } from "@/constants/lessonData";
 import { FlashCARD } from "@/models/flashcard";
 import { createFlashCards } from "@/utlis/flashcardHelp";
 import { ResizeMode, Video } from "expo-av";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -15,39 +15,35 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-
-
-
 export default function FlashCardScreen() {
-const { levelId, lessonId } = useLocalSearchParams<{
-    levelId: string;
-    lessonId: string;
-  }>();
-  const lessonKey = `${levelId}_${lessonId}`;   
+  const { levelId, lessonId } = useLocalSearchParams<{ levelId: string; lessonId: string }>();
+  const lessonKey = `${levelId}_${lessonId}`;
   const lesson = LESSON_MAP[lessonKey];
-  const [flashcards] = useState<FlashCARD[]>(() => 
-  shuffleArray(createFlashCards(lesson))
-);
+  const router = useRouter();
 
+  if (!lesson) {
+    return <Text style={{ margin: 16 }}>Lesson not found</Text>;
+  }
+
+  const [flashcards] = useState<FlashCARD[]>(() => shuffleArray(createFlashCards(lesson)));
   const [flipped, setFlipped] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
   const totalCards = flashcards.length;
-
   const card = flashcards[currentCard];
 
-
   const handleAnswer = (action: string) => {
-    if (action === "again") {
-      if (currentCard > 0) {
-        setCurrentCard(currentCard - 1);
-      }
-    } else if (action === "skip") {
-      if (currentCard < totalCards) {
-        setCurrentCard(currentCard + 1);
-      }
+    if (action === "again" && currentCard > 0) {
+      setCurrentCard(currentCard - 1);
+    } else if (action === "skip" && currentCard < totalCards) {
+      setCurrentCard(currentCard + 1);
     } else if (action === "next") {
-      if (currentCard < totalCards-1) {
+      if (currentCard < totalCards - 1) {
         setCurrentCard(currentCard + 1);
+      } else {
+        Alert.alert("Lesson Complete", "🎉 You’ve finished all flashcards!", [
+          { text: "Practice again", onPress: () => setCurrentCard(0) },
+          { text: "Exit", style: "destructive", onPress: () => router.push("/sign/practicegrid") },
+        ]);
       }
     }
     setFlipped(false);
@@ -56,14 +52,14 @@ const { levelId, lessonId } = useLocalSearchParams<{
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Flash Cards</Text>
+        <Text style={styles.headerTitle}>Flash Cards – {lesson.title}</Text>
         <Text style={styles.subtitle}>Learn • Practice • Remember</Text>
       </View>
 
       <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>{currentCard+1} / {totalCards}</Text>
+        <Text style={styles.progressText}>{currentCard + 1} / {totalCards}</Text>
         <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${((currentCard+1) / totalCards) * 100}%` }]} />
+          <View style={[styles.progressBarFill, { width: `${((currentCard + 1) / totalCards) * 100}%` }]} />
         </View>
       </View>
 
@@ -76,40 +72,39 @@ const { levelId, lessonId } = useLocalSearchParams<{
                 source={{ uri: card.video }}
                 style={styles.video}
                 resizeMode={ResizeMode.CONTAIN}
-                shouldPlay 
+                shouldPlay
                 isLooping
               />
-            )} 
+            )}
             {card.mode === "wordToImage" && (
               <>
-              <Text style={styles.wordToImageQuestion}>"{card.answer}"</Text>
-             <Image source={require("../../assets/mimo1.png")} style={styles.icon} resizeMode="contain" />
+                <Text style={styles.wordToImageQuestion}>"{card.answer}"</Text>
+                <Image source={require("../../assets/mimo1.png")} style={styles.icon} resizeMode="contain" />
               </>
             )}
-            
             <Text style={styles.tapText}>Tap to reveal answer</Text>
           </>
         ) : (
           <>
             <Text style={styles.answerLabel}>Answer</Text>
-              {card.mode === "imageToWord" && (
-                <>
-                  <Text style={styles.answerTexts}>{card.answer}</Text>
-                  <Text style={styles.answerText}>{card.hint}</Text>
-                </>
-              )}
-
-            {card.mode === "wordToImage" && card.video && (
-            <Video
-              source={{ uri: card.video }}
-              style={styles.video}
-              
-              resizeMode={ResizeMode.CONTAIN}
-              shouldPlay
-              isLooping
-            />
+            {card.mode === "imageToWord" && (
+              <>
+                <Text style={styles.answerTexts}>{card.answer}</Text>
+                <Text style={styles.answerText}>{card.hint}</Text>
+              </>
             )}
-
+            {card.mode === "wordToImage" && card.video && (
+              <>
+              <Video
+                source={{ uri: card.video }}
+                style={styles.video}
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay
+                isLooping
+              />
+              <Text style={styles.answertext}>{card.answer}</Text>
+              </>
+            )}
           </>
         )}
       </Pressable>
@@ -144,54 +139,43 @@ const styles = StyleSheet.create({
   progressBarFill: { height: "100%", backgroundColor: "#7ec096", borderRadius: 20 },
   card: {
     flexGrow: 1,
-  backgroundColor: "#FFFFFF",
-  borderRadius: 32,
-  justifyContent: "flex-start",   
-  alignItems: "center",
-  padding: 20,
-  shadowColor: "#000",
-  shadowOpacity: 0.08,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 20 },
-  elevation: 4,
-  minHeight: 300,                 
-  width: "100%",
-},
-wordToImageQuestion: {
-  fontSize: 40,          // bigger text
-  fontWeight: "800",
-  color: "#1F1F39",
-  textAlign: "center",
-  marginVertical: 20,    // spacing top/bottom
-  flexShrink: 1,         // allow wrapping if long
-},
-icon: {
-    width: 150,
-    height: 100,
-    marginLeft:0,
-    marginRight:2,
-  
+    backgroundColor: "#FFFFFF",
+    borderRadius: 32,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    padding: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 20 },
+    elevation: 4,
+    minHeight: 300,
+    width: "100%",
   },
+  wordToImageQuestion: {
+    fontSize: 40,
+    fontWeight: "800",
+    color: "#1F1F39",
+    textAlign: "center",
+    marginVertical: 20,
+    flexShrink: 1,
+  },
+  icon: { width: 150, height: 100, marginLeft: 0, marginRight: 2 },
   questionText: { fontSize: 25, fontWeight: "700", textAlign: "center", color: "#1F1F39", marginBottom: 5 },
-  tapText: { fontSize: 16, color: "#88a6ed", fontWeight: "600",marginTop:10 },
+  tapText: { fontSize: 16, color: "#88a6ed", fontWeight: "600", marginTop: 10 },
   answerLabel: { fontSize: 16, color: "#8B80F9", marginBottom: 12, fontWeight: "600" },
-  answerTexts: { fontSize: 40, fontWeight: "800", color: "#1F1F39", textAlign: "center",marginBottom:10 },
+  answerTexts: { fontSize: 40, fontWeight: "800", color: "#1F1F39", textAlign: "center", marginBottom: 10 },
   answerText: { fontSize: 30, fontWeight: "500", color: "#7b7b80", textAlign: "center" },
+  answertext: { fontSize: 30, fontWeight: "500", color: "#18181b", textAlign: "center" ,marginTop:10},
   tipBox: { backgroundColor: "#e0e5f4", padding: 5, borderRadius: 18, marginTop: 25 },
   tipText: { textAlign: "center", color: "#7C72E8", fontWeight: "500" },
   buttonsRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 25, gap: 12 },
-  levelButton: { flex: 1, paddingVertical: 16, borderRadius: 18, alignItems: "center", marginBottom: 40},
+  levelButton: { flex: 1, paddingVertical: 16, borderRadius: 18, alignItems: "center", marginBottom: 40 },
   againButton: { backgroundColor: "#FFE5E5" },
   skipButton: { backgroundColor: "#FFF3D9" },
   nextButton: { backgroundColor: "#bbe3d3" },
   againText: { color: "#E05A5A", fontWeight: "700" },
   skipText: { color: "#D18A00", fontWeight: "700" },
   nextText: { color: "#16A34A", fontWeight: "700" },
-  video: {
-  width: 200,
-  height: 150,
-  borderRadius: 16,
-  marginTop: 10,
-},
-
+  video: { width: 200, height: 150, borderRadius: 16, marginTop: 10 },
 });

@@ -1,18 +1,23 @@
-
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
-import { CameraPracticeGrid } from '../../components/CameraPracticeGrid';
+import { CameraCollapsible } from '../../components/Cameracollaspible';
+import { LESSON_LEVELS } from '../../constants/lessonData';
 
 export default function CameraPracticeScreen() {
-  const { lessonId } = useLocalSearchParams<{ lessonId?: string }>();
+  const { lessonId, levelId } = useLocalSearchParams<{ lessonId?: string; levelId?: string }>();
 
   return (
     <View style={{ flex: 1 }}>
       <Text style={{ fontSize: 20, fontWeight: '700', margin: 16 }}>
-        Camera Practice {lessonId ? `(Lesson ${lessonId})` : ''}
+        Camera Practice
+        {lessonId ? ` (Lesson ${lessonId})` : ''}
       </Text>
-      <CameraPracticeGrid />
+
+
+      {LESSON_LEVELS.map((lvl) => (
+        <CameraCollapsible key={lvl.levelId} level={lvl} />
+      ))}
     </View>
   );
 }
