@@ -1,69 +1,108 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import pandas as pd
-import joblib
+# server.py
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+import json
+import asyncio
+
+# Import the modules you just built and verified!
+from fixation_detector import FixationDetector
 from word_tracker import WordTracker
-app = Flask(__name__)
-CORS(app)
+from intervention import InterventionEngine
 
-# Load trained model
-model = joblib.load("dyslexia_model.pkl")
+app = FastAPI(title="ZyraLex Backend Engine")
+
+# Enable CORS so your frontend application can talk to this server seamlessly
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Instantiate the engines
+detector = FixationDetector(spatial_threshold=35, temporal_threshold=0.3)
 tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=2.0)
+intervention = InterventionEngine()
 
-# Simulate UI layout data sent from frontend when reading material loads
-mock_screen_words = [
-    {"word": "The", "x1": 50, "y1": 100, "x2": 90, "y2": 130},
-    {"word": "dyslexia", "x1": 100, "y1": 100, "x2": 210, "y2": 130},
-    {"word": "model", "x1": 220, "y1": 100, "x2": 300, "y2": 130},
-]
-tracker.load_text_coordinates(mock_screen_words)
+@app.get("/")
+def root():
+    return {"status": "online", "project": "ZyraLex Engine"}
 
-# Inside your frame processing loop:
-# 1. Get face/eye statuses and coordinate guesses from gaze_detection.py
-face_found, screen_gaze_x, screen_gaze_y = detect_gaze_coordinates(frame) 
-
-# 2. Feed it into your tracker
-action = tracker.update_gaze(screen_gaze_x, screen_gaze_y, face_detected=face_found)
-@app.route("/predict", methods=["POST"])
-def predict():
+@app.websocket("/ws/stream")
+async def gaze_stream_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    print("🔌 Frontend/Webcam client connected to ZyraLex Socket Loop.")
+    
     try:
-        data = request.json
-        
-        # Coerce types explicitly to eliminate serialization errors
-        score = int(data["score"])
-        mistakes = int(data["mistakes"])
-        reading_speed = int(data["reading_speed"])
-
-        print("\n📥 --- INCOMING METRICS REGISTERED ---")
-        print(f"Score: {score}/10 | Mistakes: {mistakes} | Time Elapsed: {reading_speed}s")
-
-        # Create DataFrame with exact feature names
-        input_data = pd.DataFrame([{
-            "score": score,
-            "mistakes": mistakes,
-            "reading_speed": reading_speed
-        }])
-
-        prediction = model.predict(input_data)
-        assigned_level = str(prediction[0])
-        
-        print(f"🤖 DECISION TREE TARGET ASSIGNMENT: {assigned_level.upper()}")
-        print("--------------------------------------\n")
-
-        return jsonify({"level": assigned_level})
-        
+        while True:
+            # 1. Receive JSON packet frame from the gaze source
+            raw_data = await websocket.receive_text()
+            packet = json.loads(raw_data)
+            
+            # Format expected from client:
+            # {
+            #   "raw_x": 420, "raw_y": 310, "face_detected": true,
+            #   "screen_words": [{"word": "dyslexia", "x1": 400, "y1": 300, "x2": 510, "y2": 340}]
+            # }
+            
+            face_detected = packet.get("face_detected", True)
+            raw_x = packet.get("raw_x", 0)
+            raw_y = packet.get("raw_y", 0)
+            
+            # If the layout text maps update dynamically, reload them
+            if "screen_words" in packet:
+                tracker.load_text_coordinates(packet["screen_words"])
+            
+            # 2. Process Distraction & Fixation checks
+            # Call your WordTracker directly for immediate distraction monitoring
+            status_update = tracker.update_gaze(raw_x, raw_y, face_detected=face_detected)
+            
+            if status_update and status_update["status"] == "distracted":
+                # User is looking away; send an alert payload immediately
+                await websocket.send_text(json.dumps({
+                    "type": "DISTRACTION_ALERT",
+                    "payload": status_update
+                }))
+                continue
+                
+            # 3. If a face is present, pass the raw data point through the spatial filter
+            if face_detected:
+                is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
+                
+                if is_fixating:
+                    # Let the tracker map the refined fixation coordinate to a word block
+                    fixation_match = tracker.update_gaze(cx, cy, face_detected=True)
+                    
+                    if fixation_match and fixation_match["status"] == "fixated":
+                        target_word = fixation_match["word"]
+                        
+                        # 4. Generate dynamic adaptations via InterventionEngine
+                        syllable_hyphen = intervention.format_syllable_breakdown(target_word, style="hyphen")
+                        syllable_html = intervention.format_syllable_breakdown(target_word, style="color")
+                        audio_payload = intervention.trigger_audio_cue(target_word)
+                        
+                        # Assemble complete intervention dispatch
+                        response_payload = {
+                            "type": "INTERVENTION_TRIGGER",
+                            "word": target_word,
+                            "fixation_duration": round(duration, 2),
+                            "adaptations": {
+                                "hyphenated": syllable_hyphen,
+                                "html_colored": syllable_html,
+                                "audio_cue": audio_payload
+                            }
+                        }
+                        
+                        print(f"Sending assistance layout for word: '{target_word}'")
+                        await websocket.send_text(json.dumps(response_payload))
+                        
+    except WebSocketDisconnect:
+        print("Client disconnected from ZyraLex Socket Loop.")
     except Exception as e:
-        print(f"SERVER FAULT CAUGHT: {str(e)}")
-        return jsonify({"error": str(e)}), 400
+        print(f"Runtime error inside server framework loop: {e}")
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
-
-if action:
-    if action["status"] == "distracted":
-        # Send WebSocket payload to pop up an alert or pause a audio reading narrator
-        print(f"ALERT: {action['message']}") 
-        
-    elif action["status"] == "fixated":
-        # Send layout updates to UI to replace word text box or show tooltips 
-        print(f"INTERVENTION: {action['message']}")
+    import uvicorn
+    # Start server locally on port 8000
+    uvicorn.run(app, host="0.0.0.0", port=8000)
