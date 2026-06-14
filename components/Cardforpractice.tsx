@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-  GestureResponderEvent,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    GestureResponderEvent,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { COLORS } from '../constants/colors';
 import { Lesson } from '../constants/lessonData';
@@ -14,20 +14,12 @@ interface LessonCardProps {
   onPress?: (event: GestureResponderEvent) => void;
 }
 
-export const LessonCard: React.FC<LessonCardProps> = ({ lesson, onPress }) => {
+export const PracticeCard: React.FC<LessonCardProps> = ({ lesson, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.content}>
         <Text style={styles.title}>{lesson.title}</Text>
-        <Text style={styles.description}>{lesson.description}</Text>
-        <View style={styles.footer}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>⏱ {lesson.duration} min</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>⭐ {lesson.xp} XP</Text>
-          </View>
-        </View>
+        <Text style={styles.description}>{lesson.descriptionpractice}</Text>
       </View>
       <TouchableOpacity style={styles.moreButton}>
         <Text style={styles.moreButtonText}>•••</Text>
