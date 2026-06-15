@@ -32,7 +32,7 @@ def root():
 @app.websocket("/ws/stream")
 async def gaze_stream_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("🔌 Frontend/Webcam client connected to ZyraLex Socket Loop.")
+    print("Frontend/Webcam client connected to ZyraLex Socket Loop.")
     
     try:
         while True:

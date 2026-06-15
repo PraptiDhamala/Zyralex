@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
-
+import asyncio
+import websockets
+import json
 # camera ko default camera kholcha
 cap = cv2.VideoCapture(0)
 
@@ -13,7 +15,15 @@ face_cascade = cv2.CascadeClassifier(
 eye_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_eye.xml"
 )
+async def send_packet(packet):
 
+    uri = "ws://localhost:8000/ws/stream"
+
+    async with websockets.connect(uri) as websocket:
+
+        await websocket.send(
+            json.dumps(packet)
+        )
 while True:
 
 
