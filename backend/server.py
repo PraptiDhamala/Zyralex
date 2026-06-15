@@ -2,9 +2,9 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import json
-import asyncio
+import uvicorn
 
-# Import the modules you just built and verified!
+# Import the core tracking and intervention engines
 from fixation_detector import FixationDetector
 from word_tracker import WordTracker
 from intervention import InterventionEngine
@@ -21,9 +21,20 @@ app.add_middleware(
 )
 
 # Instantiate the engines
-detector = FixationDetector(spatial_threshold=35, temporal_threshold=0.3)
-tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=2.0)
+detector = FixationDetector(spatial_threshold=100, temporal_threshold=0.1)
+tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=1.0)
 intervention = InterventionEngine()
+
+# Pre-load text layout dimensions (Will adapt dynamically if the client maps new text strings)
+tracker.load_text_coordinates([
+    {
+        "word": "dyslexia",
+        "x1": 0,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 1080
+    }
+])
 
 @app.get("/")
 def root():
@@ -38,28 +49,24 @@ async def gaze_stream_endpoint(websocket: WebSocket):
         while True:
             # 1. Receive JSON packet frame from the gaze source
             raw_data = await websocket.receive_text()
-            packet = json.loads(raw_data)
+            print("RAW DATA RECEIVED:", raw_data)
             
-            # Format expected from client:
-            # {
-            #   "raw_x": 420, "raw_y": 310, "face_detected": true,
-            #   "screen_words": [{"word": "dyslexia", "x1": 400, "y1": 300, "x2": 510, "y2": 340}]
-            # }
+            packet = json.loads(raw_data)
             
             face_detected = packet.get("face_detected", True)
             raw_x = packet.get("raw_x", 0)
             raw_y = packet.get("raw_y", 0)
             
-            # If the layout text maps update dynamically, reload them
-            if "screen_words" in packet:
+            # If the layout text maps update dynamically from the frontend, reload them
+            if "screen_words" in packet and packet["screen_words"]:
                 tracker.load_text_coordinates(packet["screen_words"])
             
-            # 2. Process Distraction & Fixation checks
-            # Call your WordTracker directly for immediate distraction monitoring
+            # 2. Process Distraction checks
             status_update = tracker.update_gaze(raw_x, raw_y, face_detected=face_detected)
+            print("TRACKER RESULT:", status_update)
             
             if status_update and status_update["status"] == "distracted":
-                # User is looking away; send an alert payload immediately
+                print("INTERVENTION TRIGGERED: Distraction Detected")
                 await websocket.send_text(json.dumps({
                     "type": "DISTRACTION_ALERT",
                     "payload": status_update
@@ -69,6 +76,7 @@ async def gaze_stream_endpoint(websocket: WebSocket):
             # 3. If a face is present, pass the raw data point through the spatial filter
             if face_detected:
                 is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
+                print(f"FIXATION METRICS -> Is Fixating: {is_fixating}, Centroid X: {cx}, Centroid Y: {cy}, Duration: {duration}")
                 
                 if is_fixating:
                     # Let the tracker map the refined fixation coordinate to a word block
@@ -82,7 +90,7 @@ async def gaze_stream_endpoint(websocket: WebSocket):
                         syllable_html = intervention.format_syllable_breakdown(target_word, style="color")
                         audio_payload = intervention.trigger_audio_cue(target_word)
                         
-                        # Assemble complete intervention dispatch
+                        # Assemble complete intervention dispatch payload
                         response_payload = {
                             "type": "INTERVENTION_TRIGGER",
                             "word": target_word,
@@ -103,6 +111,6 @@ async def gaze_stream_endpoint(websocket: WebSocket):
         print(f"Runtime error inside server framework loop: {e}")
 
 if __name__ == "__main__":
-    import uvicorn
-    # Start server locally on port 8000
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Bound directly to 127.0.0.1 to avoid connection drops on macOS network layers
+    print("Starting ZyraLex Server on http://127.0.0.1:8000")
+    uvicorn.run(app, host="127.0.0.1", port=8000)
