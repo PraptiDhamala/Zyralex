@@ -21,8 +21,17 @@ app.add_middleware(
 )
 
 # Instantiate the engines
-detector = FixationDetector(spatial_threshold=35, temporal_threshold=0.3)
-tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=2.0)
+detector = FixationDetector(spatial_threshold=100, temporal_threshold=0.1)
+tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=1.0)
+tracker.load_text_coordinates([
+    {
+        "word": "dyslexia",
+        "x1": 0,
+        "y1": 0,
+        "x2": 1920,
+        "y2": 1080
+    }
+])
 intervention = InterventionEngine()
 
 @app.get("/")
@@ -38,8 +47,10 @@ async def gaze_stream_endpoint(websocket: WebSocket):
         while True:
             # 1. Receive JSON packet frame from the gaze source
             raw_data = await websocket.receive_text()
+            # raw_data = await websocket.receive_text()
+            print("RAW DATA:", raw_data)
             packet = json.loads(raw_data)
-            
+            print("PACKET:", packet)
             # Format expected from client:
             # {
             #   "raw_x": 420, "raw_y": 310, "face_detected": true,
@@ -57,9 +68,11 @@ async def gaze_stream_endpoint(websocket: WebSocket):
             # 2. Process Distraction & Fixation checks
             # Call your WordTracker directly for immediate distraction monitoring
             status_update = tracker.update_gaze(raw_x, raw_y, face_detected=face_detected)
-            
+            print("TRACKER RESULT:", status_update)
             if status_update and status_update["status"] == "distracted":
                 # User is looking away; send an alert payload immediately
+                print("INTERVENTION TRIGGERED")
+                print(response_payload)
                 await websocket.send_text(json.dumps({
                     "type": "DISTRACTION_ALERT",
                     "payload": status_update
@@ -69,7 +82,13 @@ async def gaze_stream_endpoint(websocket: WebSocket):
             # 3. If a face is present, pass the raw data point through the spatial filter
             if face_detected:
                 is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
-                
+                print(
+                "FIXATION:",
+                is_fixating,
+                cx,
+                cy,
+                duration
+                )
                 if is_fixating:
                     # Let the tracker map the refined fixation coordinate to a word block
                     fixation_match = tracker.update_gaze(cx, cy, face_detected=True)
