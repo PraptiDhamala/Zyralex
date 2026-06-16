@@ -5,27 +5,27 @@ export type DifficultyLevel = "beginner" | "intermediate" | "advanced" | "expert
 export type FeatureStep = "LESSON_PRACTICE" | "READ_ALOUD" | "PHONICS" | "COMPLETED"
 
 export function useAppProgress() {
-  // 1. Global state indicators
+  // 1. Global state indicators — Defaulted to COMPLETED to unlock all UI sub-sections immediately
   const [currentLevel, setCurrentLevel] = useState<DifficultyLevel>("beginner")
-  const [currentFeatureStep, setCurrentFeatureStep] = useState<FeatureStep>("LESSON_PRACTICE")
+  const [currentFeatureStep, setCurrentFeatureStep] = useState<FeatureStep>("COMPLETED")
   
-  // 2. The "Learn Gate" check variables
+  // 2. The "Learn Gate" check variables — All levels set to true so nothing blocks difficulty changes
   const [learnCompletedLevels, setLearnCompletedLevels] = useState<Record<DifficultyLevel, boolean>>({
-    beginner: false, // Set to true manually or via backend once they finish the Learn module
-    intermediate: false,
-    advanced: false,
-    expert: false,
+    beginner: true, 
+    intermediate: true,
+    advanced: true,
+    expert: true,
   })
 
   // 3. Keep track of inside-feature completion counts
   const [wordsCompletedCount, setWordsCompletedCount] = useState(5) // matches your current UI placeholder
 
-  // Helper validation: Is the learn tab finished for the selected level?
+  // Helper validation: Returns true by default now so the Learn Gate checks pass seamlessly
   const isLearnGatePassed = (level: DifficultyLevel): boolean => {
     return learnCompletedLevels[level]
   }
 
-  // Linear Flow controller: Moves the user down the component list systematically
+  // Linear Flow controller: Kept intact for progression logic if needed
   const advanceToNextFeature = () => {
     if (currentFeatureStep === "LESSON_PRACTICE") {
       setCurrentFeatureStep("READ_ALOUD")
@@ -33,7 +33,6 @@ export function useAppProgress() {
       setCurrentFeatureStep("PHONICS")
     } else if (currentFeatureStep === "PHONICS") {
       setCurrentFeatureStep("COMPLETED")
-      // Level entirely cleared! Ready to unlock intermediate when they choose
     }
   }
 

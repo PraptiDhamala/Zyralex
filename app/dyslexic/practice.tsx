@@ -1,13 +1,10 @@
-
 // Enhanced Practice Screen — Blue & White Theme
-// Features: Difficulty Levels (Locked), Lesson Practice with Learn Gate & Progress Controls
+// Features: Difficulty Levels (Unlocked), Lesson Practice with Progress Controls
  
 import {
-  ChevronRight,
-  Mic,
-  Volume2
+  ChevronRight
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -18,10 +15,10 @@ import {
 import LetterRecognitionGame from "../../components/LetterRecognitionGame";
 import SimpleWordsGame from "../../components/SimpleWordsGame";
 import SyllableBasicsGame from "../../components/SyllableBasicsGame";
-import { beginnerWords } from "../../data/lesson";
+import ReadAloudModule from "../../components/practice/ReadAloudModule"; // 🌟 Imported our new component shortcut package here
+import { beginnerReadAloud } from "../../data/readAloudData";
 import { useAppProgress } from "../../hooks/useAppProgress";
-import { speakWord } from "../../services/speech";
-import { startListening } from "../../services/voice";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 type FeedbackType = "ok" | "warn" | "err"
  
@@ -31,36 +28,6 @@ interface CoachFeedback {
   comment: string
   tags: string[]
 }
- 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-const DIFFICULTIES = [
-  { id: "beginner",     label: "Beginner",     emoji: "🌱", words: 20, unlocked: true  },
-  { id: "intermediate", label: "Intermediate", emoji: "🔥", words: 30, unlocked: false }, 
-  { id: "advanced",     label: "Advanced",     emoji: "⚡", words: 40, unlocked: false },
-  { id: "expert",       label: "Expert",       emoji: "🏆", words: 50, unlocked: false },
-]
- 
-const LESSON_ITEMS = [
-  { id: "LETTER_RECOGNITION", icon: "🔤", name: "Letter Recognition", meta: "Identify letters A–Z",      bg: "#EFF6FF" },
-  { id: "SIMPLE_WORDS",       icon: "✍️",  name: "Simple Words",       meta: "3–4 letter basic words",    bg: "#FDF4FF" },
-  { id: "SYLLABLE_BASICS",    icon: "🗣️", name: "Syllable Basics",    meta: "Break words into parts",    bg: "#F0FFF4" },
-]
- 
-const PHONICS_LETTERS = [
-  { char: "A", sound: '/æ/ — "ay"' },
-  { char: "E", sound: '/ɛ/ — "ee"' },
-  { char: "I", sound: '/ɪ/ — "ih"' },
-  { char: "O", sound: '/ɒ/ — "oh"' },
-]
- 
-const COACH_FEEDBACKS: CoachFeedback[] = [
-  {
-    type: "ok",
-    result: "Amazing! You nailed it 🎉",
-    comment: "Your pronunciation was clear and confident. You matched the word perfectly — keep this energy!",
-    tags: ["Clear voice", "Perfect match", "Keep it up!"],
-  },
-]
  
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DyslexicPractice() {
@@ -77,111 +44,133 @@ export default function DyslexicPractice() {
 
   const [wordIndex, setWordIndex]                   = useState(0)
   const [spokenText, setSpokenText]                 = useState("")
-  const [coachFeedback, setCoachFeedback]           = useState<CoachFeedback | null>(null)
   const [selectedLetter, setSelectedLetter]         = useState<string | null>(null)
   const [phonicPlaying, setPhonicPlaying]           = useState(false)
   const [lockHint, setLockHint]                     = useState("")
   
+  // Custom Mascot Mimo Evaluation States
+  const [mimoFeedback, setMimoFeedback]             = useState<{
+    title: string;
+    message: string;
+    borderColor: string;
+    textColor: string;
+    bgColor: string;
+  } | null>(null);
+
   // Active game navigation state
   const [activeLessonGame, setActiveLessonGame]     = useState<string | null>(null)
- 
-  const currentWord = beginnerWords?.[wordIndex] ?? "CAT"
-  const currentDiff = DIFFICULTIES.find((d) => d.id === currentLevel)!
+
+  const currentEntry = beginnerReadAloud[wordIndex] ?? beginnerReadAloud[0]
+  const currentWord  = currentEntry.sentence
+
+  // 🧠 Optimized using useMemo to lock static structural configs safely
+  const DIFFICULTIES = useMemo(() => [
+    { id: "beginner" as const,     label: "Beginner",     emoji: "🌱", words: 20, unlocked: true  },
+    { id: "intermediate" as const, label: "Intermediate", emoji: "🔥", words: 30, unlocked: true  }, 
+    { id: "advanced" as const,     label: "Advanced",     emoji: "⚡", words: 40, unlocked: true  },
+    { id: "expert" as const,       label: "Expert",       emoji: "🏆", words: 50, unlocked: true  },
+  ], []);
+
+  const LESSON_ITEMS = useMemo(() => [
+    { id: "LETTER_RECOGNITION", icon: "🔤", name: "Letter Recognition", meta: "Identify letters A–Z",      bg: "#EFF6FF" },
+    { id: "SIMPLE_WORDS",       icon: "✍️",  name: "Simple Words",        meta: "3–4 letter basic words",    bg: "#FDF4FF" },
+    { id: "SYLLABLE_BASICS",    icon: "🗣️", name: "Syllable Basics",     meta: "Break words into parts",    bg: "#F0FFF4" },
+  ], []);
+
+  const PHONICS_LETTERS = useMemo(() => [
+    { char: "A", sound: '/æ/ — "ay"' },
+    { char: "E", sound: '/ɛ/ — "ee"' },
+    { char: "I", sound: '/ɪ/ — "ih"' },
+    { char: "O", sound: '/ɒ/ — "oh"' },
+  ], []);
+
+  const currentDiff = useMemo(() => {
+    return DIFFICULTIES.find((d) => d.id === currentLevel) || DIFFICULTIES[0];
+  }, [DIFFICULTIES, currentLevel]);
 
   // ── Handlers ──
   const handleSelectDifficulty = (diff: typeof DIFFICULTIES[0]) => {
-    if (!diff.unlocked && diff.id !== "beginner") {
-      setLockHint(`🔒 Complete previous levels first to unlock ${diff.label}`)
-      return
-    }
+    setCurrentLevel(diff.id)
     setLockHint("")
-  }
+  };
 
-  // Learn Gate requirement completely bypassed for seamless testing!
   const handleFeatureRowPress = (featureId: string) => {
     setActiveLessonGame(featureId)
-  }
+  };
 
   const handleGameComplete = () => {
-    setActiveLessonGame(null);
-    advanceToNextFeature(); 
+    setActiveLessonGame(null)
+    advanceToNextFeature()
   };
  
   const goToNextWord = () => {
-    setWordIndex((prev) => (prev < 2 ? prev + 1 : 0))
+    setWordIndex((prev) => (prev < beginnerReadAloud.length - 1 ? prev + 1 : 0))
     setSpokenText("")
-    setCoachFeedback(null)
-  }
+    setMimoFeedback(null)
+  };
  
-  const handleSpeak = (text: any) => {
-    const safeText = typeof text === "string" ? text : ""
-    setSpokenText(safeText)
-    setCoachFeedback(COACH_FEEDBACKS[0])
-  }
+  // Processes user speech outcome and displays a friendly response from Mimo the Panda
+  const handleProcessMimoSpeech = (outcome: "well_done" | "keep_trying" | "slow") => {
+    setSpokenText(currentWord);
+
+    if (outcome === "well_done") {
+      setMimoFeedback({
+        title: "Well done! 🎉",
+        message: `You said "${currentWord.toUpperCase()}" perfectly! Mimo is super proud of you.`,
+        borderColor: "#15803D",
+        textColor: "#15803D",
+        bgColor: "#DCFCE7",
+      });
+      
+      if (typeof advanceToNextFeature === "function") {
+        advanceToNextFeature();
+      }
+    } else if (outcome === "keep_trying") {
+      setMimoFeedback({
+        title: "Keep trying! 🌟",
+        message: "You are so close! Let's try to say the sounds clearly with Mimo again.",
+        borderColor: "#B45309",
+        textColor: "#B45309",
+        bgColor: "#FEF3C7",
+      });
+    } else {
+      setMimoFeedback({
+        title: "A little bit slow... 🕒",
+        message: "Great sounds! Let's try to bring those letters together a tiny bit faster next time.",
+        borderColor: "#B91C1C",
+        textColor: "#B91C1C",
+        bgColor: "#FEE2E2",
+      });
+    }
+  };
  
-  const handlePhonic = () => {
-    setPhonicPlaying(true)
-    setTimeout(() => setPhonicPlaying(false), 1200)
-  }
- 
-  const tagStyle = (type: FeedbackType) => ({
-    ok:   { bg: "#DCFCE7", text: "#15803D" },
-    warn: { bg: "#FEF3C7", text: "#92400E" },
-    err:  { bg: "#FEE2E2", text: "#991B1B" },
-  }[type])
- 
-  // Intercept screen rendering if Letter Recognition mini-game is active
   if (activeLessonGame === "LETTER_RECOGNITION") {
     return (
       <LetterRecognitionGame 
         onComplete={handleGameComplete} 
         onClose={() => setActiveLessonGame(null)} 
       />
-    );
+    )
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ... other code above ...
-
-  // Intercept screen rendering if Letter Recognition mini-game is active
-  if (activeLessonGame === "LETTER_RECOGNITION") {
-    return (
-      <LetterRecognitionGame 
-        onComplete={handleGameComplete} 
-        onClose={() => setActiveLessonGame(null)} 
-      />
-    );
-  }
-
-  // 👇 PASTE THE NEW BLOCK RIGHT HERE:
   if (activeLessonGame === "SIMPLE_WORDS") {
     return (
       <SimpleWordsGame 
         onComplete={handleGameComplete} 
         onClose={() => setActiveLessonGame(null)} 
       />
-    );
+    )
   }
-// Intercept screen rendering if Simple Words mini-game is active
-     if (activeLessonGame === "SIMPLE_WORDS") {
-       return (
-         <SimpleWordsGame 
-           onComplete={handleGameComplete} 
-           onClose={() => setActiveLessonGame(null)} 
-         />
-       );
-     }
 
-     // 🔥 ADD THIS NEW INTERCEPT BLOCK RIGHT HERE:
-     if (activeLessonGame === "SYLLABLE_BASICS") {
-       return (
-         <SyllableBasicsGame 
-           onComplete={handleGameComplete} 
-           onClose={() => setActiveLessonGame(null)} 
-         />
-       );
-     }
-  // ... the rest of the file continues below with "return (" ...
+  if (activeLessonGame === "SYLLABLE_BASICS") {
+    return (
+      <SyllableBasicsGame 
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    )
+  }
+
   return (
     <View style={s.screen}>
       
@@ -198,7 +187,7 @@ export default function DyslexicPractice() {
         </TouchableOpacity> 
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
  
         <Text style={s.pageTitle}>Practice Sessions</Text>
  
@@ -208,20 +197,17 @@ export default function DyslexicPractice() {
  
           <View style={s.diffRow}>
             {DIFFICULTIES.map((d) => {
-              const isActive  = currentLevel === d.id
-              const isLocked  = d.id !== "beginner" && !d.unlocked
+              const isActive = currentLevel === d.id
               return (
                 <TouchableOpacity
                   key={d.id}
                   onPress={() => handleSelectDifficulty(d)}
-                  activeOpacity={isLocked ? 1 : 0.75}
+                  activeOpacity={0.75}
                   style={[
                     s.diffItem,
-                    isActive  && s.diffActive,
-                    isLocked  && s.diffLocked,
+                    isActive && s.diffActive,
                   ]}
                 >
-                  {isLocked && <Text style={s.lockIco}>🔒</Text>}
                   <Text style={s.diffEmoji}>{d.emoji}</Text>
                   <Text style={[s.diffLabel, isActive && s.diffLabelActive]}>{d.label}</Text>
                   <Text style={[s.diffWords, isActive && s.diffWordsActive]}>{d.words} words</Text>
@@ -233,7 +219,7 @@ export default function DyslexicPractice() {
           {/* Progress bar */}
           <View style={s.progRow}>
             <View style={s.progBar}>
-              <View style={[s.progFill, { width: `${(wordsCompletedCount / currentDiff.words) * 100}%` }]} />
+              <View style={[s.progFill, { width: `${Math.min((wordsCompletedCount / currentDiff.words) * 100, 100)}%` }]} />
             </View>
             <Text style={s.progTxt}>{wordsCompletedCount} / {currentDiff.words} words</Text>
           </View>
@@ -265,30 +251,22 @@ export default function DyslexicPractice() {
             </TouchableOpacity>
           ))}
         </View>
+
+    
  
-        {/* ── Read Aloud Section ── */}
-        <View style={[s.card, currentFeatureStep !== "READ_ALOUD" && currentFeatureStep !== "PHONICS" && currentFeatureStep !== "COMPLETED" && s.featureLockedDim]}>
-          <Text style={s.cardTitle}>🎙️ READ ALOUD {currentFeatureStep !== "READ_ALOUD" && "🔒"}</Text>
-          <View style={s.wordBox}>
-            <Text style={s.bigWord}>{currentWord.toUpperCase()}</Text>
-            <Text style={s.wordSub}>Listen first · then Speak</Text>
-          </View>
-          <View style={s.btnPair}>
-            <TouchableOpacity style={s.btnListen} onPress={() => speakWord(currentWord)}>
-              <Volume2 size={16} color="#2563EB" /><Text style={s.btnListenText}>Listen</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.btnSpeak} onPress={() => startListening(handleSpeak)}>
-              <Mic size={16} color="#2563EB" /><Text style={s.btnSpeakText}>Speak</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={s.btnNext} onPress={goToNextWord}>
-            <Text style={s.btnNextText}>Next Word →</Text>
-          </TouchableOpacity>
-        </View>
- 
+      {/* ── Read Aloud Section ── */}
+        <ReadAloudModule
+          wordIndex={wordIndex}
+          totalSentences={beginnerReadAloud.length}
+          currentEntry={currentEntry}
+          mimoFeedback={mimoFeedback}
+          onSpeechResult={handleProcessMimoSpeech}
+          onNextWord={goToNextWord}
+        />
+        
         {/* ── Phonics Section ── */}
-        <View style={[s.card, currentFeatureStep !== "PHONICS" && currentFeatureStep !== "COMPLETED" && s.featureLockedDim]}>
-          <Text style={s.cardTitle}>🔊 PHONICS {currentFeatureStep !== "PHONICS" && "🔒"}</Text>
+        <View style={s.card}>
+          <Text style={s.cardTitle}>🔊 PHONICS</Text>
           <View style={s.letterGrid}>
             {PHONICS_LETTERS.map((l) => (
               <TouchableOpacity key={l.char} onPress={() => setSelectedLetter(l.char)} style={[s.lCard, selectedLetter === l.char && s.lCardActive]}>
@@ -305,7 +283,6 @@ export default function DyslexicPractice() {
  
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  // Main Layout Spacing (Generous padding to reduce cognitive load)
   screen: { 
     flex: 1, 
     backgroundColor: "#EFF6FF", 
@@ -313,15 +290,13 @@ const s = StyleSheet.create({
     paddingTop: 20 
   },
   pageTitle: { 
-    fontSize: 22,            // Increased from 16 for better visibility
+    fontSize: 22,
     fontWeight: "700", 
     color: "#1E3A5F", 
-    marginBottom: 20,        // More whitespace
+    marginBottom: 20,
     marginTop: 14,
-    letterSpacing: 0.5       // Decrowds letters
+    letterSpacing: 0.5
   },
-  
-  // Testing HUD
   debugHud: { 
     backgroundColor: "#DBEAFE", 
     padding: 14, 
@@ -334,75 +309,64 @@ const s = StyleSheet.create({
     marginBottom: 20 
   },
   debugText: { 
-    fontSize: 13,            // Increased from 11
+    fontSize: 13,
     fontWeight: "600", 
     color: "#1E40AF" 
   },
   debugBtn: { 
     backgroundColor: "#2563EB", 
-    paddingVertical: 8,      // Increased target size
+    paddingVertical: 8,
     paddingHorizontal: 14, 
     borderRadius: 8 
   },
   debugBtnText: { 
     color: "#fff", 
-    fontSize: 12,            // Increased from 10
+    fontSize: 12,
     fontWeight: "bold" 
   },
-
-  // Main Card containers
   card: { 
     backgroundColor: "#fff", 
     borderRadius: 16, 
-    borderWidth: 1,          // Defined boundary lines more clearly
+    borderWidth: 1,
     borderColor: "#BFDBFE", 
-    padding: 18,             // Increased from 13 for internal breathing room
-    marginBottom: 20         // Expanded vertical rhythm between sections
+    padding: 18,
+    marginBottom: 20
   },
   cardTitle: { 
-    fontSize: 13,            // Increased from 10 to clear up tiny headers
+    fontSize: 13,
     fontWeight: "700", 
     color: "#6B9EC8", 
-    letterSpacing: 1,        // Extra spacing prevents letters blending together
+    letterSpacing: 1,
     marginBottom: 16 
   },
-  featureLockedDim: { opacity: 0.4 },
-
-  // Difficulty Selector Section
-  // Difficulty Selector Section (Clean, Structured, and Oval)
   diffRow: { 
     flexDirection: "row", 
-    gap: 10,                    // Clear, consistent spacing between items
+    gap: 10,
     paddingVertical: 6,
-    paddingHorizontal: 2,       // Matches alignment from the reference image
+    paddingHorizontal: 2,
   },
   diffItem: { 
-    borderRadius: 100,          // Complete circular rounding for smooth oval pills
+    borderRadius: 100,
     borderWidth: 1.5, 
     borderColor: "#BFDBFE", 
-    backgroundColor: "#fff",    // Clean white background for inactive states
-    paddingVertical: 10,        // Managed vertical padding for proper height
-    paddingHorizontal: 16,     // Wide horizontal padding for capsule structure
-    flexDirection: "row",       // Forces elements into a single organized flat line
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    flexDirection: "row",
     alignItems: "center", 
     justifyContent: "center",
     gap: 6,                     
     position: "relative" 
   },
   diffActive: { 
-    backgroundColor: "#2563EB", // Preserves original active brand blue
+    backgroundColor: "#2563EB",
     borderColor: "#2563EB" 
   },
-  diffLocked: { 
-    backgroundColor: "#fff", 
-    borderColor: "#E2E8F0",     // Muted outline for structured locked style
-    opacity: 0.6 
-  },
   diffEmoji: { 
-    fontSize: 16                // Balanced emoji size for inline tracking
+    fontSize: 16
   },
   diffLabel: { 
-    fontSize: 14,               // Clear, comfortable text scale for dyslexia
+    fontSize: 14,
     fontWeight: "600", 
     color: "#1E3A5F", 
     textAlign: "center" 
@@ -415,29 +379,15 @@ const s = StyleSheet.create({
     fontWeight: "500"
   },
   diffWordsActive: { color: "#BFDBFE" },
-  lockIco: { 
-    fontSize: 12,
-    marginLeft: 2               // Shifts lock directly inside the text row tracking
-  },
-  
-  // Progress & Inline Hints
   progRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 14, marginBottom: 10 },
   progBar: { flex: 1, height: 6, backgroundColor: "#BFDBFE", borderRadius: 99, overflow: "hidden" },
   progFill: { height: 6, backgroundColor: "#2563EB", borderRadius: 99 },
   progTxt: { fontSize: 12, color: "#6B9EC8", fontWeight: "600" },
   lockHint: { fontSize: 12, color: "#EF4444", marginTop: 4, textAlign: "center" },
-  
-  celebrationSheet: { borderWidth: 1 },
-  bonusCard: { borderWidth: 1 },
-
-
-
-
-  // Lesson Practice Rows
   pRow: { 
     flexDirection: "row", 
     alignItems: "center", 
-    paddingVertical: 16,     // Increased row height for easier reading track
+    paddingVertical: 16,
     borderBottomWidth: 1, 
     borderBottomColor: "#DBEAFE", 
     justifyContent: 'space-between' 
@@ -445,43 +395,16 @@ const s = StyleSheet.create({
   pLeft: { flexDirection: "row", alignItems: "center", gap: 14 },
   pIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   pName: { 
-    fontSize: 15,            // Increased from 12
+    fontSize: 15,
     fontWeight: "600", 
     color: "#1E3A5F" 
   },
   pMeta: { 
-    fontSize: 12,            // Increased from 9
+    fontSize: 12,
     color: "#6B9EC8", 
     marginTop: 3 
   },
   pArr: { width: 28, height: 28, borderRadius: 8, backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center" },
-  
-  // Read Aloud Section
-  wordBox: { 
-    backgroundColor: "#EFF6FF", 
-    borderWidth: 2, 
-    borderColor: "#BFDBFE", 
-    borderRadius: 16, 
-    padding: 24, 
-    alignItems: "center", 
-    marginBottom: 16 
-  },
-  bigWord: { 
-    fontSize: 42,            // Increased from 34 for high focus recognition
-    fontWeight: "700", 
-    color: "#1E40AF", 
-    letterSpacing: 6         // Wide track letter-spacing directly helps dyslexia
-  },
-  wordSub: { fontSize: 12, color: "#7DD3FC", marginTop: 8, fontWeight: "500" },
-  btnPair: { flexDirection: "row", gap: 10, marginBottom: 14 },
-  btnListen: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 12, backgroundColor: "#fff", borderWidth: 2, borderColor: "#2563EB" },
-  btnListenText: { fontSize: 15, fontWeight: "600", color: "#2563EB" },
-  btnSpeak: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 12, backgroundColor: "#fff", borderWidth: 2, borderColor: "#2563EB" },
-  btnSpeakText: { fontSize: 15, fontWeight: "600", color: "#2563EB" },
-  btnNext: { backgroundColor: "#F0F7FF", borderWidth: 2, borderColor: "#BFDBFE", borderRadius: 12, paddingVertical: 12, alignItems: "center", marginBottom: 6 },
-  btnNextText: { fontSize: 13, fontWeight: "600", color: "#1E3A5F" },
-  
-  // Phonics Section
   letterGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   lCard: { 
     width: "48%", 
@@ -495,4 +418,9 @@ const s = StyleSheet.create({
   lCardActive: { borderColor: "#2563EB", backgroundColor: "#DBEAFE" },
   lChar: { fontSize: 28, fontWeight: "700", color: "#1E40AF" },
   lSound: { fontSize: 12, color: "#6B9EC8", marginTop: 4, fontWeight: "500" },
+  testerPanel: { backgroundColor: "#EFF6FF", padding: 12, borderRadius: 14, marginBottom: 16, borderWidth: 1, borderColor: "#BFDBFE" },
+  testerTitle: { fontSize: 11, fontWeight: "700", color: "#1E40AF", marginBottom: 8, letterSpacing: 0.5 },
+  testerButtons: { flexDirection: "row", gap: 8 },
+  testBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: "center" },
+  testBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" }
 })
