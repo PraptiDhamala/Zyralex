@@ -35,7 +35,7 @@ class WordTracker:
             if current_time - self.last_seen_time > self.distraction_threshold:
                 return {
                     "status": "distracted",
-                    "message": "Hey! Please look back at the screen to continue your lesson! ✨"
+                    "message": "Hey! Please look back at the screen to continue your lesson!"
                 }
             return None
 
