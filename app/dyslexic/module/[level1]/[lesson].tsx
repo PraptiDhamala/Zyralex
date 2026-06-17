@@ -43,25 +43,24 @@ export default function LessonScreen() {
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
 
-  // --- NEW EYE TRACKING & INTERVENTION STATES ---
   const [intervention, setIntervention] = useState<{
     word: string;
     hyphenated: string;
   } | null>(null);
   const [isDistracted, setIsDistracted] = useState(false);
+
   const ws = useRef<WebSocket | null>(null);
-
-  // Get device screen dimensions to build a dynamic mapping grid for the backend tracker
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-
   // DYNAMIC LESSON LOOKUP
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
   const lessonData =
     curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
   const explanationLength = lessonData.explanation?.length || 0;
   const examplesLength = lessonData.examples?.length || 0;
-  const practiceLength = lessonData.guidedPractice?.length || 0;
-  const totalSteps = explanationLength + examplesLength + practiceLength;
+  const totalSteps =
+    explanationLength +
+    examplesLength +
+    (lessonData.guidedPractice?.length || 0);
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
@@ -145,16 +144,8 @@ export default function LessonScreen() {
       x2: screenWidth, // Map dynamically across structural viewing area
       y2: screenHeight,
     }));
-
     if (mappedScreenWords.length > 0) {
-      ws.current.send(
-        JSON.stringify({
-          screen_words: mappedScreenWords,
-          face_detected: true,
-          raw_x: 0,
-          raw_y: 0,
-        }),
-      );
+      ws.current.send(JSON.stringify({ screen_words: mappedScreenWords }));
     }
   };
 
