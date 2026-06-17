@@ -73,7 +73,7 @@ export default function LessonScreen() {
     ws.current = new WebSocket(socketUrl);
 
     ws.current.onopen = () => {
-      // print("Connected seamlessly to ZyraLex FastAPI Server Engine");
+      console.log("Connected seamlessly to ZyraLex FastAPI Server Engine");
       sendCurrentWordsToTracker();
     };
 
@@ -111,8 +111,8 @@ export default function LessonScreen() {
     };
 
     ws.current.onerror = (e) => console.log("WebSocket Connection Error: ", e);
-    ws.current.onclose = () => print("Disconnected from ZyraLex Socket Loop.");
-
+    ws.current.onclose = () =>
+      console.log("Disconnected from ZyraLex Socket Loop.");
     return () => {
       if (ws.current) ws.current.close();
     };
@@ -333,9 +333,7 @@ export default function LessonScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.distractionCard}>
             <Ionicons name="eye-off-outline" size={50} color="#F59E0B" />
-            <Text style={styles.distractionTitle}>
-              Are you still reading? 
-            </Text>
+            <Text style={styles.distractionTitle}>Are you still reading?</Text>
             <Text style={styles.distractionText}>
               Let's re-align together! We paused right where you left off on
               this module screen step.
