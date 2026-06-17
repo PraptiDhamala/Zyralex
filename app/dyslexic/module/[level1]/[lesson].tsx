@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Speech from "expo-speech";
-import { default as React, useState } from "react";
+import { default as React, useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,10 +17,10 @@ import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
 import chunking from "../../../../data/level1/medium/chunking";
 import decoding from "../../../../data/level1/medium/decoding";
-// import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
 import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
+
 const curriculumMap: Record<string, any> = {
   level1: {
     letter_reversal: letterReversal,
@@ -27,49 +29,138 @@ const curriculumMap: Record<string, any> = {
     chunking: chunking,
     decoding: decoding,
   },
-
   level2: {
     letter_reversal: level2LetterReversal,
     phonics: level2Phonics,
     vowel_processing: level2VisualTracking,
-    // chunking: chunking,
-    // decoding: decoding,
   },
 };
 
 export default function LessonScreen() {
   const router = useRouter();
-
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
 
-  const speakWord = (word: string) => {
-    Speech.speak(word, {
-      language: "en",
-      pitch: 1,
-      rate: 0.8,
-    });
-  };
+  // --- NEW EYE TRACKING & INTERVENTION STATES ---
+  const [intervention, setIntervention] = useState<{
+    word: string;
+    hyphenated: string;
+  } | null>(null);
+  const [isDistracted, setIsDistracted] = useState(false);
+  const ws = useRef<WebSocket | null>(null);
+
+  // Get device screen dimensions to build a dynamic mapping grid for the backend tracker
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   // DYNAMIC LESSON LOOKUP
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
-
-  // const lessonData =
-  //   curriculumMap[lessonKey || "letter_reversal"] || letterReversal;
   const lessonData =
     curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
   const explanationLength = lessonData.explanation?.length || 0;
-
   const examplesLength = lessonData.examples?.length || 0;
-
   const practiceLength = lessonData.guidedPractice?.length || 0;
-
   const totalSteps = explanationLength + examplesLength + practiceLength;
-
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
+
+  // --- WEBSOCKET LIFECYCLE MANAGEMENT ---
+  useEffect(() => {
+    // Fast API development endpoint.
+    // NOTE: If using a physical testing device, replace "127.0.0.1" with your computer's Local IP address (e.g., 192.168.X.X)
+    const socketUrl = "ws://127.0.0.1:8000/ws/stream";
+    ws.current = new WebSocket(socketUrl);
+
+    ws.current.onopen = () => {
+      // print("Connected seamlessly to ZyraLex FastAPI Server Engine");
+      sendCurrentWordsToTracker();
+    };
+
+    ws.current.onmessage = (event) => {
+      try {
+        const response = JSON.parse(event.data);
+
+        // Handle Distraction Engine Intercept
+        if (response.type === "DISTRACTION_ALERT") {
+          setIsDistracted(true);
+          Speech.speak(
+            "Hey there! Let's bring our attention back to the lesson map.",
+            { rate: 0.85 },
+          );
+        }
+
+        // Handle Fixation / Syllable Breakdown Intercept
+        if (response.type === "INTERVENTION_TRIGGER") {
+          setIntervention({
+            word: response.word,
+            hyphenated: response.adaptations.hyphenated,
+          });
+
+          // Trigger audio reading cue seamlessly
+          Speech.speak(
+            `Let's break down the word: ${response.word}. It is pronounced as: ${response.adaptations.hyphenated}`,
+            {
+              rate: 0.75,
+            },
+          );
+        }
+      } catch (err) {
+        console.error("Error parsing socket incoming frame stream data:", err);
+      }
+    };
+
+    ws.current.onerror = (e) => console.log("WebSocket Connection Error: ", e);
+    ws.current.onclose = () => print("Disconnected from ZyraLex Socket Loop.");
+
+    return () => {
+      if (ws.current) ws.current.close();
+    };
+  }, [step]); // Triggers reload sequence whenever step shifts to refresh local screen word coordinate data
+
+  // Helper function to map current textual blocks to backend tracker coordinate grid maps
+  const sendCurrentWordsToTracker = () => {
+    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
+
+    let targetWords: string[] = [];
+
+    // Parse visual words on current active view layer layout frame
+    if (step < explanationLength) {
+      targetWords = lessonData.explanation[step].content.split(" ");
+    } else if (
+      lessonData.examples &&
+      step < explanationLength + examplesLength
+    ) {
+      const example = lessonData.examples[step - explanationLength];
+      targetWords = [example.word];
+    } else if (currentPractice) {
+      targetWords = currentPractice.question.split(" ");
+    }
+
+    // Map screen words dynamically to fill the Python server's text layout grid system bounding-box array
+    const mappedScreenWords = targetWords.map((word) => ({
+      word: word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""),
+      x1: 0,
+      y1: 0,
+      x2: screenWidth, // Map dynamically across structural viewing area
+      y2: screenHeight,
+    }));
+
+    if (mappedScreenWords.length > 0) {
+      ws.current.send(
+        JSON.stringify({
+          screen_words: mappedScreenWords,
+          face_detected: true,
+          raw_x: 0,
+          raw_y: 0,
+        }),
+      );
+    }
+  };
+
+  const speakWord = (word: string) => {
+    Speech.speak(word, { language: "en", pitch: 1, rate: 0.8 });
+  };
 
   const handleNext = () => {
     if (step + 1 >= totalSteps) {
@@ -82,28 +173,22 @@ export default function LessonScreen() {
   const handlePracticeAnswer = (selected: string, correct: string) => {
     if (selected === correct) {
       setScore((prev) => prev + 1);
-
       Speech.speak("Amazing job!");
     } else {
       Speech.speak("Nice try!");
     }
-
     handleNext();
   };
 
   const renderContent = () => {
-    // EXPLANATION SECTION
     if (step < lessonData.explanation.length) {
       const item = lessonData.explanation[step];
-
       return (
         <View style={styles.card}>
           <View style={[styles.badge, item.type === "tip" && styles.tipBadge]}>
             <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
           </View>
-
           <Text style={styles.text}>{item.content}</Text>
-
           <TouchableOpacity
             style={styles.button}
             onPress={() => speakWord(item.content)}
@@ -113,7 +198,6 @@ export default function LessonScreen() {
               <Text style={styles.buttonText}>Hear It</Text>
             </View>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[styles.button, { marginTop: 14 }]}
             onPress={handleNext}
@@ -124,42 +208,30 @@ export default function LessonScreen() {
       );
     }
 
-    // EXAMPLES SECTION
     if (lessonData.examples && step < explanationLength + examplesLength) {
       const exampleIndex = step - explanationLength;
-
       const example = lessonData.examples[exampleIndex];
-
       return (
         <View style={styles.card}>
           <Text style={styles.bigLetter}>{example.emoji}</Text>
-
           <Text style={styles.word}>
             <Text
-              style={{
-                color: example.color || "#2563EB",
-                fontWeight: "bold",
-              }}
+              style={{ color: example.color || "#2563EB", fontWeight: "bold" }}
             >
               {example.letter}
             </Text>
-
             {example.word.slice(example.letter.length)}
           </Text>
-
           {example.sentence && (
             <Text style={styles.exampleSentence}>{example.sentence}</Text>
           )}
-
           <TouchableOpacity
             style={styles.audioButton}
             onPress={() => speakWord(example.word)}
           >
             <Ionicons name="volume-high" size={20} color="#2563EB" />
-
             <Text style={styles.audioText}>Hear Sound</Text>
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.button} onPress={handleNext}>
             <Text style={styles.buttonText}>I Understand</Text>
           </TouchableOpacity>
@@ -167,12 +239,10 @@ export default function LessonScreen() {
       );
     }
 
-    // GUIDED PRACTICE SECTION
     if (lessonData.guidedPractice && currentPractice) {
       return (
         <View style={styles.card}>
           <Text style={styles.question}>{currentPractice.question}</Text>
-
           {currentPractice.options.map((option: string, index: number) => (
             <TouchableOpacity
               key={index}
@@ -187,26 +257,19 @@ export default function LessonScreen() {
         </View>
       );
     }
-
     return null;
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{lessonData.title}</Text>
-
       <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
 
-      {/* PROGRESS BAR */}
-
-      {/* PROGRESS BAR */}
       <View style={styles.progressBarBackground}>
         <View
           style={[
             styles.progressBarFill,
-            {
-              width: `${((step + 1) / totalSteps) * 100}%`,
-            },
+            { width: `${((step + 1) / totalSteps) * 100}%` },
           ]}
         />
       </View>
@@ -216,37 +279,25 @@ export default function LessonScreen() {
       ) : (
         <View style={styles.card}>
           <Text style={styles.complete}>🎉 {lessonData.completionMessage}</Text>
-
           <Text style={styles.score}>
             Score: {score} / {lessonData.guidedPractice.length}
           </Text>
-
           <TouchableOpacity
             style={[
               styles.button,
-              {
-                marginTop: 24,
-                backgroundColor: "#2563EB",
-              },
+              { marginTop: 24, backgroundColor: "#2563EB" },
             ]}
             onPress={() => {
-              // Reset local states before navigating back to the same component layout
               setStep(0);
               setFinished(false);
               setScore(0);
-
-              // Safely map visual_tracking parameters if coming from vowel_processing
               let nextLesson = lessonKey;
               if (lessonKey === "vowel_processing") {
                 nextLesson = "visual_tracking";
               }
-
               router.replace({
-                pathname: "/dyslexic/module/[level1]/[lesson]", // <-- Added slash between parameters
-                params: {
-                  level1: "level2",
-                  lesson: nextLesson,
-                },
+                pathname: "/dyslexic/module/[level1]/[lesson]",
+                params: { level1: "level2", lesson: nextLesson },
               });
             }}
           >
@@ -254,6 +305,53 @@ export default function LessonScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* --- INTEGRATED MODAL OVERLAY: FIXATION / SYLLABLE ASSISTANCE ASSISTANT --- */}
+      <Modal visible={intervention !== null} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.interventionCard}>
+            <Text style={styles.modalAlertTitle}>Let's Break It Down! 🧩</Text>
+            <Text style={styles.originalWord}>{intervention?.word}</Text>
+            <Text style={styles.syllableBreakdown}>
+              {intervention?.hyphenated}
+            </Text>
+            <Text style={styles.modalMessage}>
+              Take your time parsing out these core individual phonetic sounds!
+            </Text>
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setIntervention(null)}
+            >
+              <Text style={styles.buttonText}>Got it!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* --- INTEGRATED MODAL OVERLAY: DISTRACTION / RE-ENGAGEMENT DIALOGUE --- */}
+      <Modal visible={isDistracted} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.distractionCard}>
+            <Ionicons name="eye-off-outline" size={50} color="#F59E0B" />
+            <Text style={styles.distractionTitle}>
+              Are you still reading? 
+            </Text>
+            <Text style={styles.distractionText}>
+              Let's re-align together! We paused right where you left off on
+              this module screen step.
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { width: "100%", backgroundColor: "#F59E0B" },
+              ]}
+              onPress={() => setIsDistracted(false)}
+            >
+              <Text style={styles.buttonText}>Resume Learning</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -265,21 +363,13 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: "center",
   },
-
-  title: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#1E293B",
-    marginBottom: 8,
-  },
-
+  title: { fontSize: 30, fontWeight: "800", color: "#1E293B", marginBottom: 8 },
   subtitle: {
     fontSize: 18,
     color: "#64748B",
     marginBottom: 20,
     lineHeight: 28,
   },
-
   progressBarBackground: {
     height: 14,
     backgroundColor: "#E2E8F0",
@@ -287,13 +377,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 24,
   },
-
   progressBarFill: {
     height: "100%",
     backgroundColor: "#F59E0B",
     borderRadius: 999,
   },
-
   card: {
     backgroundColor: "white",
     borderRadius: 24,
@@ -303,7 +391,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
-
   badge: {
     backgroundColor: "#EFF6FF",
     alignSelf: "flex-start",
@@ -312,17 +399,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 16,
   },
-
-  tipBadge: {
-    backgroundColor: "#FEF3C7",
-  },
-
-  badgeText: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: "#1E40AF",
-  },
-
+  tipBadge: { backgroundColor: "#FEF3C7" },
+  badgeText: { fontSize: 11, fontWeight: "bold", color: "#1E40AF" },
   text: {
     fontSize: 24,
     lineHeight: 40,
@@ -330,19 +408,8 @@ const styles = StyleSheet.create({
     color: "#334155",
     marginBottom: 28,
   },
-
-  bigLetter: {
-    fontSize: 100,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
-  word: {
-    fontSize: 42,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-
+  bigLetter: { fontSize: 100, textAlign: "center", marginBottom: 20 },
+  word: { fontSize: 42, textAlign: "center", marginBottom: 20 },
   exampleSentence: {
     fontSize: 20,
     lineHeight: 32,
@@ -350,7 +417,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-
   audioButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -361,33 +427,20 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginBottom: 20,
   },
-
   audioText: {
     marginLeft: 8,
     color: "#2563EB",
     fontWeight: "700",
     fontSize: 16,
   },
-
   button: {
     backgroundColor: "#2563EB",
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: "center",
   },
-
-  buttonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
-  audioRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-
+  buttonText: { color: "white", fontSize: 18, fontWeight: "700" },
+  audioRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   question: {
     fontSize: 24,
     fontWeight: "700",
@@ -395,7 +448,6 @@ const styles = StyleSheet.create({
     color: "#1E293B",
     lineHeight: 38,
   },
-
   option: {
     backgroundColor: "#F8FAFC",
     padding: 22,
@@ -404,13 +456,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#CBD5E1",
   },
-
-  optionText: {
-    fontSize: 22,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-
+  optionText: { fontSize: 22, textAlign: "center", fontWeight: "600" },
   complete: {
     fontSize: 26,
     lineHeight: 38,
@@ -418,11 +464,73 @@ const styles = StyleSheet.create({
     color: "#2563EB",
     fontWeight: "700",
   },
+  score: { textAlign: "center", color: "#64748B", marginTop: 10, fontSize: 18 },
 
-  score: {
-    textAlign: "center",
+  // Modal layout structural layout extensions
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  interventionCard: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    width: "100%",
+    elevation: 5,
+  },
+  modalAlertTitle: {
+    fontSize: 16,
+    fontWeight: "700",
     color: "#64748B",
-    marginTop: 10,
-    fontSize: 18,
+    marginBottom: 12,
+  },
+  originalWord: { fontSize: 24, fontWeight: "300", color: "#94A3B8" },
+  syllableBreakdown: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#2563EB",
+    marginVertical: 12,
+    letterSpacing: 2,
+  },
+  modalMessage: {
+    fontSize: 15,
+    textAlign: "center",
+    color: "#475569",
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  closeModalButton: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    width: "100%",
+    alignItems: "center",
+  },
+  distractionCard: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 32,
+    alignItems: "center",
+    width: "100%",
+    elevation: 5,
+  },
+  distractionTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1E293B",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  distractionText: {
+    fontSize: 15,
+    color: "#64748B",
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 22,
   },
 });
