@@ -9,7 +9,7 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
 
 async def stream_gaze():
-    uri = "ws://127.0.0.1:8000/ws/stream"
+    uri = "ws://127.0.0.1:8000/ws/camera"
     cap = cv2.VideoCapture(0)
     
     # Define your actual display/screen coordinates dimensions
