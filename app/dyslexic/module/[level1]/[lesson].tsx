@@ -68,7 +68,7 @@ export default function LessonScreen() {
   useEffect(() => {
     // Fast API development endpoint.
     // NOTE: If using a physical testing device, replace "127.0.0.1" with your computer's Local IP address (e.g., 192.168.X.X)
-    const socketUrl = "ws://127.0.0.1:8000/ws/stream";
+    const socketUrl = "ws://192.168.1.XX:8000/ws/app";
     ws.current = new WebSocket(socketUrl);
 
     ws.current.onopen = () => {
