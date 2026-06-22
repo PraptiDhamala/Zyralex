@@ -101,3 +101,4 @@ export const SYLLABLE_DATA: SyllableChallenge[] = [
   { id: "syl_19", word: "UMBRELLA", syllablesCount: 3, breakdown: "UM - BREL - LA",meaningClue: "☔ Keeps you perfectly dry during rainstorms!", audioPrompt: "How many beats in UM-BREL-LA?" },
   { id: "syl_20", word: "BUTTERFLY",syllablesCount: 3, breakdown: "BUT - TER - FLY",meaningClue: "🦋 Has colorful wings and flutters around flowers!", audioPrompt: "Last one! Count the beats in: BUT-TER-FLY!" }
 ];
+

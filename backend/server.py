@@ -1,17 +1,16 @@
-# server.py
+# backend/server.py
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import uvicorn
+from typing import List
 
-# Import the core tracking and intervention engines
 from fixation_detector import FixationDetector
 from word_tracker import WordTracker
 from intervention import InterventionEngine
 
-app = FastAPI(title="ZyraLex Backend Engine")
+app = FastAPI(title="ZyraLex Dual-Stream Hub")
 
-# Enable CORS so your frontend application can talk to this server seamlessly
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,97 +19,120 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Instantiate the engines
+# Instantiate engines
 detector = FixationDetector(spatial_threshold=100, temporal_threshold=0.1)
 tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=1.0)
 intervention = InterventionEngine()
 
-# Pre-load text layout dimensions (Will adapt dynamically if the client maps new text strings)
-tracker.load_text_coordinates([
-    {
-        "word": "dyslexia",
-        "x1": 0,
-        "y1": 0,
-        "x2": 1920,
-        "y2": 1080
-    }
-])
+# Dedicated client storage lists
+camera_connections: List[WebSocket] = []
+app_connections: List[WebSocket] = []
+
+async def broadcast_to_apps(message_dict: dict):
+    """Safely broadcasts calculated metrics directly to the mobile apps."""
+    payload = json.dumps(message_dict)
+    for app_socket in app_connections:
+        try:
+            await app_socket.send_text(payload)
+        except Exception:
+            pass
 
 @app.get("/")
 def root():
-    return {"status": "online", "project": "ZyraLex Engine"}
+    return {"status": "online", "project": "ZyraLex Engine Hub"}
 
-@app.websocket("/ws/stream")
-async def gaze_stream_endpoint(websocket: WebSocket):
+# --- 1. DEDICATED APP HANDSHAKE ENDPOINT ---
+@app.websocket("/ws/app")
+async def app_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("Frontend/Webcam client connected to ZyraLex Socket Loop.")
+    app_connections.append(websocket)
+    print(f"Mobile App client synced up. Total Active Apps: {len(app_connections)}")
     
     try:
         while True:
-            # 1. Receive JSON packet frame from the gaze source
+            # Listen to text coordinate updates from frontend
             raw_data = await websocket.receive_text()
-            print("RAW DATA RECEIVED:", raw_data)
+            packet = json.loads(raw_data)
             
+            if "screen_words" in packet and packet["screen_words"]:
+                print(f"App updated layout coordinates: {len(packet['screen_words'])} words.")
+                tracker.load_text_coordinates(packet["screen_words"])
+                
+    except WebSocketDisconnect:
+        print("Mobile App disconnected.")
+    finally:
+        if websocket in app_connections:
+            app_connections.remove(websocket)
+
+# --- 2. DEDICATED CAMERA EYE STREAM ENDPOINT ---
+@app.websocket("/ws/camera")
+async def camera_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    camera_connections.append(websocket)
+    print(" Camera Eye-Tracker Connected to Pipeline Stream!")
+    
+    try:
+        while True:
+            raw_data = await websocket.receive_text()
             packet = json.loads(raw_data)
             
             face_detected = packet.get("face_detected", True)
             raw_x = packet.get("raw_x", 0)
             raw_y = packet.get("raw_y", 0)
             
-            # If the layout text maps update dynamically from the frontend, reload them
-            if "screen_words" in packet and packet["screen_words"]:
-                tracker.load_text_coordinates(packet["screen_words"])
-            
-            # 2. Process Distraction checks
+            # Compute Distraction
             status_update = tracker.update_gaze(raw_x, raw_y, face_detected=face_detected)
-            print("TRACKER RESULT:", status_update)
-            
             if status_update and status_update["status"] == "distracted":
-                print("INTERVENTION TRIGGERED: Distraction Detected")
-                await websocket.send_text(json.dumps({
+                print("INTERVENTION: Distraction Dispatched")
+                await broadcast_to_apps({
                     "type": "DISTRACTION_ALERT",
                     "payload": status_update
-                }))
+                })
                 continue
-                
-            # 3. If a face is present, pass the raw data point through the spatial filter
+            
+            # Compute Fixation
             if face_detected:
                 is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
-                print(f"FIXATION METRICS -> Is Fixating: {is_fixating}, Centroid X: {cx}, Centroid Y: {cy}, Duration: {duration}")
                 
                 if is_fixating:
-                    # Let the tracker map the refined fixation coordinate to a word block
                     fixation_match = tracker.update_gaze(cx, cy, face_detected=True)
                     
                     if fixation_match and fixation_match["status"] == "fixated":
                         target_word = fixation_match["word"]
                         
-                        # 4. Generate dynamic adaptations via InterventionEngine
-                        syllable_hyphen = intervention.format_syllable_breakdown(target_word, style="hyphen")
-                        syllable_html = intervention.format_syllable_breakdown(target_word, style="color")
-                        audio_payload = intervention.trigger_audio_cue(target_word)
-                        
-                        # Assemble complete intervention dispatch payload
                         response_payload = {
                             "type": "INTERVENTION_TRIGGER",
                             "word": target_word,
                             "fixation_duration": round(duration, 2),
                             "adaptations": {
-                                "hyphenated": syllable_hyphen,
-                                "html_colored": syllable_html,
-                                "audio_cue": audio_payload
+                                "hyphenated": intervention.format_syllable_breakdown(target_word, style="hyphen"),
+                                "html_colored": intervention.format_syllable_breakdown(target_word, style="color")
                             }
                         }
-                        
-                        print(f"Sending assistance layout for word: '{target_word}'")
-                        await websocket.send_text(json.dumps(response_payload))
+                        print(f"Fixation on '{target_word}'. Broadcasting layout...")
+                        await broadcast_to_apps(response_payload)
                         
     except WebSocketDisconnect:
-        print("Client disconnected from ZyraLex Socket Loop.")
-    except Exception as e:
-        print(f"Runtime error inside server framework loop: {e}")
-
+        print("Camera client dropped connection pipeline loop.")
+    finally:
+        if websocket in camera_connections:
+            camera_connections.remove(websocket)
+          if fixation_match["status"] == "struggling":
+            await broadcast_to_apps({
+            "type": "FRUSTRATION_ALERT",
+            "word": target_word,
+            "message": "It's okay to find this hard. Let's try together."
+        })
+        await broadcast_to_apps({
+            "type": "ENCOURAGEMENT_PUSH",
+            "message": "You just read that whole section!",
+            "stars_earned": 1
+    })
+    @app.post("/api/mood")
+    async def receive_mood(data: dict):
+    # store to students.csv or DB
+    # adjust intervention tone based on mood
+    mood = data.get("mood")  # "happy", "tired", "frustrated", "okay"
+    return {"received": True, "adapted_tone": mood}
 if __name__ == "__main__":
-    # Bound directly to 127.0.0.1 to avoid connection drops on macOS network layers
-    print("Starting ZyraLex Server on http://127.0.0.1:8000")
     uvicorn.run(app, host="127.0.0.1", port=8000)
