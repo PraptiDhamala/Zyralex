@@ -7,7 +7,8 @@ class WordTracker:
       
         self.distraction_threshold = distraction_threshold
         self.fixation_threshold = fixation_threshold
-        
+        self.word_struggle_counts = {}
+
         self.last_seen_time = time.time()
         self.current_word_index = None
         self.word_hover_start_time = None
@@ -70,4 +71,15 @@ class WordTracker:
             self.current_word_index = None
             self.word_hover_start_time = None
 
+# inside update_gaze, after the fixation threshold check:
+        if duration >= self.fixation_threshold:
+            target_word = self.words_metadata[looking_at_word_idx]['word']
+            self.word_struggle_counts[target_word] = self.word_struggle_counts.get(target_word, 0) + 1
+
+            status = "struggling" if self.word_struggle_counts[target_word] >= 3 else "fixated"
+            return{
+                 "status": status,
+                "word": target_word,
+                "struggle_count": self.word_struggle_counts[target_word],
+            }
         return None

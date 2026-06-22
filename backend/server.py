@@ -46,7 +46,7 @@ def root():
 async def app_endpoint(websocket: WebSocket):
     await websocket.accept()
     app_connections.append(websocket)
-    print(f"📱 Mobile App client synced up. Total Active Apps: {len(app_connections)}")
+    print(f"Mobile App client synced up. Total Active Apps: {len(app_connections)}")
     
     try:
         while True:
@@ -117,6 +117,22 @@ async def camera_endpoint(websocket: WebSocket):
     finally:
         if websocket in camera_connections:
             camera_connections.remove(websocket)
-
+          if fixation_match["status"] == "struggling":
+            await broadcast_to_apps({
+            "type": "FRUSTRATION_ALERT",
+            "word": target_word,
+            "message": "It's okay to find this hard. Let's try together."
+        })
+        await broadcast_to_apps({
+            "type": "ENCOURAGEMENT_PUSH",
+            "message": "You just read that whole section!",
+            "stars_earned": 1
+    })
+    @app.post("/api/mood")
+    async def receive_mood(data: dict):
+    # store to students.csv or DB
+    # adjust intervention tone based on mood
+    mood = data.get("mood")  # "happy", "tired", "frustrated", "okay"
+    return {"received": True, "adapted_tone": mood}
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
