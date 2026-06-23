@@ -42,3 +42,13 @@ app-example
 /ios
 /android
 backend/.env
+
+# Backendsign (IMPORTANT)
+backendsign/venv/
+backendsign/__pycache__/
+backendsign/*.pyc
+backendsign/*.pkl
+
+__pycache__/
+*.pyc
+*.pkl
