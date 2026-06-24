@@ -3,11 +3,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RelativePathString, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 import { DifficultySelector } from '../../components/DifficultySelector';
 import { PracticeSessionCard } from '../../components/PracticeSessionCard';
@@ -76,6 +77,13 @@ useFocusEffect(
           selectedDifficulty={selectedDifficulty}
           onSelectDifficulty={setSelectedDifficulty}
         />
+        <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 50,marginTop:40 }}>
+            <Image
+                  source={require("../../assets/mimo2.png")}
+                  style={{ width: 120, height: 100 }}
+                  resizeMode="contain"
+                />
+        </View>
 
         {/* Practice Modes */}
         <View style={styles.practiceContainer}>
@@ -128,7 +136,7 @@ const styles = StyleSheet.create({
   practiceContainer: {
     paddingHorizontal: 16,
     marginBottom: 24,
-    gap: 16, // more breathing room between rows
+    gap: 16, 
   },
   bottomPadding: {
     height: 40,
