@@ -34,10 +34,3 @@ class FixationDetector:
             self.gaze_history = self.gaze_history[-1:]
   
         return False, None, None, 0.
-        
-# # After a correct answer or lesson completion — call this from a new /api/milestone endpoint
-# await broadcast_to_apps({
-#     "type": "ENCOURAGEMENT_PUSH",
-#     "message": "You just read that whole section!",
-#     "stars_earned": 1
-# })

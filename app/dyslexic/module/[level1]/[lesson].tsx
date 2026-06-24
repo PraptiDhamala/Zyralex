@@ -76,13 +76,16 @@ export default function LessonScreen() {
 
   const BASE_IP_URL = "http://192.168.1.XX:8000";
   const WS_IP_URL = "ws://192.168.1.XX:8000/ws/app";
+  const [wsStatus, setWsStatus] = useState<
+    "connecting" | "connected" | "disconnected"
+  >("connecting");
 
   useEffect(() => {
     (async () => {
       const { granted } = await requestPermission();
       if (!granted) console.warn("Camera permission denied.");
     })();
-  }, []); 
+  }, []);
   useEffect(() => {
     fetch(`${BASE_IP_URL}/api/tracking/start`, { method: "POST" }).catch(
       (err) => console.error("Tracking start failed:", err),
@@ -92,9 +95,26 @@ export default function LessonScreen() {
 
     ws.current.onopen = () => {
       console.log("Connected to ZyraLex Server");
+      setWsStatus("connected");
       sendCurrentWordsToTracker();
     };
-
+    ws.current.onerror = () => setWsStatus("disconnected");
+    ws.current.onclose = () => setWsStatus("disconnected");
+    <Text
+      style={{
+        position: "absolute",
+        top: 50,
+        right: 16,
+        backgroundColor: wsStatus === "connected" ? "#22c55e" : "#ef4444",
+        color: "white",
+        padding: 6,
+        borderRadius: 8,
+        fontSize: 11,
+        zIndex: 9999,
+      }}
+    >
+      WS: {wsStatus}
+    </Text>;
     ws.current.onmessage = (event) => {
       try {
         const response = JSON.parse(event.data);
@@ -116,7 +136,7 @@ export default function LessonScreen() {
         if (response.type === "FRUSTRATION_ALERT") {
           if (distractionTimer.current) clearTimeout(distractionTimer.current);
           setMascotConfig({
-            mood: "frustrated", 
+            mood: "frustrated",
             message:
               response.sel_message ||
               "This word is tough — and you're still here trying. That's what matters! 🌟",
@@ -332,7 +352,12 @@ export default function LessonScreen() {
           </TouchableOpacity>
         </View>
       )}
-      {mascotConfig && (
+      {mascotConfig && mascotConfig.mood === "encourage" && !pendingWordHelp ? (
+        <View style={styles.distractionToast}>
+          <Text style={styles.distractionEmoji}>💪</Text>
+          <Text style={styles.distractionText}>{mascotConfig.message}</Text>
+        </View>
+      ) : mascotConfig ? (
         <View>
           <Mascot
             mood={mascotConfig.mood}
@@ -340,12 +365,7 @@ export default function LessonScreen() {
             showNext={!pendingWordHelp}
             nextLabel="Got it!"
             onDismiss={() => {
-              const wasDistraction =
-                mascotConfig?.mood === "encourage" && !pendingWordHelp;
-              if (wasDistraction) {
-                setStep(0);
-                Speech.speak("Let's go through this together from the start.");
-              } else if (
+              if (
                 mascotConfig?.mood === "correct" ||
                 mascotConfig?.mood === "wrong"
               ) {
@@ -388,7 +408,7 @@ export default function LessonScreen() {
             </View>
           )}
         </View>
-      )}
+      ) : null}
     </ScrollView>
   );
 }
@@ -509,6 +529,35 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     color: "#1E293B",
     lineHeight: 38,
+  },
+  distractionToast: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    backgroundColor: "#EEF4FF",
+    borderColor: "#2563EB",
+    borderWidth: 2,
+    borderRadius: 16,
+    padding: 12,
+    maxWidth: 180,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    zIndex: 999,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  distractionEmoji: {
+    fontSize: 20,
+  },
+  distractionText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1E40AF",
+    flexShrink: 1,
+    lineHeight: 18,
   },
   option: {
     backgroundColor: "#F8FAFC",
