@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Speech from "expo-speech";
-import { default as React, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +11,8 @@ import {
   View,
 } from "react-native";
 
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { Mascot } from "../../../../components/lesson/Mascot";
 import letterReversal from "../../../../data/level1/easy/letter_reversal";
 import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
@@ -21,37 +22,46 @@ import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
 import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
 
-const curriculumMap: Record<string, any> = {
-  level1: {
-    letter_reversal: letterReversal,
-    phonics: phonics,
-    vowel_processing: vowel_processing,
-    chunking: chunking,
-    decoding: decoding,
-  },
-  level2: {
-    letter_reversal: level2LetterReversal,
-    phonics: level2Phonics,
-    vowel_processing: level2VisualTracking,
-  },
-};
-
 export default function LessonScreen() {
   const router = useRouter();
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
+  const frameInterval = useRef<NodeJS.Timeout | null>(null);
+
+  const [pendingWordHelp, setPendingWordHelp] = useState<{
+    word: string;
+    hyphenated: string;
+  } | null>(null);
+  const curriculumMap: Record<string, any> = {
+    level1: {
+      letter_reversal: letterReversal,
+      phonics: phonics,
+      vowel_processing: vowel_processing,
+      chunking: chunking,
+      decoding: decoding,
+    },
+    level2: {
+      letter_reversal: level2LetterReversal,
+      phonics: level2Phonics,
+      vowel_processing: level2VisualTracking,
+    },
+  };
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
-
-  const [intervention, setIntervention] = useState<{
-    word: string;
-    hyphenated: string;
+  const [mascotConfig, setMascotConfig] = useState<{
+    mood: "cheer" | "correct" | "wrong" | "encourage" | "frustrated";
+    message: string;
+    word?: string;
+    hyphenated?: string;
   } | null>(null);
   const [isDistracted, setIsDistracted] = useState(false);
 
   const ws = useRef<WebSocket | null>(null);
+  const distractionTimer = useRef<any>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-  // DYNAMIC LESSON LOOKUP
+
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
   const lessonData =
     curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
@@ -64,15 +74,24 @@ export default function LessonScreen() {
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
-  // --- WEBSOCKET LIFECYCLE MANAGEMENT ---
+  const BASE_IP_URL = "http://192.168.1.XX:8000";
+  const WS_IP_URL = "ws://192.168.1.XX:8000/ws/app";
+
   useEffect(() => {
-    // Fast API development endpoint.
-    // NOTE: If using a physical testing device, replace "127.0.0.1" with your computer's Local IP address (e.g., 192.168.X.X)
-    const socketUrl = "ws://192.168.1.XX:8000/ws/app";
-    ws.current = new WebSocket(socketUrl);
+    (async () => {
+      const { granted } = await requestPermission();
+      if (!granted) console.warn("Camera permission denied.");
+    })();
+  }, []); 
+  useEffect(() => {
+    fetch(`${BASE_IP_URL}/api/tracking/start`, { method: "POST" }).catch(
+      (err) => console.error("Tracking start failed:", err),
+    );
+
+    ws.current = new WebSocket(WS_IP_URL);
 
     ws.current.onopen = () => {
-      console.log("Connected seamlessly to ZyraLex FastAPI Server Engine");
+      console.log("Connected to ZyraLex Server");
       sendCurrentWordsToTracker();
     };
 
@@ -80,50 +99,62 @@ export default function LessonScreen() {
       try {
         const response = JSON.parse(event.data);
 
-        // Handle Distraction Engine Intercept
         if (response.type === "DISTRACTION_ALERT") {
-          setIsDistracted(true);
-          Speech.speak(
-            "Hey there! Let's bring our attention back to the lesson map.",
-            { rate: 0.85 },
+          if (distractionTimer.current) clearTimeout(distractionTimer.current);
+          setMascotConfig({
+            mood: "encourage",
+            message:
+              response.payload?.message ||
+              "Hey! Lost your place? No worries — let's jump back in! 😊",
+          });
+          distractionTimer.current = setTimeout(
+            () => setMascotConfig(null),
+            8000,
           );
         }
 
-        // Handle Fixation / Syllable Breakdown Intercept
+        if (response.type === "FRUSTRATION_ALERT") {
+          if (distractionTimer.current) clearTimeout(distractionTimer.current);
+          setMascotConfig({
+            mood: "frustrated", 
+            message:
+              response.sel_message ||
+              "This word is tough — and you're still here trying. That's what matters! 🌟",
+          });
+          distractionTimer.current = setTimeout(
+            () => setMascotConfig(null),
+            9000,
+          );
+        }
+
         if (response.type === "INTERVENTION_TRIGGER") {
-          setIntervention({
+          setPendingWordHelp({
             word: response.word,
             hyphenated: response.adaptations.hyphenated,
           });
-
-          // Trigger audio reading cue seamlessly
-          Speech.speak(
-            `Let's break down the word: ${response.word}. It is pronounced as: ${response.adaptations.hyphenated}`,
-            {
-              rate: 0.75,
-            },
-          );
+          setMascotConfig({
+            mood: "encourage",
+            message: `${response.sel_message}\n\nDo you need help with the word "${response.word}"?`,
+          });
         }
       } catch (err) {
-        console.error("Error parsing socket incoming frame stream data:", err);
+        console.error("Error parsing socket data:", err);
       }
     };
 
-    ws.current.onerror = (e) => console.log("WebSocket Connection Error: ", e);
-    ws.current.onclose = () =>
-      console.log("Disconnected from ZyraLex Socket Loop.");
     return () => {
       if (ws.current) ws.current.close();
+      if (distractionTimer.current) clearTimeout(distractionTimer.current);
     };
-  }, [step]); // Triggers reload sequence whenever step shifts to refresh local screen word coordinate data
+  }, []);
 
-  // Helper function to map current textual blocks to backend tracker coordinate grid maps
+  useEffect(() => {
+    sendCurrentWordsToTracker();
+  }, [step]);
   const sendCurrentWordsToTracker = () => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
     let targetWords: string[] = [];
-
-    // Parse visual words on current active view layer layout frame
     if (step < explanationLength) {
       targetWords = lessonData.explanation[step].content.split(" ");
     } else if (
@@ -136,14 +167,14 @@ export default function LessonScreen() {
       targetWords = currentPractice.question.split(" ");
     }
 
-    // Map screen words dynamically to fill the Python server's text layout grid system bounding-box array
     const mappedScreenWords = targetWords.map((word) => ({
       word: word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""),
       x1: 0,
       y1: 0,
-      x2: screenWidth, // Map dynamically across structural viewing area
+      x2: screenWidth,
       y2: screenHeight,
     }));
+
     if (mappedScreenWords.length > 0) {
       ws.current.send(JSON.stringify({ screen_words: mappedScreenWords }));
     }
@@ -164,11 +195,19 @@ export default function LessonScreen() {
   const handlePracticeAnswer = (selected: string, correct: string) => {
     if (selected === correct) {
       setScore((prev) => prev + 1);
+      setMascotConfig({
+        mood: "correct",
+        message: "Amazing! You got it right! Your hard work is paying off! 🌟",
+      });
       Speech.speak("Amazing job!");
     } else {
-      Speech.speak("Nice try!");
+      setMascotConfig({
+        mood: "wrong",
+        message:
+          "That's okay! Mistakes help us learn. Try to sound it out next time. 💛",
+      });
+      Speech.speak("Nice try! Keep going!");
     }
-    handleNext();
   };
 
   const renderContent = () => {
@@ -255,7 +294,6 @@ export default function LessonScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{lessonData.title}</Text>
       <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
-
       <View style={styles.progressBarBackground}>
         <View
           style={[
@@ -264,7 +302,6 @@ export default function LessonScreen() {
           ]}
         />
       </View>
-
       {!finished ? (
         renderContent()
       ) : (
@@ -283,9 +320,8 @@ export default function LessonScreen() {
               setFinished(false);
               setScore(0);
               let nextLesson = lessonKey;
-              if (lessonKey === "vowel_processing") {
+              if (lessonKey === "vowel_processing")
                 nextLesson = "visual_tracking";
-              }
               router.replace({
                 pathname: "/dyslexic/module/[level1]/[lesson]",
                 params: { level1: "level2", lesson: nextLesson },
@@ -296,51 +332,63 @@ export default function LessonScreen() {
           </TouchableOpacity>
         </View>
       )}
+      {mascotConfig && (
+        <View>
+          <Mascot
+            mood={mascotConfig.mood}
+            message={mascotConfig.message}
+            showNext={!pendingWordHelp}
+            nextLabel="Got it!"
+            onDismiss={() => {
+              const wasDistraction =
+                mascotConfig?.mood === "encourage" && !pendingWordHelp;
+              if (wasDistraction) {
+                setStep(0);
+                Speech.speak("Let's go through this together from the start.");
+              } else if (
+                mascotConfig?.mood === "correct" ||
+                mascotConfig?.mood === "wrong"
+              ) {
+                handleNext();
+              }
+              setMascotConfig(null);
+              setPendingWordHelp(null);
+            }}
+          />
 
-      {/* --- INTEGRATED MODAL OVERLAY: FIXATION / SYLLABLE ASSISTANCE ASSISTANT --- */}
-      <Modal visible={intervention !== null} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.interventionCard}>
-            <Text style={styles.modalAlertTitle}>Let's Break It Down! 🧩</Text>
-            <Text style={styles.originalWord}>{intervention?.word}</Text>
-            <Text style={styles.syllableBreakdown}>
-              {intervention?.hyphenated}
-            </Text>
-            <Text style={styles.modalMessage}>
-              Take your time parsing out these core individual phonetic sounds!
-            </Text>
-            <TouchableOpacity
-              style={styles.closeModalButton}
-              onPress={() => setIntervention(null)}
-            >
-              <Text style={styles.buttonText}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+          {pendingWordHelp && (
+            <View style={styles.wordHelpButtons}>
+              <TouchableOpacity
+                style={styles.yesButton}
+                onPress={() => {
+                  setMascotConfig({
+                    mood: "cheer",
+                    message: `"${pendingWordHelp.word}" breaks down as:\n\n${pendingWordHelp.hyphenated}`,
+                  });
+                  Speech.speak(
+                    `Let's break it down: ${pendingWordHelp.hyphenated}`,
+                    { rate: 0.75 },
+                  );
+                  setPendingWordHelp(null);
+                }}
+              >
+                <Text style={styles.yesText}>Yes, help me! 🧩</Text>
+              </TouchableOpacity>
 
-      {/* --- INTEGRATED MODAL OVERLAY: DISTRACTION / RE-ENGAGEMENT DIALOGUE --- */}
-      <Modal visible={isDistracted} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.distractionCard}>
-            <Ionicons name="eye-off-outline" size={50} color="#F59E0B" />
-            <Text style={styles.distractionTitle}>Are you still reading?</Text>
-            <Text style={styles.distractionText}>
-              Let's re-align together! We paused right where you left off on
-              this module screen step.
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                { width: "100%", backgroundColor: "#F59E0B" },
-              ]}
-              onPress={() => setIsDistracted(false)}
-            >
-              <Text style={styles.buttonText}>Resume Learning</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                style={styles.noButton}
+                onPress={() => {
+                  setMascotConfig(null);
+                  setPendingWordHelp(null);
+                  Speech.speak("You've got this! Keep going!");
+                }}
+              >
+                <Text style={styles.noText}>I'm okay, keep going!</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-      </Modal>
+      )}
     </ScrollView>
   );
 }
@@ -352,6 +400,31 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: "center",
   },
+  wordHelpButtons: {
+    position: "absolute",
+    bottom: 60,
+    left: 24,
+    right: 24,
+    flexDirection: "row",
+    gap: 12,
+    zIndex: 1000,
+  },
+  yesButton: {
+    flex: 1,
+    backgroundColor: "#2563EB",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  noButton: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  yesText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  noText: { color: "#64748B", fontWeight: "700", fontSize: 15 },
   title: { fontSize: 30, fontWeight: "800", color: "#1E293B", marginBottom: 8 },
   subtitle: {
     fontSize: 18,
@@ -454,8 +527,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   score: { textAlign: "center", color: "#64748B", marginTop: 10, fontSize: 18 },
-
-  // Modal layout structural layout extensions
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -488,38 +559,48 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 15,
     textAlign: "center",
-    color: "#475569",
+    color: "#64748B",
     marginBottom: 20,
-    lineHeight: 22,
   },
   closeModalButton: {
     backgroundColor: "#2563EB",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    width: "100%",
+    paddingVertical: 16,
     borderRadius: 12,
-    width: "100%",
     alignItems: "center",
   },
-  distractionCard: {
-    backgroundColor: "white",
-    borderRadius: 24,
-    padding: 32,
+
+  toastBannerContainer: {
+    position: "absolute",
+    bottom: 30,
+    left: 20,
+    right: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: "#FEF3C7",
+    shadowColor: "#1E293B",
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  toastContent: {
+    flexDirection: "row",
     alignItems: "center",
-    width: "100%",
-    elevation: 5,
+    gap: 12,
+    marginBottom: 14,
   },
-  distractionTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1E293B",
-    marginTop: 16,
-    marginBottom: 8,
+  toastText: { fontSize: 17, fontWeight: "600", color: "#1E293B", flex: 1 },
+  toastActions: { flexDirection: "row", gap: 12 },
+  toastButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  distractionText: {
-    fontSize: 15,
-    color: "#64748B",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 22,
-  },
+  toastAcceptBtn: { backgroundColor: "#F59E0B" },
+  toastDismissBtn: { backgroundColor: "#F1F5F9" },
+  toastActionText: { color: "white", fontSize: 15, fontWeight: "700" },
 });
