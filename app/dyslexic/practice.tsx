@@ -1,11 +1,7 @@
-// Enhanced Practice Screen — Blue & White Theme
-// Features: Difficulty Levels (Unlocked), Lesson Practice with Progress Controls
- 
-import {
-  ChevronRight
-} from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,40 +11,29 @@ import {
 import LetterRecognitionGame from "../../components/LetterRecognitionGame";
 import SimpleWordsGame from "../../components/SimpleWordsGame";
 import SyllableBasicsGame from "../../components/SyllableBasicsGame";
-import ReadAloudModule from "../../components/practice/ReadAloudModule"; // 🌟 Imported our new component shortcut package here
+import ReadAloudModule from "../../components/practice/ReadAloudModule";
 import { beginnerReadAloud } from "../../data/readAloudData";
 import { useAppProgress } from "../../hooks/useAppProgress";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type FeedbackType = "ok" | "warn" | "err"
- 
-interface CoachFeedback {
-  type: FeedbackType
-  result: string
-  comment: string
-  tags: string[]
-}
- 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Structural Modular Connections
+import { AttentionMeter } from "../../components/AttentionMeter";
+import { CameraPreview } from "../../components/CameraPreview";
+import { beginnerPhonics } from "../../data/phonicsData";
+import { useGazeTracking } from "../../hooks/useGazeTracking";
+
 export default function DyslexicPractice() {
-  // Integrate our Progress Engine Hook
   const {
     currentLevel,
     setCurrentLevel,
-    currentFeatureStep,
-    isLearnGatePassed,
     advanceToNextFeature,
     wordsCompletedCount,
-    debugCompleteLearnModule
-  } = useAppProgress()
+    debugCompleteLearnModule,
+    isLearnGatePassed
+  } = useAppProgress();
 
-  const [wordIndex, setWordIndex]                   = useState(0)
-  const [spokenText, setSpokenText]                 = useState("")
-  const [selectedLetter, setSelectedLetter]         = useState<string | null>(null)
-  const [phonicPlaying, setPhonicPlaying]           = useState(false)
-  const [lockHint, setLockHint]                     = useState("")
+  const [wordIndex, setWordIndex]                   = useState(0);
+  const [spokenText, setSpokenText]                 = useState("");
   
-  // Custom Mascot Mimo Evaluation States
   const [mimoFeedback, setMimoFeedback]             = useState<{
     title: string;
     message: string;
@@ -57,13 +42,20 @@ export default function DyslexicPractice() {
     bgColor: string;
   } | null>(null);
 
-  // Active game navigation state
-  const [activeLessonGame, setActiveLessonGame]     = useState<string | null>(null)
+  const [activeLessonGame, setActiveLessonGame]     = useState<string | null>(null);
 
-  const currentEntry = beginnerReadAloud[wordIndex] ?? beginnerReadAloud[0]
-  const currentWord  = currentEntry.sentence
+  // Phonics Gaze States
+  const [phonicsIndex, setPhonicsIndex]             = useState(0);
+  const [activeChunkIndex, setActiveChunkIndex]     = useState(0);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [evaluationData, setEvaluationData]         = useState<{ finalScore: number; feedback: string } | null>(null);
 
-  // 🧠 Optimized using useMemo to lock static structural configs safely
+  const { metrics, handleFaceDetected, getEvaluationReport, resetSession } = useGazeTracking();
+
+  const currentEntry = beginnerReadAloud[wordIndex] ?? beginnerReadAloud[0];
+  const currentWord  = currentEntry.sentence;
+  const activePhonics = beginnerPhonics[phonicsIndex] ?? beginnerPhonics[0];
+
   const DIFFICULTIES = useMemo(() => [
     { id: "beginner" as const,     label: "Beginner",     emoji: "🌱", words: 20, unlocked: true  },
     { id: "intermediate" as const, label: "Intermediate", emoji: "🔥", words: 30, unlocked: true  }, 
@@ -77,39 +69,55 @@ export default function DyslexicPractice() {
     { id: "SYLLABLE_BASICS",    icon: "🗣️", name: "Syllable Basics",     meta: "Break words into parts",    bg: "#F0FFF4" },
   ], []);
 
-  const PHONICS_LETTERS = useMemo(() => [
-    { char: "A", sound: '/æ/ — "ay"' },
-    { char: "E", sound: '/ɛ/ — "ee"' },
-    { char: "I", sound: '/ɪ/ — "ih"' },
-    { char: "O", sound: '/ɒ/ — "oh"' },
-  ], []);
-
   const currentDiff = useMemo(() => {
     return DIFFICULTIES.find((d) => d.id === currentLevel) || DIFFICULTIES[0];
   }, [DIFFICULTIES, currentLevel]);
 
-  // ── Handlers ──
   const handleSelectDifficulty = (diff: typeof DIFFICULTIES[0]) => {
-    setCurrentLevel(diff.id)
-    setLockHint("")
+    setCurrentLevel(diff.id);
   };
 
   const handleFeatureRowPress = (featureId: string) => {
-    setActiveLessonGame(featureId)
+    setActiveLessonGame(featureId);
   };
 
   const handleGameComplete = () => {
-    setActiveLessonGame(null)
-    advanceToNextFeature()
+    setActiveLessonGame(null);
+    advanceToNextFeature();
   };
  
   const goToNextWord = () => {
-    setWordIndex((prev) => (prev < beginnerReadAloud.length - 1 ? prev + 1 : 0))
-    setSpokenText("")
-    setMimoFeedback(null)
+    setWordIndex((prev) => (prev < beginnerReadAloud.length - 1 ? prev + 1 : 0));
+    setSpokenText("");
+    setMimoFeedback(null);
+  };
+
+  const advancePhonicsChunk = () => {
+    const totalPhonemes = activePhonics.phonemes?.length ?? 0;
+    if (activeChunkIndex < totalPhonemes - 1) {
+      setActiveChunkIndex((p) => p + 1);
+    } else {
+      setActiveChunkIndex(0);
+      setPhonicsIndex((p) => (p < beginnerPhonics.length - 1 ? p + 1 : 0));
+    }
+  };
+
+  const goToNextPhonicsWord = () => {
+    setActiveChunkIndex(0);
+    setPhonicsIndex((p) => (p < beginnerPhonics.length - 1 ? p + 1 : 0));
+  };
+
+  const handleStopAndEvaluate = () => {
+    const report = getEvaluationReport();
+    setEvaluationData(report);
+    setReportModalVisible(true);
+  };
+
+  const handleCloseReport = () => {
+    setReportModalVisible(false);
+    resetSession();
   };
  
-  // Processes user speech outcome and displays a friendly response from Mimo the Panda
   const handleProcessMimoSpeech = (outcome: "well_done" | "keep_trying" | "slow") => {
     setSpokenText(currentWord);
 
@@ -121,10 +129,7 @@ export default function DyslexicPractice() {
         textColor: "#15803D",
         bgColor: "#DCFCE7",
       });
-      
-      if (typeof advanceToNextFeature === "function") {
-        advanceToNextFeature();
-      }
+      advanceToNextFeature();
     } else if (outcome === "keep_trying") {
       setMimoFeedback({
         title: "Keep trying! 🌟",
@@ -144,50 +149,40 @@ export default function DyslexicPractice() {
     }
   };
  
-  if (activeLessonGame === "LETTER_RECOGNITION") {
-    return (
-      <LetterRecognitionGame 
-        onComplete={handleGameComplete} 
-        onClose={() => setActiveLessonGame(null)} 
-      />
-    )
-  }
-
-  if (activeLessonGame === "SIMPLE_WORDS") {
-    return (
-      <SimpleWordsGame 
-        onComplete={handleGameComplete} 
-        onClose={() => setActiveLessonGame(null)} 
-      />
-    )
-  }
-
-  if (activeLessonGame === "SYLLABLE_BASICS") {
-    return (
-      <SyllableBasicsGame 
-        onComplete={handleGameComplete} 
-        onClose={() => setActiveLessonGame(null)} 
-      />
-    )
-  }
+  if (activeLessonGame === "LETTER_RECOGNITION") return <LetterRecognitionGame onComplete={handleGameComplete} onClose={() => setActiveLessonGame(null)} />;
+  if (activeLessonGame === "SIMPLE_WORDS") return <SimpleWordsGame onComplete={handleGameComplete} onClose={() => setActiveLessonGame(null)} />;
+  if (activeLessonGame === "SYLLABLE_BASICS") return <SyllableBasicsGame onComplete={handleGameComplete} onClose={() => setActiveLessonGame(null)} />;
 
   return (
     <View style={s.screen}>
       
-      {/* 🛠️ TESTING HUD (TEMPORARY) */}
+      {/* 🛠️ TESTING HUD */}
       <View style={s.debugHud}>
         <Text style={s.debugText}>
           Learn Status: {isLearnGatePassed(currentLevel) ? "✅ COMPLETED" : "❌ NOT LEARNED YET"}
         </Text>
-        <TouchableOpacity 
-          style={s.debugBtn} 
-          onPress={() => debugCompleteLearnModule(currentLevel)}
-        >
+        <TouchableOpacity style={s.debugBtn} onPress={() => debugCompleteLearnModule(currentLevel)}>
           <Text style={s.debugBtnText}>🔧 Clear Learn Gate</Text>
         </TouchableOpacity> 
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* 👁️ REAL-TIME PERFORMANCE GRAPHICS PANEL */}
+      <View style={s.attentionStatusHud}>
+        <Text style={s.hudIndicator}>{metrics.isFacePresent ? "👤 Connected" : "👤 Disconnected"}</Text>
+        <Text style={[s.hudIndicator, { color: metrics.isLookingAtScreen ? '#15803D' : '#EF4444' }]}>
+          {metrics.isLookingAtScreen ? "🎯 Looking at Screen" : "⚠️ Looking Away"}
+        </Text>
+        <Text style={s.hudIndicator}>Scanning: {metrics.estimatedReadingDirection}</Text>
+      </View>
+
+      {/* Eye Tracking Look-at-Camera Guard Alert */}
+      {!metrics.isLookingAtScreen && (
+        <View style={s.gazeAlert}>
+          <Text style={s.gazeAlertText}>👀 Keep looking here while reading!</Text>
+        </View>
+      )}
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
  
         <Text style={s.pageTitle}>Practice Sessions</Text>
  
@@ -197,33 +192,28 @@ export default function DyslexicPractice() {
  
           <View style={s.diffRow}>
             {DIFFICULTIES.map((d) => {
-              const isActive = currentLevel === d.id
+              const isActive = currentLevel === d.id;
               return (
                 <TouchableOpacity
                   key={d.id}
                   onPress={() => handleSelectDifficulty(d)}
                   activeOpacity={0.75}
-                  style={[
-                    s.diffItem,
-                    isActive && s.diffActive,
-                  ]}
+                  style={[s.diffItem, isActive && s.diffActive]}
                 >
                   <Text style={s.diffEmoji}>{d.emoji}</Text>
                   <Text style={[s.diffLabel, isActive && s.diffLabelActive]}>{d.label}</Text>
                   <Text style={[s.diffWords, isActive && s.diffWordsActive]}>{d.words} words</Text>
                 </TouchableOpacity>
-              )
+              );
             })}
           </View>
  
-          {/* Progress bar */}
           <View style={s.progRow}>
             <View style={s.progBar}>
               <View style={[s.progFill, { width: `${Math.min((wordsCompletedCount / currentDiff.words) * 100, 100)}%` }]} />
             </View>
             <Text style={s.progTxt}>{wordsCompletedCount} / {currentDiff.words} words</Text>
           </View>
-          {lockHint ? <Text style={s.lockHint}>{lockHint}</Text> : null}
         </View>
  
         {/* ── Lesson Practice Section ── */}
@@ -252,9 +242,47 @@ export default function DyslexicPractice() {
           ))}
         </View>
 
-    
- 
-      {/* ── Read Aloud Section ── */}
+        {/* ── LIVE GAZE PHONICS MODULE ── */}
+        <View style={s.card}>
+          <Text style={s.cardTitle}>🎯 ATTENTION PHONICS READING</Text>
+          <Text style={s.phonicsHint}>Tap chunks from left to right as you read aloud!</Text>
+          
+          <View style={s.gazePracticeBox}>
+            <Text style={s.phonicsTargetWord}>TARGET WORD: {activePhonics.word}</Text>
+            
+            <View style={s.chunksInteractiveRow}>
+              {(activePhonics.phonemes ?? []).map((chunk: string, idx: number) => {
+                const isActive = idx === activeChunkIndex;
+                return (
+                  <TouchableOpacity 
+                    key={idx} 
+                    onPress={advancePhonicsChunk}
+                    style={[s.chunkBubble, isActive && s.chunkBubbleActive]}
+                  >
+                    <Text style={[s.chunkText, isActive && s.chunkTextActive]}>{chunk}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <Text style={s.soundHint}>Current sound helper: {activePhonics.sounds[activeChunkIndex]}</Text>
+          </View>
+
+          <AttentionMeter score={metrics.attentionScore} />
+
+          <View style={s.cameraFooterControl}>
+            <CameraPreview onFacesDetected={handleFaceDetected} />
+            <View style={s.actionBtnGroup}>
+              <TouchableOpacity style={s.nextWordBtn} onPress={goToNextPhonicsWord}>
+                <Text style={s.nextWordBtnText}>Next Word ➡️</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.evaluateBtn} onPress={handleStopAndEvaluate}>
+                <Text style={s.evaluateBtnText}>Evaluate</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* ── Read Aloud Section ── */}
         <ReadAloudModule
           wordIndex={wordIndex}
           totalSentences={beginnerReadAloud.length}
@@ -263,164 +291,76 @@ export default function DyslexicPractice() {
           onSpeechResult={handleProcessMimoSpeech}
           onNextWord={goToNextWord}
         />
-        
-        {/* ── Phonics Section ── */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>🔊 PHONICS</Text>
-          <View style={s.letterGrid}>
-            {PHONICS_LETTERS.map((l) => (
-              <TouchableOpacity key={l.char} onPress={() => setSelectedLetter(l.char)} style={[s.lCard, selectedLetter === l.char && s.lCardActive]}>
-                <Text style={s.lChar}>{l.char}</Text>
-                <Text style={s.lSound}>{l.sound}</Text>
-              </TouchableOpacity>
-            ))}
+      </ScrollView>
+
+      {/* ── EVALUATION REPORT MODAL ── */}
+      <Modal visible={reportModalVisible} transparent={true} animationType="slide">
+        <View style={s.modalOverlay}>
+          <View style={s.modalContent}>
+            <Text style={s.modalTitle}>Mimo's Focus Report 🐾</Text>
+            <Text style={s.modalScore}>{evaluationData?.finalScore}% Focus Score</Text>
+            <Text style={s.modalFeedback}>{evaluationData?.feedback}</Text>
+            <TouchableOpacity style={s.modalCloseBtn} onPress={handleCloseReport}>
+              <Text style={s.modalCloseBtnText}>Back to Practice</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+      </Modal>
     </View>
-  )
+  );
 }
- 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const s = StyleSheet.create({
-  screen: { 
-    flex: 1, 
-    backgroundColor: "#EFF6FF", 
-    paddingHorizontal: 20, 
-    paddingTop: 20 
-  },
-  pageTitle: { 
-    fontSize: 22,
-    fontWeight: "700", 
-    color: "#1E3A5F", 
-    marginBottom: 20,
-    marginTop: 14,
-    letterSpacing: 0.5
-  },
-  debugHud: { 
-    backgroundColor: "#DBEAFE", 
-    padding: 14, 
-    borderRadius: 12, 
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    alignItems: "center", 
-    borderWidth: 1, 
-    borderColor: "#93C5FD", 
-    marginBottom: 20 
-  },
-  debugText: { 
-    fontSize: 13,
-    fontWeight: "600", 
-    color: "#1E40AF" 
-  },
-  debugBtn: { 
-    backgroundColor: "#2563EB", 
-    paddingVertical: 8,
-    paddingHorizontal: 14, 
-    borderRadius: 8 
-  },
-  debugBtnText: { 
-    color: "#fff", 
-    fontSize: 12,
-    fontWeight: "bold" 
-  },
-  card: { 
-    backgroundColor: "#fff", 
-    borderRadius: 16, 
-    borderWidth: 1,
-    borderColor: "#BFDBFE", 
-    padding: 18,
-    marginBottom: 20
-  },
-  cardTitle: { 
-    fontSize: 13,
-    fontWeight: "700", 
-    color: "#6B9EC8", 
-    letterSpacing: 1,
-    marginBottom: 16 
-  },
-  diffRow: { 
-    flexDirection: "row", 
-    gap: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 2,
-  },
-  diffItem: { 
-    borderRadius: 100,
-    borderWidth: 1.5, 
-    borderColor: "#BFDBFE", 
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center", 
-    justifyContent: "center",
-    gap: 6,                     
-    position: "relative" 
-  },
-  diffActive: { 
-    backgroundColor: "#2563EB",
-    borderColor: "#2563EB" 
-  },
-  diffEmoji: { 
-    fontSize: 16
-  },
-  diffLabel: { 
-    fontSize: 14,
-    fontWeight: "600", 
-    color: "#1E3A5F", 
-    textAlign: "center" 
-  },
+  screen: { flex: 1, backgroundColor: "#EFF6FF", paddingHorizontal: 20, paddingTop: 20 },
+  pageTitle: { fontSize: 22, fontWeight: "700", color: "#1E3A5F", marginBottom: 20, marginTop: 14, letterSpacing: 0.5 },
+  debugHud: { backgroundColor: "#DBEAFE", padding: 14, borderRadius: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#93C5FD", marginBottom: 12 },
+  debugText: { fontSize: 13, fontWeight: "600", color: "#1E40AF" },
+  debugBtn: { backgroundColor: "#2563EB", paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8 },
+  debugBtnText: { color: "#fff", fontSize: 12, fontWeight: "bold" },
+  attentionStatusHud: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#fff', padding: 10, borderRadius: 12, borderWidth: 1, borderColor: '#BFDBFE', marginBottom: 10 },
+  hudIndicator: { fontSize: 12, fontWeight: '700', color: '#1E3A5F' },
+  gazeAlert: { backgroundColor: '#EF4444', padding: 10, borderRadius: 8, marginBottom: 10 },
+  gazeAlertText: { color: '#fff', fontWeight: '800', textAlign: 'center', fontSize: 14 },
+  card: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: "#BFDBFE", padding: 18, marginBottom: 20 },
+  cardTitle: { fontSize: 13, fontWeight: "700", color: "#6B9EC8", letterSpacing: 1, marginBottom: 16 },
+  phonicsHint: { fontSize: 12, color: '#6B9EC8', marginBottom: 12, fontStyle: 'italic' },
+  gazePracticeBox: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 10, borderWidth: 1, borderColor: '#E2E8F0' },
+  phonicsTargetWord: { fontSize: 12, color: '#94A3B8', fontWeight: '700', letterSpacing: 1, marginBottom: 10 },
+  chunksInteractiveRow: { flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 10 },
+  chunkBubble: { backgroundColor: '#E2E8F0', paddingVertical: 12, paddingHorizontal: 22, borderRadius: 12 },
+  chunkBubbleActive: { backgroundColor: '#2563EB' },
+  chunkText: { fontSize: 28, fontWeight: 'bold', color: '#334155' },
+  chunkTextActive: { color: '#fff' },
+  soundHint: { fontSize: 13, color: '#475569', fontWeight: '500' },
+  cameraFooterControl: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
+  actionBtnGroup: { flex: 1, marginLeft: 12, gap: 8 },
+  nextWordBtn: { backgroundColor: '#4B5563', paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+  nextWordBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  evaluateBtn: { backgroundColor: '#1E3A5F', paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+  evaluateBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  diffRow: { flexDirection: "row", gap: 10, paddingVertical: 6, paddingHorizontal: 2 },
+  diffItem: { borderRadius: 100, borderWidth: 1.5, borderColor: "#BFDBFE", backgroundColor: "#fff", paddingVertical: 10, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  diffActive: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
+  diffEmoji: { fontSize: 16 },
+  diffLabel: { fontSize: 14, fontWeight: "600", color: "#1E3A5F", textAlign: "center" },
   diffLabelActive: { color: "#fff" },
-  diffWords: { 
-    fontSize: 12, 
-    color: "#6B9EC8", 
-    textAlign: "center",
-    fontWeight: "500"
-  },
+  diffWords: { fontSize: 12, color: "#6B9EC8", textAlign: "center", fontWeight: "500" },
   diffWordsActive: { color: "#BFDBFE" },
   progRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 14, marginBottom: 10 },
   progBar: { flex: 1, height: 6, backgroundColor: "#BFDBFE", borderRadius: 99, overflow: "hidden" },
   progFill: { height: 6, backgroundColor: "#2563EB", borderRadius: 99 },
   progTxt: { fontSize: 12, color: "#6B9EC8", fontWeight: "600" },
-  lockHint: { fontSize: 12, color: "#EF4444", marginTop: 4, textAlign: "center" },
-  pRow: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    paddingVertical: 16,
-    borderBottomWidth: 1, 
-    borderBottomColor: "#DBEAFE", 
-    justifyContent: 'space-between' 
-  },
+  pRow: { flexDirection: "row", alignItems: "center", paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: "#DBEAFE", justifyContent: 'space-between' },
   pLeft: { flexDirection: "row", alignItems: "center", gap: 14 },
   pIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  pName: { 
-    fontSize: 15,
-    fontWeight: "600", 
-    color: "#1E3A5F" 
-  },
-  pMeta: { 
-    fontSize: 12,
-    color: "#6B9EC8", 
-    marginTop: 3 
-  },
+  pName: { fontSize: 15, fontWeight: "600", color: "#1E3A5F" },
+  pMeta: { fontSize: 12, color: "#6B9EC8", marginTop: 3 },
   pArr: { width: 28, height: 28, borderRadius: 8, backgroundColor: "#EFF6FF", alignItems: "center", justifyContent: "center" },
-  letterGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  lCard: { 
-    width: "48%", 
-    borderRadius: 12, 
-    borderWidth: 2, 
-    borderColor: "#BFDBFE", 
-    backgroundColor: "#F0F7FF", 
-    padding: 16, 
-    alignItems: "center" 
-  },
-  lCardActive: { borderColor: "#2563EB", backgroundColor: "#DBEAFE" },
-  lChar: { fontSize: 28, fontWeight: "700", color: "#1E40AF" },
-  lSound: { fontSize: 12, color: "#6B9EC8", marginTop: 4, fontWeight: "500" },
-  testerPanel: { backgroundColor: "#EFF6FF", padding: 12, borderRadius: 14, marginBottom: 16, borderWidth: 1, borderColor: "#BFDBFE" },
-  testerTitle: { fontSize: 11, fontWeight: "700", color: "#1E40AF", marginBottom: 8, letterSpacing: 0.5 },
-  testerButtons: { flexDirection: "row", gap: 8 },
-  testBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: "center" },
-  testBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" }
-})
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { width: '80%', backgroundColor: '#fff', borderRadius: 20, padding: 24, alignItems: 'center' },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#1E3A5F', marginBottom: 12 },
+  modalScore: { fontSize: 32, fontWeight: '800', color: '#2563EB', marginBottom: 8 },
+  modalFeedback: { fontSize: 14, color: '#475569', textAlign: 'center', marginBottom: 20, lineHeight: 20 },
+  modalCloseBtn: { backgroundColor: '#2563EB', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 12 },
+  modalCloseBtnText: { color: '#fff', fontWeight: '700' }
+});
