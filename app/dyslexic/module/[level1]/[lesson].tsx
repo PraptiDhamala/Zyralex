@@ -74,8 +74,8 @@ export default function LessonScreen() {
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
-  const BASE_IP_URL = "http://192.168.1.XX:8000";
-  const WS_IP_URL = "ws://192.168.1.XX:8000/ws/app";
+  const BASE_IP_URL = "http://192.168.254.63:8000";
+  const WS_IP_URL = "ws://192.168.254.63:8000/ws/app";
   const [wsStatus, setWsStatus] = useState<
     "connecting" | "connected" | "disconnected"
   >("connecting");

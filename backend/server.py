@@ -123,18 +123,21 @@ async def camera_endpoint(websocket: WebSocket):
     finally:
         if websocket in camera_connections:
             camera_connections.remove(websocket)
-    @app.post("/api/mood")
-    async def receive_mood(data: dict):
+@app.post("/api/mood")
+async def receive_mood(data: dict):
+    mood = data.get("mood")
+    return {
+        "received": True,
+        "adapted_tone": mood
+    }
 
-    mood = data.get("mood")  
-    return {"received": True, "adapted_tone": mood}
-    @app.post("/api/tracking/start")
-    async def start_tracking():
-        return {"status": "tracking_started"}
 
-    @app.post("/api/mood")
-    async def receive_mood(data: dict):
-        mood = data.get("mood")
-        return {"received": True, "adapted_tone": mood}
+@app.post("/api/tracking/start")
+async def start_tracking():
+    return {
+        "status": "tracking_started"
+    }
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
