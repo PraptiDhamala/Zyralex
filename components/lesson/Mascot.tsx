@@ -95,12 +95,9 @@ export const Mascot: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width,
-    height,
-    zIndex: 999,
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 99999,
+    elevation: 99999,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -109,7 +106,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
   },
   card: {
-    width: width * 0.82,
+    width: "82%",
+    maxWidth: 700,
     borderRadius: 24,
     borderWidth: 2.5,
     padding: 28,

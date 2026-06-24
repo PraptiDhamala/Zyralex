@@ -100,21 +100,6 @@ export default function LessonScreen() {
     };
     ws.current.onerror = () => setWsStatus("disconnected");
     ws.current.onclose = () => setWsStatus("disconnected");
-    <Text
-      style={{
-        position: "absolute",
-        top: 50,
-        right: 16,
-        backgroundColor: wsStatus === "connected" ? "#22c55e" : "#ef4444",
-        color: "white",
-        padding: 6,
-        borderRadius: 8,
-        fontSize: 11,
-        zIndex: 9999,
-      }}
-    >
-      WS: {wsStatus}
-    </Text>;
     ws.current.onmessage = (event) => {
       try {
         const response = JSON.parse(event.data);
@@ -311,54 +296,67 @@ export default function LessonScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{lessonData.title}</Text>
-      <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
-      <View style={styles.progressBarBackground}>
-        <View
-          style={[
-            styles.progressBarFill,
-            { width: `${((step + 1) / totalSteps) * 100}%` },
-          ]}
-        />
-      </View>
-      {!finished ? (
-        renderContent()
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.complete}>🎉 {lessonData.completionMessage}</Text>
-          <Text style={styles.score}>
-            Score: {score} / {lessonData.guidedPractice.length}
-          </Text>
-          <TouchableOpacity
+    <View style={styles.screenContainer}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>{lessonData.title}</Text>
+        <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
+        <View style={styles.progressBarBackground}>
+          <View
             style={[
-              styles.button,
-              { marginTop: 24, backgroundColor: "#2563EB" },
+              styles.progressBarFill,
+              { width: `${((step + 1) / totalSteps) * 100}%` },
             ]}
-            onPress={() => {
-              setStep(0);
-              setFinished(false);
-              setScore(0);
-              let nextLesson = lessonKey;
-              if (lessonKey === "vowel_processing")
-                nextLesson = "visual_tracking";
-              router.replace({
-                pathname: "/dyslexic/module/[level1]/[lesson]",
-                params: { level1: "level2", lesson: nextLesson },
-              });
-            }}
-          >
-            <Text style={styles.buttonText}>Start Level 2</Text>
-          </TouchableOpacity>
+          />
         </View>
-      )}
+        {!finished ? (
+          renderContent()
+        ) : (
+          <View style={styles.card}>
+            <Text style={styles.complete}>{lessonData.completionMessage}</Text>
+            <Text style={styles.score}>
+              Score: {score} / {lessonData.guidedPractice.length}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { marginTop: 24, backgroundColor: "#2563EB" },
+              ]}
+              onPress={() => {
+                setStep(0);
+                setFinished(false);
+                setScore(0);
+                let nextLesson = lessonKey;
+                if (lessonKey === "vowel_processing")
+                  nextLesson = "visual_tracking";
+                router.replace({
+                  pathname: "/dyslexic/module/[level1]/[lesson]",
+                  params: { level1: "level2", lesson: nextLesson },
+                });
+              }}
+            >
+              <Text style={styles.buttonText}>Start Level 2</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
+
+      <Text
+        style={[
+          styles.wsBadge,
+          { backgroundColor: wsStatus === "connected" ? "#22c55e" : "#ef4444" },
+        ]}
+      >
+        WS: {wsStatus}
+      </Text>
+
+      {/* Mascot Overlay Interventions */}
       {mascotConfig && mascotConfig.mood === "encourage" && !pendingWordHelp ? (
         <View style={styles.distractionToast}>
           <Text style={styles.distractionEmoji}>💪</Text>
           <Text style={styles.distractionText}>{mascotConfig.message}</Text>
         </View>
       ) : mascotConfig ? (
-        <View>
+        <View style={StyleSheet.absoluteFillObject}>
           <Mascot
             mood={mascotConfig.mood}
             message={mascotConfig.message}
@@ -409,25 +407,43 @@ export default function LessonScreen() {
           )}
         </View>
       ) : null}
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+  },
   container: {
     flexGrow: 1,
-    backgroundColor: "#F8FAFC",
     padding: 24,
     justifyContent: "center",
+    maxWidth: 600,
+    width: "100%",
+    alignSelf: "center",
+  },
+  wsBadge: {
+    position: "absolute",
+    top: 20,
+    right: 16,
+    color: "white",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    fontSize: 11,
+    fontWeight: "700",
+    zIndex: 99999,
   },
   wordHelpButtons: {
     position: "absolute",
-    bottom: 60,
+    bottom: 80,
     left: 24,
     right: 24,
     flexDirection: "row",
     gap: 12,
-    zIndex: 1000,
+    zIndex: 100000,
   },
   yesButton: {
     flex: 1,
@@ -445,12 +461,19 @@ const styles = StyleSheet.create({
   },
   yesText: { color: "#fff", fontWeight: "700", fontSize: 15 },
   noText: { color: "#64748B", fontWeight: "700", fontSize: 15 },
-  title: { fontSize: 30, fontWeight: "800", color: "#1E293B", marginBottom: 8 },
+  title: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: "#1E293B",
+    marginBottom: 8,
+    textAlign: "center",
+  },
   subtitle: {
     fontSize: 18,
     color: "#64748B",
     marginBottom: 20,
     lineHeight: 28,
+    textAlign: "center",
   },
   progressBarBackground: {
     height: 14,
@@ -472,6 +495,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 3,
+    width: "100%",
   },
   badge: {
     backgroundColor: "#EFF6FF",
@@ -503,7 +527,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#DBEAFE",
-    alignSelf: "flex-start",
+    alignSelf: "center",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 14,
@@ -529,6 +553,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     color: "#1E293B",
     lineHeight: 38,
+    textAlign: "center",
   },
   distractionToast: {
     position: "absolute",
@@ -544,14 +569,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     zIndex: 999,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
   },
-  distractionEmoji: {
-    fontSize: 20,
-  },
+  distractionEmoji: { fontSize: 20 },
   distractionText: {
     fontSize: 13,
     fontWeight: "600",
@@ -576,80 +595,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   score: { textAlign: "center", color: "#64748B", marginTop: 10, fontSize: 18 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  interventionCard: {
-    backgroundColor: "white",
-    borderRadius: 24,
-    padding: 28,
-    alignItems: "center",
-    width: "100%",
-    elevation: 5,
-  },
-  modalAlertTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#64748B",
-    marginBottom: 12,
-  },
-  originalWord: { fontSize: 24, fontWeight: "300", color: "#94A3B8" },
-  syllableBreakdown: {
-    fontSize: 36,
-    fontWeight: "800",
-    color: "#2563EB",
-    marginVertical: 12,
-    letterSpacing: 2,
-  },
-  modalMessage: {
-    fontSize: 15,
-    textAlign: "center",
-    color: "#64748B",
-    marginBottom: 20,
-  },
-  closeModalButton: {
-    backgroundColor: "#2563EB",
-    width: "100%",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-
-  toastBannerContainer: {
-    position: "absolute",
-    bottom: 30,
-    left: 20,
-    right: 20,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: "#FEF3C7",
-    shadowColor: "#1E293B",
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  toastContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 14,
-  },
-  toastText: { fontSize: 17, fontWeight: "600", color: "#1E293B", flex: 1 },
-  toastActions: { flexDirection: "row", gap: 12 },
-  toastButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  toastAcceptBtn: { backgroundColor: "#F59E0B" },
-  toastDismissBtn: { backgroundColor: "#F1F5F9" },
-  toastActionText: { color: "white", fontSize: 15, fontWeight: "700" },
 });
