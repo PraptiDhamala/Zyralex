@@ -107,11 +107,16 @@ export default function LessonScreen() {
 
         if (response.type === "DISTRACTION_ALERT") {
           if (distractionTimer.current) clearTimeout(distractionTimer.current);
+          const alertMessage =
+            "Hey! Lost your place? It is completely normal take a rest but don't quit, you got this!!";
           setMascotConfig({
             mood: "encourage",
-            message:
-              response.payload?.message ||
-              "Hey! Lost your place? It is completely normal take a rest but don't quit, you got this",
+            message: alertMessage,
+          });
+          Speech.speak(alertMessage, {
+            language: "en",
+            pitch: 0.95,
+            rate: 0.75,
           });
           distractionTimer.current = setTimeout(
             () => setMascotConfig(null),
@@ -121,11 +126,17 @@ export default function LessonScreen() {
 
         if (response.type === "FRUSTRATION_ALERT") {
           if (distractionTimer.current) clearTimeout(distractionTimer.current);
+          const frustrationMessage =
+            response.sel_message ||
+            "This word is tough — and you're still here trying. That's what matters! ";
           setMascotConfig({
             mood: "frustrated",
-            message:
-              response.sel_message ||
-              "This word is tough — and you're still here trying. That's what matters! ",
+            message: frustrationMessage,
+          });
+          Speech.speak(frustrationMessage, {
+            language: "en",
+            pitch: 0.95,
+            rate: 0.72,
           });
           distractionTimer.current = setTimeout(
             () => setMascotConfig(null),
@@ -134,13 +145,19 @@ export default function LessonScreen() {
         }
 
         if (response.type === "INTERVENTION_TRIGGER") {
+          const interventionMessage = `${response.sel_message}\n\nDo you need help with the word "${response.word}"?`;
           setPendingWordHelp({
             word: response.word,
             hyphenated: response.adaptations.hyphenated,
           });
           setMascotConfig({
             mood: "encourage",
-            message: `${response.sel_message}\n\nDo you need help with the word "${response.word}"?`,
+            message: interventionMessage,
+          });
+          Speech.speak(interventionMessage.replace("\n\n", " "), {
+            language: "en",
+            pitch: 0.95,
+            rate: 0.75,
           });
         }
       } catch (err) {
@@ -565,14 +582,14 @@ const styles = StyleSheet.create({
   },
   distractionToast: {
     position: "absolute",
-    top: 60,
-    right: 16,
+    top: 30,
+    right: 26,
     backgroundColor: "#EEF4FF",
     borderColor: "#2563EB",
     borderWidth: 2,
     borderRadius: 20,
     padding: 12,
-    maxWidth: 200,
+    maxWidth: 240,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -584,7 +601,7 @@ const styles = StyleSheet.create({
   },
   toastMimo: {
     width: 55,
-    height: 55,
+    height: 75,
   },
   toastTextBlock: {
     flex: 1,
