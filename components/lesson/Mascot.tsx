@@ -1,6 +1,4 @@
-// components/lesson/Mascot.tsx
-
-import React from 'react';
+import React from "react";
 import {
   Dimensions,
   Image,
@@ -8,61 +6,70 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { COLORS } from '../../constants/colors';
+} from "react-native";
+import { COLORS } from "../../constants/colors";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 interface Props {
-  mood: 'cheer' | 'correct' | 'wrong' | 'encourage';
+  mood: "cheer" | "correct" | "wrong" | "encourage" | "frustrated";
   message: string;
-  onDismiss?: () => void;  // only used when Next button is needed
-  showNext?: boolean;       // show the Next button or not
-  nextLabel?: string;       //"Continue" etc.
+  onDismiss?: () => void;
+  showNext?: boolean;
+  nextLabel?: string;
 }
 
-const BUBBLE_COLORS: Record<Props['mood'], string> = {
-  cheer:    '#EEF4FF',
-  correct:  '#D4EDDA',
-  wrong:    '#FFF3CD',
-  encourage:'#EEF4FF',
+const BUBBLE_COLORS: Record<Props["mood"], string> = {
+  cheer: "#EEF4FF",
+  correct: "#D4EDDA",
+  wrong: "#FFF3CD",
+  frustrated: "#FFF0F0",
+  encourage: "#EEF4FF",
 };
 
-const BORDER_COLORS: Record<Props['mood'], string> = {
-  cheer:     COLORS.primary,
-  correct:  '#28A745',
-  wrong:    '#FFC107',
+const BORDER_COLORS: Record<Props["mood"], string> = {
+  cheer: COLORS.primary,
+  correct: "#28A745",
+  frustrated: "#E53E3E",
+  wrong: "#FFC107",
   encourage: COLORS.primary,
 };
 
-const TITLE: Record<Props['mood'], string> = {
-  cheer:    '🎉 Let\'s go!',
-  correct:  '✅ Correct!',
-  wrong:    '💛 Not quite!',
-  encourage:'💪 Keep it up!',
+const TITLE: Record<Props["mood"], string> = {
+  cheer: "Let's go!",
+  correct: "Correct!",
+  wrong: "💛 Not quite!",
+  frustrated: "You're doing great!",
+  encourage: "Keep it up!",
 };
 
 export const Mascot: React.FC<Props> = ({
-  mood, message, onDismiss, showNext = false, nextLabel = 'Next',
+  mood,
+  message,
+  onDismiss,
+  showNext = false,
+  nextLabel = "Next",
 }) => (
   <View style={styles.overlay}>
     {/* Dark background */}
     <View style={styles.backdrop} />
 
     {/* Card */}
-    <View style={[styles.card, {
-      backgroundColor: BUBBLE_COLORS[mood],
-      borderColor: BORDER_COLORS[mood],
-    }]}>
-
-      {/* Mimo image */}
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: BUBBLE_COLORS[mood],
+          borderColor: BORDER_COLORS[mood],
+        },
+      ]}
+    >
       <Image
-        source={require('../../assets/mimoimg.png')}
+        source={require("../../assets/mimoimg.png")}
         style={styles.mimo}
         resizeMode="contain"
       />
 
-      {/* Title */}
       <Text style={[styles.title, { color: BORDER_COLORS[mood] }]}>
         {TITLE[mood]}
       </Text>
@@ -70,7 +77,6 @@ export const Mascot: React.FC<Props> = ({
       {/* Message */}
       <Text style={styles.message}>{message}</Text>
 
-      {/* Next button — only shown when showNext=true */}
       {showNext && onDismiss && (
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: BORDER_COLORS[mood] }]}
@@ -86,24 +92,24 @@ export const Mascot: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    position: 'absolute',
-    top: 0, left: 0,
-    width, height,
-    zIndex: 999,
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 99999,
+    elevation: 99999,
+    justifyContent: "center",
+    alignItems: "center",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: "rgba(0,0,0,0.55)",
   },
   card: {
-    width: width * 0.82,
+    width: "82%",
+    maxWidth: 700,
     borderRadius: 24,
     borderWidth: 2.5,
     padding: 28,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
@@ -116,14 +122,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: "800",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   message: {
     fontSize: 15,
-    color: '#333',
-    textAlign: 'center',
+    color: "#333",
+    textAlign: "center",
     lineHeight: 24,
     marginBottom: 24,
   },
@@ -131,12 +137,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   nextBtnText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });
