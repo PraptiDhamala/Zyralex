@@ -2,7 +2,7 @@ import time
 import re
 
 class WordTracker:
-    def __init__(self, distraction_threshold=3.0, fixation_threshold=2.5):
+    def __init__(self, distraction_threshold=15.0, fixation_threshold=2.5):
         self.distraction_threshold = distraction_threshold
         self.fixation_threshold = fixation_threshold
         self.word_struggle_counts = {}
@@ -27,6 +27,7 @@ class WordTracker:
 
         if not face_detected:
             if current_time - self.last_seen_time > self.distraction_threshold:
+                self.last_seen_time = current_time 
                 return {
                     "status": "distracted",
                     "sel_message": "Hey! Lost your place? No worries — every reader does that. Let's jump back in! 😊",
@@ -52,7 +53,6 @@ class WordTracker:
                 target_word = self.words_metadata[looking_at_word_idx]['word']
                 broken_word = self.syllable_breakdown(target_word)
 
-                # ✅ struggle_count and status defined BEFORE they are used
                 self.word_struggle_counts[target_word] = (
                     self.word_struggle_counts.get(target_word, 0) + 1
                 )

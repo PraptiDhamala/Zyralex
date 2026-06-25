@@ -298,6 +298,16 @@ export default function LessonScreen() {
   return (
     <View style={styles.screenContainer}>
       <ScrollView contentContainerStyle={styles.container}>
+        <Text
+          style={[
+            styles.wsBadge,
+            {
+              backgroundColor: wsStatus === "connected" ? "#22c55e" : "#ef4444",
+            },
+          ]}
+        >
+          WS: {wsStatus}
+        </Text>
         <Text style={styles.title}>{lessonData.title}</Text>
         <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
         <View style={styles.progressBarBackground}>
@@ -340,16 +350,6 @@ export default function LessonScreen() {
         )}
       </ScrollView>
 
-      <Text
-        style={[
-          styles.wsBadge,
-          { backgroundColor: wsStatus === "connected" ? "#22c55e" : "#ef4444" },
-        ]}
-      >
-        WS: {wsStatus}
-      </Text>
-
-      {/* Mascot Overlay Interventions */}
       {mascotConfig && mascotConfig.mood === "encourage" && !pendingWordHelp ? (
         <View style={styles.distractionToast}>
           <Text style={styles.distractionEmoji}>💪</Text>
