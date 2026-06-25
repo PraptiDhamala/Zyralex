@@ -36,11 +36,11 @@ const BORDER_COLORS: Record<Props["mood"], string> = {
 };
 
 const TITLE: Record<Props["mood"], string> = {
-  cheer: "🎉 Let's go!",
-  correct: "✅ Correct!",
+  cheer: "Let's go!",
+  correct: "Correct!",
   wrong: "💛 Not quite!",
-  frustrated: "🫂 You're doing great!",
-  encourage: "💪 Keep it up!",
+  frustrated: "You're doing great!",
+  encourage: "Keep it up!",
 };
 
 export const Mascot: React.FC<Props> = ({
@@ -64,14 +64,12 @@ export const Mascot: React.FC<Props> = ({
         },
       ]}
     >
-      {/* Mimo image */}
       <Image
         source={require("../../assets/mimoimg.png")}
         style={styles.mimo}
         resizeMode="contain"
       />
 
-      {/* Title */}
       <Text style={[styles.title, { color: BORDER_COLORS[mood] }]}>
         {TITLE[mood]}
       </Text>
@@ -79,7 +77,6 @@ export const Mascot: React.FC<Props> = ({
       {/* Message */}
       <Text style={styles.message}>{message}</Text>
 
-      {/* Next button — only shown when showNext=true */}
       {showNext && onDismiss && (
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: BORDER_COLORS[mood] }]}

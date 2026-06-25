@@ -4,6 +4,7 @@ import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -110,7 +111,7 @@ export default function LessonScreen() {
             mood: "encourage",
             message:
               response.payload?.message ||
-              "Hey! Lost your place? No worries — let's jump back in! 😊",
+              "Hey! Lost your place? It is completely normal take a rest but don't quit, you got this",
           });
           distractionTimer.current = setTimeout(
             () => setMascotConfig(null),
@@ -124,7 +125,7 @@ export default function LessonScreen() {
             mood: "frustrated",
             message:
               response.sel_message ||
-              "This word is tough — and you're still here trying. That's what matters! 🌟",
+              "This word is tough — and you're still here trying. That's what matters! ",
           });
           distractionTimer.current = setTimeout(
             () => setMascotConfig(null),
@@ -202,7 +203,7 @@ export default function LessonScreen() {
       setScore((prev) => prev + 1);
       setMascotConfig({
         mood: "correct",
-        message: "Amazing! You got it right! Your hard work is paying off! 🌟",
+        message: "Amazing! You got it right! Your hard work is paying off! ",
       });
       Speech.speak("Amazing job!");
     } else {
@@ -352,8 +353,15 @@ export default function LessonScreen() {
 
       {mascotConfig && mascotConfig.mood === "encourage" && !pendingWordHelp ? (
         <View style={styles.distractionToast}>
-          <Text style={styles.distractionEmoji}>💪</Text>
-          <Text style={styles.distractionText}>{mascotConfig.message}</Text>
+          <Image
+            source={require("../../../../assets/mimoimg.png")}
+            style={styles.toastMimo}
+            resizeMode="contain"
+          />
+          <View style={styles.toastTextBlock}>
+            <Text style={styles.toastTitle}>Hey!</Text>
+            <Text style={styles.distractionText}>{mascotConfig.message}</Text>
+          </View>
         </View>
       ) : mascotConfig ? (
         <View style={StyleSheet.absoluteFillObject}>
@@ -557,26 +565,44 @@ const styles = StyleSheet.create({
   },
   distractionToast: {
     position: "absolute",
-    top: 16,
+    top: 60,
     right: 16,
     backgroundColor: "#EEF4FF",
     borderColor: "#2563EB",
     borderWidth: 2,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 12,
-    maxWidth: 180,
+    maxWidth: 200,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    zIndex: 999,
+    zIndex: 99999,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  toastMimo: {
+    width: 55,
+    height: 55,
+  },
+  toastTextBlock: {
+    flex: 1,
+    flexShrink: 1,
+  },
+  toastTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#1E40AF",
+    marginBottom: 2,
   },
   distractionEmoji: { fontSize: 20 },
   distractionText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
     color: "#1E40AF",
     flexShrink: 1,
-    lineHeight: 18,
+    lineHeight: 17,
   },
   option: {
     backgroundColor: "#F8FAFC",
