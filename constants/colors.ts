@@ -8,8 +8,11 @@ export const COLORS = {
   border: '#E5E5E5',
   success: '#4CAF50',
   warning: '#FFC107',
-  info: '#2196F3',
+  info: '#2196f3',
   text: '#333333',
   textLight: '#666666',
   background: '#FAFAFA',
+  orange:'#f58325',
+  blue:'#82c4f6',
+  lightGreen:'#c4ebc4',
 };
