@@ -1,7 +1,8 @@
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
+import LottieView from "lottie-react-native";
 import React, { useMemo } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../constants/colors";
 import { LESSON_LEVELS, SignItem } from "../constants/lessonData";
 function getAllSigns(): SignItem[] {
@@ -50,16 +51,17 @@ export const SignOfTheDayPanel = () => {
         </View>
 
         <View style={styles.mascotContainer}>
-          <Image
-            source={require("../assets/mimo2.png")}
-            style={styles.mascotImage}
-            resizeMode="contain"
-          />
+           <LottieView
+                    source={require("../assets/panda.json")}
+                    autoPlay
+                    loop
+                    style={styles.mascotImage}
+                  />
           <Text style={styles.mascotText}>Try it with me!</Text>
         </View>
       </View>
 
-      {/* Action Buttons */}
+      {/* Action Buttons 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.practiceButton}>
           <Text style={styles.buttonText}>Practice</Text>
@@ -67,7 +69,7 @@ export const SignOfTheDayPanel = () => {
         <TouchableOpacity style={styles.quizButton}>
           <Text style={styles.buttonText}>Quiz</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Streak */}
       <View style={styles.streakContainer}>
@@ -106,18 +108,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    marginLeft:20,
+    gap:30,
   },
   signContainer: {
     alignItems: "center",
     flex: 1,
+    
   },
   signVideo: {
-    width: 250,
-    height: 200,
-    backgroundColor: COLORS.cream,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  width: 199,
+   height: 150,
+    borderRadius: 16,
+   marginTop: 10 ,
+   borderWidth: 2,
+borderColor: "white",
+
   },
   signLabel: {
     fontSize: 25,
@@ -130,7 +136,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mascotImage: {
-    width: 200,
+    marginLeft:30,
+    width: 180,
     height: 200,
   },
   mascotText: {
