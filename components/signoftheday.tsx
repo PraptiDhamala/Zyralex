@@ -1,9 +1,9 @@
 import { ResizeMode, Video } from "expo-av";
-import React, { useMemo } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '../constants/colors';
-import { LESSON_LEVELS, SignItem } from '../constants/lessonData';
-
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useMemo } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { COLORS } from "../constants/colors";
+import { LESSON_LEVELS, SignItem } from "../constants/lessonData";
 function getAllSigns(): SignItem[] {
   return LESSON_LEVELS.flatMap(level =>
     level.lessons.flatMap(lesson => lesson.signs)
@@ -21,34 +21,42 @@ function getSignOfTheDay(): SignItem {
 }
 
 export const SignOfTheDayPanel = () => {
-    const signOfTheDay = useMemo(() => getSignOfTheDay(), []);
-
+  const signOfTheDay = useMemo(() => getSignOfTheDay(), []);
   if (!signOfTheDay) return null;
+
   return (
-    <View style={styles.panel}>
+    <LinearGradient
+      colors={["#e1f3f2", "#fed6e3"]} 
+      end={{ x: 1, y: 1 }}
+      style={styles.panel}
+    >
+
+    
+    
       <Text style={styles.title}>Sign of the Day</Text>
       <Text style={styles.subtitle}>Learn one new sign every day!</Text>
+    
+      {/* Sign + Mascot Row */}
+      <View style={styles.row}>
+        <View style={styles.signContainer}>
+          <Video
+            source={{ uri: signOfTheDay.video }}
+            style={styles.signVideo}
+            resizeMode={ResizeMode.CONTAIN}
+            shouldPlay
+            isLooping
+          />
+          <Text style={styles.signLabel}>{signOfTheDay.label}</Text>
+        </View>
 
-      {/* Sign Illustration */}
-      <View style={styles.signContainer}>
-        <Video
-          source={{ uri: signOfTheDay.video }}
-          style={styles.signVideo}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay
-          isLooping
-        />
-        <Text style={styles.signLabel}>{signOfTheDay.label}</Text>
-      </View>
-
-      {/* Mascot Encouragement */}
-      <View style={styles.mascotContainer}>
-        <Image
-          source={require('../assets/mimo2.png')}
-          style={styles.mascotImage}
-          resizeMode="contain"
-        />
-        <Text style={styles.mascotText}>Great job! You did it!</Text>
+        <View style={styles.mascotContainer}>
+          <Image
+            source={require("../assets/mimo2.png")}
+            style={styles.mascotImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.mascotText}>Try it with me!</Text>
+        </View>
       </View>
 
       {/* Action Buttons */}
@@ -60,96 +68,106 @@ export const SignOfTheDayPanel = () => {
           <Text style={styles.buttonText}>Quiz</Text>
         </TouchableOpacity>
       </View>
+
       {/* Streak */}
       <View style={styles.streakContainer}>
         <Text style={styles.streakText}>🔥 Streak: 5 Days</Text>
       </View>
-    </View>
+   
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   panel: {
-    backgroundColor: COLORS.blue,
-    borderRadius: 16,
-    padding: 16,
+    
+    padding: 20,
     marginHorizontal: 16,
     marginTop: 24,
-    elevation: 3,
-  },
-   signVideo: {
-    width: 200,
-    height: 150,
-    backgroundColor: COLORS.white,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    marginBottom: 24,
+    borderRadius:30,
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.black,
   },
   subtitle: {
     fontSize: 14,
-    color: COLORS.black,
-    marginBottom: 12,
+    color: COLORS.darkGray,
+    marginBottom: 16,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   signContainer: {
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: "center",
+    flex: 1,
   },
-  signImage: {
-    width: 120,
-    height: 100,
+  signVideo: {
+    width: 250,
+    height: 200,
+    backgroundColor: COLORS.cream,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   signLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.black,
+    fontSize: 25,
+    fontWeight: "900",
+    color: COLORS.primary,
     marginTop: 8,
   },
   mascotContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
+    alignItems: "center",
+    flex: 1,
   },
   mascotImage: {
-    width: 80,
-    height: 70,
-    marginRight: 8,
+    width: 200,
+    height: 200,
   },
   mascotText: {
-    fontSize: 16,
+    fontSize: 20,
     color: COLORS.primary,
-    fontWeight: '500',
+    fontWeight: "600",
+    marginTop: 4,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 8,
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginVertical: 12,
   },
   practiceButton: {
-    backgroundColor: COLORS.orange,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
   },
   quizButton: {
     backgroundColor: COLORS.info,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
   },
   buttonText: {
-    color: COLORS.white,
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
   },
   streakContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 8,
   },
   streakText: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.orange,
-    fontWeight: '600',
+    fontWeight: "700",
   },
 });
