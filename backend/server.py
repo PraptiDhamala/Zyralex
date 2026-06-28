@@ -1,4 +1,3 @@
-# backend/server.py
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import json
@@ -19,17 +18,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Instantiate engines
 detector = FixationDetector(spatial_threshold=100, temporal_threshold=0.1)
 tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=1.0)
 intervention = InterventionEngine()
 
-# Dedicated client storage lists
 camera_connections: List[WebSocket] = []
 app_connections: List[WebSocket] = []
 
 async def broadcast_to_apps(message_dict: dict):
-    """Safely broadcasts calculated metrics directly to the mobile apps."""
     payload = json.dumps(message_dict)
     for app_socket in app_connections:
         try:
@@ -41,10 +37,6 @@ async def broadcast_to_apps(message_dict: dict):
 def root():
     return {"status": "online", "project": "ZyraLex Engine Hub"}
 
-<<<<<<< HEAD
-# --- 1. DEDICATED APP HANDSHAKE ENDPOINT ---
-=======
->>>>>>> c120b3dc191b840be20f7a6bdad0b3ad1616184c
 @app.websocket("/ws/app")
 async def app_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -53,7 +45,6 @@ async def app_endpoint(websocket: WebSocket):
     
     try:
         while True:
-            # Listen to text coordinate updates from frontend
             raw_data = await websocket.receive_text()
             packet = json.loads(raw_data)
             
@@ -66,14 +57,12 @@ async def app_endpoint(websocket: WebSocket):
     finally:
         if websocket in app_connections:
             app_connections.remove(websocket)
-<<<<<<< HEAD
 
-# --- 2. DEDICATED CAMERA EYE STREAM ENDPOINT ---
 @app.websocket("/ws/camera")
 async def camera_endpoint(websocket: WebSocket):
     await websocket.accept()
     camera_connections.append(websocket)
-    print(" Camera Eye-Tracker Connected to Pipeline Stream!")
+    print("Camera Eye-Tracker Connected to Pipeline Stream!")
     
     try:
         while True:
@@ -84,78 +73,6 @@ async def camera_endpoint(websocket: WebSocket):
             raw_x = packet.get("raw_x", 0)
             raw_y = packet.get("raw_y", 0)
             
-            # Compute Distraction
-            status_update = tracker.update_gaze(raw_x, raw_y, face_detected=face_detected)
-            if status_update and status_update["status"] == "distracted":
-                print("INTERVENTION: Distraction Dispatched")
-                await broadcast_to_apps({
-                    "type": "DISTRACTION_ALERT",
-                    "payload": status_update
-                })
-                continue
-            
-            # Compute Fixation
-            if face_detected:
-                is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
-                
-                if is_fixating:
-                    fixation_match = tracker.update_gaze(cx, cy, face_detected=True)
-                    
-                    if fixation_match and fixation_match["status"] == "fixated":
-                        target_word = fixation_match["word"]
-                        
-                        response_payload = {
-                            "type": "INTERVENTION_TRIGGER",
-                            "word": target_word,
-                            "fixation_duration": round(duration, 2),
-                            "adaptations": {
-                                "hyphenated": intervention.format_syllable_breakdown(target_word, style="hyphen"),
-                                "html_colored": intervention.format_syllable_breakdown(target_word, style="color")
-                            }
-                        }
-                        print(f"Fixation on '{target_word}'. Broadcasting layout...")
-                        await broadcast_to_apps(response_payload)
-                        
-    except WebSocketDisconnect:
-        print("Camera client dropped connection pipeline loop.")
-    finally:
-        if websocket in camera_connections:
-            camera_connections.remove(websocket)
-          if fixation_match["status"] == "struggling":
-            await broadcast_to_apps({
-            "type": "FRUSTRATION_ALERT",
-            "word": target_word,
-            "message": "It's okay to find this hard. Let's try together."
-        })
-        await broadcast_to_apps({
-            "type": "ENCOURAGEMENT_PUSH",
-            "message": "You just read that whole section!",
-            "stars_earned": 1
-    })
-    @app.post("/api/mood")
-    async def receive_mood(data: dict):
-    # store to students.csv or DB
-    # adjust intervention tone based on mood
-    mood = data.get("mood")  # "happy", "tired", "frustrated", "okay"
-    return {"received": True, "adapted_tone": mood}
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
-=======
-
-@app.websocket("/ws/camera")
-async def camera_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    camera_connections.append(websocket)
-    print("Camera Eye-Tracker Connected to Pipeline Stream!")
-
-    try:
-        while True:
-            raw_data = await websocket.receive_text()
-            packet = json.loads(raw_data)
-
-            face_detected = packet.get("face_detected", True)
-            raw_x = packet.get("raw_x", 0)
-            raw_y = packet.get("raw_y", 0)
             if not face_detected:
                 status_update = tracker.update_gaze(raw_x, raw_y, face_detected=False)
                 if status_update and status_update["status"] == "distracted":
@@ -166,16 +83,18 @@ async def camera_endpoint(websocket: WebSocket):
                         }
                     })
                 continue
-
-            is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
+            
+            # Update gaze and check for fixation
             tracker.update_gaze(raw_x, raw_y, face_detected=True)
+            is_fixating, cx, cy, duration = detector.process_point(raw_x, raw_y)
+            
             if is_fixating:
                 fixation_match = tracker.update_gaze(cx, cy, face_detected=True)
-
+                
                 if fixation_match:
                     status = fixation_match.get("status")
                     target_word = fixation_match.get("word", "")
-
+                    
                     if status == "fixated":
                         await broadcast_to_apps({
                             "type": "INTERVENTION_TRIGGER",
@@ -184,22 +103,23 @@ async def camera_endpoint(websocket: WebSocket):
                             "sel_message": fixation_match.get("sel_message", ""),
                             "adaptations": {
                                 "hyphenated": intervention.format_syllable_breakdown(target_word, style="hyphen"),
-                                "html_colored": intervention.format_syllable_breakdown(target_word, style="color"),
+                                "html_colored": intervention.format_syllable_breakdown(target_word, style="color")
                             }
                         })
-
+                        
                     elif status == "struggling":
                         await broadcast_to_apps({
                             "type": "FRUSTRATION_ALERT",
                             "word": target_word,
                             "sel_message": fixation_match.get("sel_message", "This is tough — and you're still trying. That's amazing! 🌟"),
-                            })
-
+                        })
+                        
     except WebSocketDisconnect:
-        print("Camera client dropped connection.")
+        print("Camera client dropped connection pipeline loop.")
     finally:
         if websocket in camera_connections:
             camera_connections.remove(websocket)
+
 @app.post("/api/tracking/start")
 async def start_tracking():
     return {
@@ -213,6 +133,6 @@ async def receive_mood(data: dict):
         "received": True,
         "adapted_tone": mood
     }
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
->>>>>>> c120b3dc191b840be20f7a6bdad0b3ad1616184c
