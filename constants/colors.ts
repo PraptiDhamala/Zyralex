@@ -13,6 +13,6 @@ export const COLORS = {
   textLight: '#666666',
   background: '#FAFAFA',
   orange:'#f58325',
-  blue:'#82c4f6',
+  blue:'#d7e9f6',
   lightGreen:'#c4ebc4',
 };
