@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { CameraView, useCameraPermissions } from "expo-camera";
+import ConfettiCannon from "react-native-confetti-cannon";
 import { Mascot } from "../../../../components/lesson/Mascot";
 import letterReversal from "../../../../data/level1/easy/letter_reversal";
 import phonics from "../../../../data/level1/easy/phonics";
@@ -22,30 +23,27 @@ import decoding from "../../../../data/level1/medium/decoding";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
 import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
-
 export default function LessonScreen() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const frameInterval = useRef<NodeJS.Timeout | null>(null);
+  const confettiRef = useRef<any>(null);
 
   const [pendingWordHelp, setPendingWordHelp] = useState<{
     word: string;
     hyphenated: string;
   } | null>(null);
   const curriculumMap: Record<string, any> = {
-    level1: {
-      letter_reversal: letterReversal,
-      phonics: phonics,
-      vowel_processing: vowel_processing,
-      chunking: chunking,
-      decoding: decoding,
-    },
-    level2: {
-      letter_reversal: level2LetterReversal,
-      phonics: level2Phonics,
-      vowel_processing: level2VisualTracking,
-    },
+    letter_reversal: letterReversal,
+    phonics: phonics,
+    vowel_processing: vowel_processing,
+    chunking: chunking,
+    decoding: decoding,
+
+    level2_letter_reversal: level2LetterReversal,
+    level2_phonics: level2Phonics,
+    level2_vowel_processing: level2VisualTracking,
   };
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
@@ -219,6 +217,7 @@ export default function LessonScreen() {
   const handlePracticeAnswer = (selected: string, correct: string) => {
     if (selected === correct) {
       setScore((prev) => prev + 1);
+      confettiRef.current?.start();
       setMascotConfig({
         mood: "correct",
         message: "Amazing! You got it right! Your hard work is paying off! ",
@@ -433,6 +432,13 @@ export default function LessonScreen() {
           )}
         </View>
       ) : null}
+      <ConfettiCannon
+        ref={confettiRef}
+        count={120}
+        origin={{ x: screenWidth / 2, y: 0 }}
+        autoStart={false}
+        fadeOut={true}
+      />
     </View>
   );
 }

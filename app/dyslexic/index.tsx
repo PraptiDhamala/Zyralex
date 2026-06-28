@@ -8,7 +8,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -26,12 +26,10 @@ import { supabase } from "../../lib/supabase";
 export default function DyslexicHome() {
   const router = useRouter();
 
-  // STATES
   const [isSimplified, setIsSimplified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [simplifiedText, setSimplifiedText] = useState("");
 
-  // FLASHCARD LAB STATES
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [activeSyllableIndex, setActiveSyllableIndex] = useState<number | null>(
@@ -39,10 +37,8 @@ export default function DyslexicHome() {
   );
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // Mocked scanned word split into syllables
   const sampleSyllables = ["be", "au", "ti", "ful"];
 
-  // DYNAMIC METRICS FROM SUPABASE
   const [dbLoading, setDbLoading] = useState(true);
   const [score, setScore] = useState<number>(0);
   const [level, setLevel] = useState<string>("Beginner");
@@ -53,12 +49,30 @@ export default function DyslexicHome() {
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [completedLessonsCount, setCompletedLessonsCount] = useState<number>(0);
 
-  // FETCH METRICS ON MOUNT
   useFocusEffect(
     useCallback(() => {
       fetchUserData();
     }, []),
   );
+  useEffect(() => {
+    const checkAssessment = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("assessments")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!data) {
+        router.replace("/dyslexic/learn");
+      }
+    };
+    checkAssessment();
+  }, []);
 
   const fetchUserData = async () => {
     try {
@@ -110,38 +124,33 @@ export default function DyslexicHome() {
     }
   };
 
-  // TRIGGER FLASHCARD FLOW
   const handleFlashcardPress = () => {
     setFlashcardModalVisible(true);
     setIsScanning(true);
     setActiveSyllableIndex(null);
 
-    // Simulate camera/OCR scan time
     setTimeout(() => {
       setIsScanning(false);
     }, 2000);
   };
 
-  // PLAY AUDIO / AUDIO FOCUS ANIMATION SEQUENCER
   const handlePlayPronunciation = () => {
     if (isPlayingAudio) return;
     setIsPlayingAudio(true);
     let currentIdx = 0;
 
-    // Sequentially highlight each syllable to replicate audio focus tracking
     const interval = setInterval(() => {
       if (currentIdx < sampleSyllables.length) {
         setActiveSyllableIndex(currentIdx);
         currentIdx++;
       } else {
         clearInterval(interval);
-        setActiveSyllableIndex(null); // Clear highlight when done
+        setActiveSyllableIndex(null);
         setIsPlayingAudio(false);
       }
-    }, 600); // 600ms per syllable cadence
+    }, 600);
   };
 
-  // PICK DOCUMENT
   const pickDocument = async () => {
     try {
       setLoading(true);
@@ -383,7 +392,6 @@ export default function DyslexicHome() {
               </View>
             </Pressable>
 
-            {/* CONNECTED FLASHCARD BUTTON */}
             <Pressable
               style={styles.actionButton}
               onPress={handleFlashcardPress}
@@ -406,7 +414,6 @@ export default function DyslexicHome() {
         )}
       </ScrollView>
 
-      {/* FLASHCARD MODAL SUB-MODULE VIEW */}
       <Modal
         animationType="slide"
         transparent={false}
