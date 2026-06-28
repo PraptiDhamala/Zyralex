@@ -72,10 +72,8 @@ export default function DyslexicLayout() {
         name="learn"
         options={{
           title: "Assesment",
-          href: null, 
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="clipboard-outline" color={color} size={20} />
-          ),
+          href: null,
+          tabBarStyle: { display: "none" },
         }}
       />
       <Tabs.Screen
