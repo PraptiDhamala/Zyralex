@@ -342,7 +342,6 @@ export default function LearnScreen() {
           (patternFrequency[normalizedPattern] || 0) + 1;
       });
 
-      // let primaryWeakArea = "None Identified";
       let detectedWeakArea = "None Identified";
 
       let highestCount = 0;
@@ -355,7 +354,6 @@ export default function LearnScreen() {
       }
 
       setPrimaryWeakArea(detectedWeakArea);
-      // setPrimaryWeakArea(primaryWeakArea);
       let dynamicReview = "Excellent decoding fluency!";
 
       if (assignedLevel === "easy") {
@@ -396,12 +394,8 @@ export default function LearnScreen() {
   };
 
   const startTargetedLesson = () => {
-    const routeLevel =
-      level === "hard" ? "hard" : level === "medium" ? "medium" : "easy";
-
     let recommendedLesson = "letter_reversal";
 
-    // EASY LEVEL
     if (level === "easy") {
       switch (primaryWeakArea) {
         case "phonological_awareness":
@@ -409,46 +403,35 @@ export default function LearnScreen() {
         case "phonics":
           recommendedLesson = "phonics";
           break;
-
         case "vowel_processing":
           recommendedLesson = "vowel_processing";
           break;
-
         case "letter_reversal":
-          recommendedLesson = "letter_reversal";
-          break;
-
         default:
           recommendedLesson = "letter_reversal";
       }
     }
 
-    // MEDIUM LEVEL
     if (level === "medium") {
       switch (primaryWeakArea) {
         case "decoding":
           recommendedLesson = "decoding";
           break;
-
         case "visual_tracking":
         case "vowel_processing":
-          recommendedLesson = "chunking";
-          break;
-
         default:
           recommendedLesson = "chunking";
       }
     }
 
-    // HARD LEVEL
     if (level === "hard") {
-      recommendedLesson = "advanced_morphology";
+      recommendedLesson = "morphology"; // matches your hard/morphology.ts
     }
 
     router.push({
       pathname: "/dyslexic/module/[level1]/[lesson]",
       params: {
-        level1: routeLevel,
+        level1: `level1`, // always "level1" — the folder
         lesson: recommendedLesson,
       },
     });

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { ChevronRight } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import {
@@ -533,7 +532,6 @@ const s = StyleSheet.create({
   },
   testBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" },
 });
-=======
 
 // // Enhanced Practice Screen — Blue & White Theme
 // // Features: Difficulty Levels (Unlocked), Lesson Practice with Progress Controls
@@ -1245,4 +1243,3 @@ const s = StyleSheet.create({
 //   testBtn: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: "center" },
 //   testBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" }
 // })
->>>>>>> 31bb463f975edf222b73227ee1aa814e658bda71
