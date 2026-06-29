@@ -121,7 +121,7 @@ const lesson = {
   ],
 
   completionMessage:
-    "Amazing work! 🎉 You are getting better at recognizing b and d!",
+    "Amazing work!You are getting better at recognizing b and d!",
 };
 
 export default lesson;
