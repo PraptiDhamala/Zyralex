@@ -339,42 +339,30 @@ export default function LearnScreen() {
   };
 
   const startTargetedLesson = () => {
-    const validLevel1Lessons = [
-      "letter_reversal",
-      "phonics",
-      "vowel_processing",
-      "comprehension",
-      "fluency",
-      "morphology",
-      "chunking",
-      "decoding",
-      "syllables",
-    ];
+    const weakAreaToLesson: Record<string, string> = {
+      letter_reversal: "letter_reversal",
+      spelling_recognition: "letter_reversal",
+      visual_tracking: "letter_reversal",
+      phonics: "phonics",
+      phonological_awareness: "phonics",
+      phoneme_manipulation: "phonics",
+      vowel_processing: "vowel_processing",
+      decoding: "decoding",
+      chunking: "chunking",
+    };
 
-    let recommendedLesson = displayWeakArea;
+    const levelToParam: Record<string, string> = {
+      easy: "level1",
+      medium: "level2",
+      hard: "level2",
+    };
 
-    if (
-      recommendedLesson === "phonological_awareness" ||
-      recommendedLesson === "phoneme_manipulation"
-    ) {
-      recommendedLesson = "phonics";
-    } else if (
-      recommendedLesson === "spelling_recognition" ||
-      recommendedLesson === "visual_tracking"
-    ) {
-      recommendedLesson = "letter_reversal";
-    }
-
-    if (!validLevel1Lessons.includes(recommendedLesson)) {
-      recommendedLesson = "letter_reversal";
-    }
+    const lesson = weakAreaToLesson[displayWeakArea] ?? "letter_reversal";
+    const level = levelToParam[displayLevel] ?? "level1";
 
     router.push({
       pathname: "/dyslexic/module/[level1]/[lesson]",
-      params: {
-        level1: "level1", 
-        lesson: recommendedLesson,
-      },
+      params: { level1: level, lesson },
     });
   };
 
@@ -394,18 +382,9 @@ export default function LearnScreen() {
     }
 
     switch (displayWeakArea) {
-      case "decoding":
-        return (
-          <View style={styles.lessonCard}>
-            <Text style={styles.lessonTitle}>Focus: Decoding Skills</Text>
-            <Text style={styles.lessonText}>
-              We detected difficulty blending letters and reading words
-              smoothly. We will practice sounding out and decoding words
-              step-by-step.
-            </Text>
-          </View>
-        );
       case "letter_reversal":
+      case "spelling_recognition": // normalized to letter_reversal lesson
+      case "visual_tracking": // normalized to letter_reversal lesson
         return (
           <View style={styles.lessonCard}>
             <Text style={styles.lessonTitle}>
@@ -414,33 +393,61 @@ export default function LearnScreen() {
             <Text style={styles.lessonText}>
               Let's practice the difference between{" "}
               <Text style={styles.boldText}>b</Text> and{" "}
-              <Text style={styles.boldText}>d</Text>:
-            </Text>
-            <Text style={styles.lessonText}>
-              • <Text style={styles.highlight}>b</Text> has a belly (points
-              right: <Text style={styles.boldText}>ba</Text>ll)
-              {"\n"}• <Text style={styles.highlight}>d</Text> wears a diaper
-              (points left: <Text style={styles.boldText}>do</Text>g)
+              <Text style={styles.boldText}>d</Text>:{"\n"}•{" "}
+              <Text style={styles.highlight}>b</Text> has a belly (points right:{" "}
+              <Text style={styles.boldText}>ba</Text>ll){"\n"}•{" "}
+              <Text style={styles.highlight}>d</Text> wears a diaper (points
+              left: <Text style={styles.boldText}>do</Text>g)
             </Text>
           </View>
         );
-      case "visual_tracking":
+
+      case "phonics":
+      case "phonological_awareness":
+      case "phoneme_manipulation":
         return (
           <View style={styles.lessonCard}>
-            <Text style={styles.lessonTitle}>Focus: Visual Tracking</Text>
+            <Text style={styles.lessonTitle}>
+              Focus: Phonics & Sound Patterns
+            </Text>
             <Text style={styles.lessonText}>
-              We'll work on tracking letter sequences like matching inverted
-              structures smoothly without losing placement.
+              We noticed difficulty with letter sounds and rhyming patterns.
+              We'll practice matching sounds to letters and blending them into
+              words.
             </Text>
           </View>
         );
+
+      case "vowel_processing":
+        return (
+          <View style={styles.lessonCard}>
+            <Text style={styles.lessonTitle}>Focus: Vowel Processing</Text>
+            <Text style={styles.lessonText}>
+              We'll work on recognizing vowel teams like "oa", "ai", and "ee" so
+              you can fill in missing sounds confidently.
+            </Text>
+          </View>
+        );
+
+      case "decoding":
+        return (
+          <View style={styles.lessonCard}>
+            <Text style={styles.lessonTitle}>Focus: Decoding Skills</Text>
+            <Text style={styles.lessonText}>
+              We detected difficulty blending letters and reading words
+              smoothly. We'll practice sounding out and decoding words
+              step-by-step.
+            </Text>
+          </View>
+        );
+
       default:
         return (
           <View style={styles.lessonCard}>
             <Text style={styles.lessonTitle}>Focus: Chunking & Syllables</Text>
             <Text style={styles.lessonText}>
-              You have solid core baseline tracing. Let's work on isolating
-              blended vowel teams.
+              You have a solid baseline. Let's work on breaking longer words
+              into syllable chunks to improve reading fluency.
             </Text>
           </View>
         );
