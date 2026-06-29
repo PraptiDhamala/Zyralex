@@ -35,18 +35,36 @@ export default function LessonScreen() {
     hyphenated: string;
   } | null>(null);
   const curriculumMap: Record<string, any> = {
-    letter_reversal: letterReversal,
-    phonics: phonics,
-    vowel_processing: vowel_processing,
-    chunking: chunking,
-    decoding: decoding,
-
-    level2_letter_reversal: level2LetterReversal,
-    level2_phonics: level2Phonics,
-    level2_vowel_processing: level2VisualTracking,
+    level1: {
+      letter_reversal: letterReversal,
+      phonics: phonics,
+      vowel_processing: vowel_processing,
+      chunking: chunking,
+      decoding: decoding,
+    },
+    level2: {
+      level2_letter_reversal: level2LetterReversal,
+      level2_phonics: level2Phonics,
+      level2_vowel_processing: level2VisualTracking,
+    },
   };
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
+  const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
+  const activeLevel = Array.isArray(level1) ? level1[0] : level1;
+  console.log(
+    "ROUTE PARAMS RECEIVED -> level:",
+    activeLevel,
+    "lesson:",
+    lessonKey,
+  );
+  console.log(
+    "DOES IT EXIST IN MAP?",
+    !!curriculumMap[activeLevel]?.[lessonKey as string],
+  );
+  const lessonData =
+    curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
+
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [mascotConfig, setMascotConfig] = useState<{
@@ -61,9 +79,6 @@ export default function LessonScreen() {
   const distractionTimer = useRef<any>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-  const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
-  const lessonData =
-    curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
   const explanationLength = lessonData.explanation?.length || 0;
   const examplesLength = lessonData.examples?.length || 0;
   const totalSteps =

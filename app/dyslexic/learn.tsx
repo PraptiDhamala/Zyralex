@@ -339,54 +339,45 @@ export default function LearnScreen() {
   };
 
   const startTargetedLesson = () => {
-    let recommendedLesson = "letter_reversal";
+    const validLevel1Lessons = [
+      "letter_reversal",
+      "phonics",
+      "vowel_processing",
+      "comprehension",
+      "fluency",
+      "morphology",
+      "chunking",
+      "decoding",
+      "syllables",
+    ];
 
-    if (displayLevel === "easy") {
-      switch (displayWeakArea) {
-        case "phonological_awareness":
-        case "phoneme_manipulation":
-        case "phonics":
-          recommendedLesson = "phonics";
-          break;
-        case "vowel_processing":
-          recommendedLesson = "vowel_processing";
-          break;
-        case "decoding":
-          recommendedLesson = "decoding";
-          break;
-        case "letter_reversal":
-        case "spelling_recognition":
-        default:
-          recommendedLesson = "letter_reversal";
-      }
+    let recommendedLesson = displayWeakArea;
+
+    if (
+      recommendedLesson === "phonological_awareness" ||
+      recommendedLesson === "phoneme_manipulation"
+    ) {
+      recommendedLesson = "phonics";
+    } else if (
+      recommendedLesson === "spelling_recognition" ||
+      recommendedLesson === "visual_tracking"
+    ) {
+      recommendedLesson = "letter_reversal";
     }
 
-    if (displayLevel === "medium") {
-      switch (displayWeakArea) {
-        case "decoding":
-          recommendedLesson = "decoding";
-          break;
-        case "visual_tracking":
-        case "vowel_processing":
-        default:
-          recommendedLesson = "chunking";
-      }
-    }
-
-    if (displayLevel === "hard") {
-      recommendedLesson = "morphology";
+    if (!validLevel1Lessons.includes(recommendedLesson)) {
+      recommendedLesson = "letter_reversal";
     }
 
     router.push({
       pathname: "/dyslexic/module/[level1]/[lesson]",
       params: {
-        level1: "level1",
+        level1: "level1", 
         lesson: recommendedLesson,
       },
     });
   };
 
-  // Helper utility to supply descriptive cards on the fly
   const renderTargetedCard = () => {
     if (displayLevel === "hard") {
       return (
@@ -402,7 +393,6 @@ export default function LearnScreen() {
       );
     }
 
-    // Dynamic handling based on specific detected weak areas
     switch (displayWeakArea) {
       case "decoding":
         return (
@@ -537,7 +527,6 @@ export default function LearnScreen() {
                 Assigned Program: {displayLevel.toUpperCase()}
               </Text>
 
-              {/* Renders dynamic text card card matching both variables */}
               {renderTargetedCard()}
 
               <TouchableOpacity
