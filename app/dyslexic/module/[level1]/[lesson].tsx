@@ -43,9 +43,9 @@ export default function LessonScreen() {
       decoding: decoding,
     },
     level2: {
-      level2_letter_reversal: level2LetterReversal,
-      level2_phonics: level2Phonics,
-      level2_vowel_processing: level2VisualTracking,
+      letter_reversal: level2LetterReversal,
+      phonics: level2Phonics,
+      visual_tracking: level2VisualTracking,
     },
   };
   const { lesson, level1 } = useLocalSearchParams();
@@ -368,13 +368,14 @@ export default function LessonScreen() {
                 setStep(0);
                 setFinished(false);
                 setScore(0);
-                let nextLesson = lessonKey;
-                if (lessonKey === "vowel_processing")
-                  nextLesson = "visual_tracking";
-                router.replace({
-                  pathname: "/dyslexic/module/[level1]/[lesson]",
-                  params: { level1: "level2", lesson: nextLesson },
-                });
+
+                const lessonToNext: Record<string, string> = {
+                  vowel_processing: "visual_tracking",
+                };
+                const nextLesson =
+                  lessonToNext[lessonKey as string] ?? (lessonKey as string);
+
+                router.replace(`/dyslexic/module/level2/${nextLesson}`);
               }}
             >
               <Text style={styles.buttonText}>Start Level 2</Text>

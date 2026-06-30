@@ -342,7 +342,7 @@ export default function LearnScreen() {
     const weakAreaToLesson: Record<string, string> = {
       letter_reversal: "letter_reversal",
       spelling_recognition: "letter_reversal",
-      visual_tracking: "letter_reversal",
+      visual_tracking: "visual_tracking",
       phonics: "phonics",
       phonological_awareness: "phonics",
       phoneme_manipulation: "phonics",
@@ -360,10 +360,7 @@ export default function LearnScreen() {
     const lesson = weakAreaToLesson[displayWeakArea] ?? "letter_reversal";
     const level = levelToParam[displayLevel] ?? "level1";
 
-    router.push({
-      pathname: "/dyslexic/module/[level1]/[lesson]",
-      params: { level1: level, lesson },
-    });
+    router.push(`/dyslexic/module/${level}/${lesson}`);
   };
 
   const renderTargetedCard = () => {
@@ -383,8 +380,8 @@ export default function LearnScreen() {
 
     switch (displayWeakArea) {
       case "letter_reversal":
-      case "spelling_recognition": // normalized to letter_reversal lesson
-      case "visual_tracking": // normalized to letter_reversal lesson
+      case "spelling_recognition":
+      case "visual_tracking":
         return (
           <View style={styles.lessonCard}>
             <Text style={styles.lessonTitle}>
