@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import Constants from "expo-constants";
+import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -11,8 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { CameraView, useCameraPermissions } from "expo-camera";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { Mascot } from "../../../../components/lesson/Mascot";
 import letterReversal from "../../../../data/level1/easy/letter_reversal";
@@ -23,6 +23,67 @@ import decoding from "../../../../data/level1/medium/decoding";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
 import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
+import level3LetterReversal from "../../../../data/level3/easy/letter_reversal";
+import level3Phonics from "../../../../data/level3/easy/phonics";
+import level3VowelProcessing from "../../../../data/level3/easy/vowel_processing";
+
+const curriculumMap: Record<string, Record<string, any>> = {
+  level1: {
+    letter_reversal: letterReversal,
+    phonics: phonics,
+    vowel_processing: vowel_processing,
+    chunking: chunking,
+    decoding: decoding,
+  },
+  level2: {
+    letter_reversal: level2LetterReversal,
+    phonics: level2Phonics,
+    visual_tracking: level2VisualTracking,
+  },
+  level3: {
+    letter_reversal: level3LetterReversal,
+    phonics: level3Phonics,
+    vowel_processing: level3VowelProcessing,
+  },
+};
+
+const LEVEL_ORDER = ["level1", "level2", "level3"];
+
+function getNextRoute(currentLevel: string, lessonKey: string): Href | null {
+  const idx = LEVEL_ORDER.indexOf(currentLevel);
+  const nextLevel = LEVEL_ORDER[idx + 1];
+
+  if (!nextLevel) return null;
+
+  const nextLevelLessons = curriculumMap[nextLevel];
+
+  if (!nextLevelLessons) return null;
+
+  const nextLesson = nextLevelLessons[lessonKey]
+    ? lessonKey
+    : Object.keys(nextLevelLessons)[0];
+
+  return {
+    pathname: "/dyslexic/module/[level1]/[lesson]",
+    params: {
+      level1: nextLevel,
+      lesson: nextLesson,
+    },
+  };
+}
+
+function getServerIp(): string {
+  const hostUri =
+    Constants.expoConfig?.hostUri ??
+    (Constants as any).manifest2?.extra?.expoClient?.hostUri ??
+    (Constants as any).manifest?.debuggerHost;
+
+  if (hostUri) {
+    return hostUri.split(":")[0];
+  }
+  return "192.168.254.69";
+}
+
 export default function LessonScreen() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
@@ -34,24 +95,12 @@ export default function LessonScreen() {
     word: string;
     hyphenated: string;
   } | null>(null);
-  const curriculumMap: Record<string, any> = {
-    level1: {
-      letter_reversal: letterReversal,
-      phonics: phonics,
-      vowel_processing: vowel_processing,
-      chunking: chunking,
-      decoding: decoding,
-    },
-    level2: {
-      letter_reversal: level2LetterReversal,
-      phonics: level2Phonics,
-      visual_tracking: level2VisualTracking,
-    },
-  };
+
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
   const activeLevel = Array.isArray(level1) ? level1[0] : level1;
+
   console.log(
     "ROUTE PARAMS RECEIVED -> level:",
     activeLevel,
@@ -62,9 +111,9 @@ export default function LessonScreen() {
     "DOES IT EXIST IN MAP?",
     !!curriculumMap[activeLevel]?.[lessonKey as string],
   );
-  const lessonData =
-    curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
 
+  const lessonData =
+    curriculumMap[activeLevel]?.[lessonKey as string] ?? letterReversal;
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [mascotConfig, setMascotConfig] = useState<{
@@ -88,7 +137,7 @@ export default function LessonScreen() {
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
-  const SERVER_IP = "192.168.254.69";
+  const SERVER_IP = getServerIp();
   const BASE_IP_URL = `http://${SERVER_IP}:8000`;
   const WS_IP_URL = `ws://${SERVER_IP}:8000/ws/app`;
   const [wsStatus, setWsStatus] = useState<
@@ -101,6 +150,7 @@ export default function LessonScreen() {
       if (!granted) console.warn("Camera permission denied.");
     })();
   }, []);
+
   useEffect(() => {
     fetch(`${BASE_IP_URL}/api/tracking/start`, { method: "POST" }).catch(
       (err) => console.error("Tracking start failed:", err),
@@ -188,6 +238,7 @@ export default function LessonScreen() {
   useEffect(() => {
     sendCurrentWordsToTracker();
   }, [step]);
+
   const sendCurrentWordsToTracker = () => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
@@ -369,16 +420,19 @@ export default function LessonScreen() {
                 setFinished(false);
                 setScore(0);
 
-                const lessonToNext: Record<string, string> = {
-                  vowel_processing: "visual_tracking",
-                };
-                const nextLesson =
-                  lessonToNext[lessonKey as string] ?? (lessonKey as string);
+                const nextRoute = getNextRoute(
+                  activeLevel,
+                  lessonKey as string,
+                );
 
-                router.replace(`/dyslexic/module/level2/${nextLesson}`);
+                if (nextRoute) {
+                  router.replace(nextRoute);
+                } else {
+                  router.replace("/dyslexic");
+                }
               }}
             >
-              <Text style={styles.buttonText}>Start Level 2</Text>
+              <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>
           </View>
         )}
