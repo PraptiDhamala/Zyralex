@@ -70,7 +70,6 @@ function getNextRoute(currentLevel: string, lessonKey: string): Href | null {
     };
   }
 
-  
   console.warn(
     `${nextLevel} has no "${lessonKey}" lesson yet — student was defaulted instead.`,
   );
@@ -126,8 +125,6 @@ export default function LessonScreen() {
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
-  // --- Server IP: no more hardcoded fallback. Resolved on mount, editable
-  // in-app any time via the WS badge, persisted so it survives app restarts.
   const [serverIp, setServerIp] = useState<string | null>(null);
   const [ipModalVisible, setIpModalVisible] = useState(false);
   const [ipInput, setIpInput] = useState("");
@@ -141,6 +138,13 @@ export default function LessonScreen() {
       if (!granted) console.warn("Camera permission denied.");
     })();
   }, []);
+  useEffect(() => {
+    setStep(0);
+    setFinished(false);
+    setScore(0);
+    setMascotConfig(null);
+    setPendingWordHelp(null);
+  }, [activeLevel, lessonKey]);
 
   // Resolve the server IP once on mount
   useEffect(() => {
@@ -195,8 +199,6 @@ export default function LessonScreen() {
       socket.onclose = () => {
         if (cancelled) return;
         setWsStatus("disconnected");
-        // Auto-retry - handles the server coming back up or a brief
-        // network blip without needing to reopen the lesson screen.
         reconnectTimer.current = setTimeout(connect, 4000);
       };
 
