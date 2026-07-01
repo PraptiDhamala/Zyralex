@@ -96,17 +96,17 @@ const lesson = {
 
     {
       letter: "b",
-      word: "rabbit",
-      emoji: "🐰",
-      sentence: "Rabbit has the letter b in the middle.",
+      word: "ball",
+      emoji: "⚽",
+      sentence: "B-all starts with the /b/ sound.",
       color: "#2563EB",
     },
 
     {
       letter: "d",
-      word: "window",
-      emoji: "🪟",
-      sentence: "Window has the letter d in the middle.",
+      word: "desk",
+      emoji: "💻",
+      sentence: "D-esk starts with the /d/ sound.",
       color: "#F59E0B",
     },
   ],
@@ -125,15 +125,15 @@ const lesson = {
     },
 
     {
-      question: "🔍 Which word has the letter b inside?",
-      options: ["rabbit", "door"],
-      answer: "rabbit",
+      question: "⚽ Which word starts with the letter b?",
+      options: ["ball", "door"],
+      answer: "ball",
     },
 
     {
-      question: "🪟 Which word has the letter d inside?",
-      options: ["window", "ball"],
-      answer: "window",
+      question: "💻 Which word starts with the letter d?",
+      options: ["desk", "apple"],
+      answer: "desk",
     },
 
     {

@@ -58,23 +58,25 @@ const LEVEL_ORDER = ["level1", "level2", "level3"];
 function getNextRoute(currentLevel: string, lessonKey: string): Href | null {
   const idx = LEVEL_ORDER.indexOf(currentLevel);
   const nextLevel = LEVEL_ORDER[idx + 1];
-
   if (!nextLevel) return null;
 
   const nextLevelLessons = curriculumMap[nextLevel];
-
   if (!nextLevelLessons) return null;
 
-  const nextLesson = nextLevelLessons[lessonKey]
-    ? lessonKey
-    : Object.keys(nextLevelLessons)[0];
+  if (nextLevelLessons[lessonKey]) {
+    return {
+      pathname: "/dyslexic/module/[level1]/[lesson]",
+      params: { level1: nextLevel, lesson: lessonKey },
+    };
+  }
 
+  
+  console.warn(
+    `${nextLevel} has no "${lessonKey}" lesson yet — student was defaulted instead.`,
+  );
   return {
     pathname: "/dyslexic/module/[level1]/[lesson]",
-    params: {
-      level1: nextLevel,
-      lesson: nextLesson,
-    },
+    params: { level1: nextLevel, lesson: Object.keys(nextLevelLessons)[0] },
   };
 }
 
