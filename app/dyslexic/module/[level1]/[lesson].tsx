@@ -1,15 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import Constants from "expo-constants";
 import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import * as Speech from "expo-speech";
 import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -26,6 +27,11 @@ import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
 import level3LetterReversal from "../../../../data/level3/easy/letter_reversal";
 import level3Phonics from "../../../../data/level3/easy/phonics";
 import level3VowelProcessing from "../../../../data/level3/easy/vowel_processing";
+import {
+  buildUrls,
+  resolveServerIp,
+  setServerIpOverride,
+} from "../../../../utils/serverConfig";
 
 const curriculumMap: Record<string, Record<string, any>> = {
   level1: {
@@ -72,17 +78,14 @@ function getNextRoute(currentLevel: string, lessonKey: string): Href | null {
   };
 }
 
-function getServerIp(): string {
-  const hostUri =
-    Constants.expoConfig?.hostUri ??
-    (Constants as any).manifest2?.extra?.expoClient?.hostUri ??
-    (Constants as any).manifest?.debuggerHost;
-
-  if (hostUri) {
-    return hostUri.split(":")[0];
-  }
-  return "192.168.254.69";
-}
+// Mascot config now carries an explicit displayMode so placement is a
+// deliberate choice per alert type, not an accidental side effect of
+// which fields happen to be set.
+type MascotConfig = {
+  mood: "cheer" | "correct" | "wrong" | "encourage" | "frustrated";
+  message: string;
+  displayMode: "toast" | "modal";
+};
 
 export default function LessonScreen() {
   const router = useRouter();
@@ -101,31 +104,15 @@ export default function LessonScreen() {
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
   const activeLevel = Array.isArray(level1) ? level1[0] : level1;
 
-  console.log(
-    "ROUTE PARAMS RECEIVED -> level:",
-    activeLevel,
-    "lesson:",
-    lessonKey,
-  );
-  console.log(
-    "DOES IT EXIST IN MAP?",
-    !!curriculumMap[activeLevel]?.[lessonKey as string],
-  );
-
   const lessonData =
     curriculumMap[activeLevel]?.[lessonKey as string] ?? letterReversal;
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
-  const [mascotConfig, setMascotConfig] = useState<{
-    mood: "cheer" | "correct" | "wrong" | "encourage" | "frustrated";
-    message: string;
-    word?: string;
-    hyphenated?: string;
-  } | null>(null);
-  const [isDistracted, setIsDistracted] = useState(false);
+  const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
 
   const ws = useRef<WebSocket | null>(null);
   const distractionTimer = useRef<any>(null);
+  const reconnectTimer = useRef<any>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   const explanationLength = lessonData.explanation?.length || 0;
@@ -137,11 +124,13 @@ export default function LessonScreen() {
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
-  const SERVER_IP = getServerIp();
-  const BASE_IP_URL = `http://${SERVER_IP}:8000`;
-  const WS_IP_URL = `ws://${SERVER_IP}:8000/ws/app`;
+  // --- Server IP: no more hardcoded fallback. Resolved on mount, editable
+  // in-app any time via the WS badge, persisted so it survives app restarts.
+  const [serverIp, setServerIp] = useState<string | null>(null);
+  const [ipModalVisible, setIpModalVisible] = useState(false);
+  const [ipInput, setIpInput] = useState("");
   const [wsStatus, setWsStatus] = useState<
-    "connecting" | "connected" | "disconnected"
+    "connecting" | "connected" | "disconnected" | "unconfigured"
   >("connecting");
 
   useEffect(() => {
@@ -151,89 +140,144 @@ export default function LessonScreen() {
     })();
   }, []);
 
+  // Resolve the server IP once on mount
   useEffect(() => {
-    fetch(`${BASE_IP_URL}/api/tracking/start`, { method: "POST" }).catch(
-      (err) => console.error("Tracking start failed:", err),
-    );
-
-    ws.current = new WebSocket(WS_IP_URL);
-
-    ws.current.onopen = () => {
-      console.log("Connected to ZyraLex Server");
-      setWsStatus("connected");
-      sendCurrentWordsToTracker();
-    };
-    ws.current.onerror = () => setWsStatus("disconnected");
-    ws.current.onclose = () => setWsStatus("disconnected");
-    ws.current.onmessage = (event) => {
-      try {
-        const response = JSON.parse(event.data);
-
-        if (response.type === "DISTRACTION_ALERT") {
-          if (distractionTimer.current) clearTimeout(distractionTimer.current);
-          const alertMessage =
-            "Hey! Lost your place? It is completely normal take a rest but don't quit, you got this!!";
-          setMascotConfig({
-            mood: "encourage",
-            message: alertMessage,
-          });
-          Speech.speak(alertMessage, {
-            language: "en",
-            pitch: 0.95,
-            rate: 0.75,
-          });
-          distractionTimer.current = setTimeout(
-            () => setMascotConfig(null),
-            8000,
-          );
-        }
-
-        if (response.type === "FRUSTRATION_ALERT") {
-          if (distractionTimer.current) clearTimeout(distractionTimer.current);
-          const frustrationMessage =
-            response.sel_message ||
-            "This word is tough — and you're still here trying. That's what matters! ";
-          setMascotConfig({
-            mood: "frustrated",
-            message: frustrationMessage,
-          });
-          Speech.speak(frustrationMessage, {
-            language: "en",
-            pitch: 0.95,
-            rate: 0.72,
-          });
-          distractionTimer.current = setTimeout(
-            () => setMascotConfig(null),
-            9000,
-          );
-        }
-
-        if (response.type === "INTERVENTION_TRIGGER") {
-          const interventionMessage = `${response.sel_message}\n\nDo you need help with the word "${response.word}"?`;
-          setPendingWordHelp({
-            word: response.word,
-            hyphenated: response.adaptations.hyphenated,
-          });
-          setMascotConfig({
-            mood: "encourage",
-            message: interventionMessage,
-          });
-          Speech.speak(interventionMessage.replace("\n\n", " "), {
-            language: "en",
-            pitch: 0.95,
-            rate: 0.75,
-          });
-        }
-      } catch (err) {
-        console.error("Error parsing socket data:", err);
+    (async () => {
+      const ip = await resolveServerIp();
+      if (!ip) {
+        setWsStatus("unconfigured");
+        setIpModalVisible(true);
+      } else {
+        setServerIp(ip);
       }
+    })();
+  }, []);
+
+  const saveIpOverride = async () => {
+    const trimmed = ipInput.trim();
+    if (!trimmed) return;
+    await setServerIpOverride(trimmed);
+    setServerIp(trimmed);
+    setIpModalVisible(false);
+  };
+
+  useEffect(() => {
+    if (!serverIp) return;
+
+    const { base: BASE_IP_URL, ws: WS_IP_URL } = buildUrls(serverIp);
+    let cancelled = false;
+
+    const connect = () => {
+      if (cancelled) return;
+      setWsStatus("connecting");
+
+      fetch(`${BASE_IP_URL}/api/tracking/start`, { method: "POST" }).catch(
+        (err) => console.error("Tracking start failed:", err),
+      );
+
+      const socket = new WebSocket(WS_IP_URL);
+      ws.current = socket;
+
+      socket.onopen = () => {
+        if (cancelled) return;
+        console.log("Connected to ZyraLex Server");
+        setWsStatus("connected");
+        sendCurrentWordsToTracker();
+      };
+
+      socket.onerror = () => {
+        if (cancelled) return;
+        setWsStatus("disconnected");
+      };
+
+      socket.onclose = () => {
+        if (cancelled) return;
+        setWsStatus("disconnected");
+        // Auto-retry - handles the server coming back up or a brief
+        // network blip without needing to reopen the lesson screen.
+        reconnectTimer.current = setTimeout(connect, 4000);
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const response = JSON.parse(event.data);
+
+          if (response.type === "DISTRACTION_ALERT") {
+            if (distractionTimer.current)
+              clearTimeout(distractionTimer.current);
+            const alertMessage =
+              "Hey! Lost your place? It is completely normal take a rest but don't quit, you got this!!";
+            setMascotConfig({
+              mood: "encourage",
+              message: alertMessage,
+              displayMode: "toast",
+            });
+            Speech.speak(alertMessage, {
+              language: "en",
+              pitch: 0.95,
+              rate: 0.75,
+            });
+            distractionTimer.current = setTimeout(
+              () => setMascotConfig(null),
+              8000,
+            );
+          }
+
+          if (response.type === "FRUSTRATION_ALERT") {
+            if (distractionTimer.current)
+              clearTimeout(distractionTimer.current);
+            const frustrationMessage =
+              response.sel_message ||
+              "This word is tough — and you're still here trying. That's what matters! ";
+            setMascotConfig({
+              mood: "frustrated",
+              message: frustrationMessage,
+
+              displayMode: "toast",
+            });
+            Speech.speak(frustrationMessage, {
+              language: "en",
+              pitch: 0.95,
+              rate: 0.72,
+            });
+            distractionTimer.current = setTimeout(
+              () => setMascotConfig(null),
+              9000,
+            );
+          }
+
+          if (response.type === "INTERVENTION_TRIGGER") {
+            const interventionMessage = `${response.sel_message}\n\nDo you need help with the word "${response.word}"?`;
+            setPendingWordHelp({
+              word: response.word,
+              hyphenated: response.adaptations.hyphenated,
+            });
+            setMascotConfig({
+              mood: "encourage",
+              message: interventionMessage,
+              displayMode: "modal",
+            });
+            Speech.speak(interventionMessage.replace("\n\n", " "), {
+              language: "en",
+              pitch: 0.95,
+              rate: 0.75,
+            });
+          }
+        } catch (err) {
+          console.error("Error parsing socket data:", err);
+        }
+      };
     };
+
+    connect();
 
     return () => {
-      if (ws.current) ws.current.close();
+      cancelled = true;
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       if (distractionTimer.current) clearTimeout(distractionTimer.current);
+      ws.current?.close();
     };
-  }, []);
+  }, [serverIp]);
 
   useEffect(() => {
     sendCurrentWordsToTracker();
@@ -287,6 +331,7 @@ export default function LessonScreen() {
       setMascotConfig({
         mood: "correct",
         message: "Amazing! You got it right! Your hard work is paying off! ",
+        displayMode: "modal",
       });
       Speech.speak("Amazing job!");
     } else {
@@ -294,6 +339,7 @@ export default function LessonScreen() {
         mood: "wrong",
         message:
           "That's okay! Mistakes help us learn. Try to sound it out next time. 💛",
+        displayMode: "modal",
       });
       Speech.speak("Nice try! Keep going!");
     }
@@ -379,19 +425,28 @@ export default function LessonScreen() {
     return null;
   };
 
+  const wsBadgeColor =
+    wsStatus === "connected"
+      ? "#22c55e"
+      : wsStatus === "connecting"
+        ? "#f59e0b"
+        : "#ef4444";
+
   return (
     <View style={styles.screenContainer}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text
-          style={[
-            styles.wsBadge,
-            {
-              backgroundColor: wsStatus === "connected" ? "#22c55e" : "#ef4444",
-            },
-          ]}
+        <TouchableOpacity
+          onPress={() => {
+            setIpInput(serverIp ?? "");
+            setIpModalVisible(true);
+          }}
         >
-          WS: {wsStatus}
-        </Text>
+          <Text style={[styles.wsBadge, { backgroundColor: wsBadgeColor }]}>
+            WS: {wsStatus}
+            {serverIp ? ` (${serverIp})` : ""}
+          </Text>
+        </TouchableOpacity>
+
         <Text style={styles.title}>{lessonData.title}</Text>
         <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
         <View style={styles.progressBarBackground}>
@@ -438,7 +493,8 @@ export default function LessonScreen() {
         )}
       </ScrollView>
 
-      {mascotConfig && mascotConfig.mood === "encourage" && !pendingWordHelp ? (
+      {/* Ambient nudges (distraction / frustration): same toast placement for both. */}
+      {mascotConfig && mascotConfig.displayMode === "toast" ? (
         <View style={styles.distractionToast}>
           <Image
             source={require("../../../../assets/mimoimg.png")}
@@ -451,6 +507,7 @@ export default function LessonScreen() {
           </View>
         </View>
       ) : mascotConfig ? (
+        // Anything needing a decision or explicit dismissal: blocking modal.
         <View style={StyleSheet.absoluteFillObject}>
           <Mascot
             mood={mascotConfig.mood}
@@ -477,6 +534,7 @@ export default function LessonScreen() {
                   setMascotConfig({
                     mood: "cheer",
                     message: `"${pendingWordHelp.word}" breaks down as:\n\n${pendingWordHelp.hyphenated}`,
+                    displayMode: "modal",
                   });
                   Speech.speak(
                     `Let's break it down: ${pendingWordHelp.hyphenated}`,
@@ -502,6 +560,7 @@ export default function LessonScreen() {
           )}
         </View>
       ) : null}
+
       <ConfettiCannon
         ref={confettiRef}
         count={120}
@@ -509,6 +568,44 @@ export default function LessonScreen() {
         autoStart={false}
         fadeOut={true}
       />
+
+      <Modal visible={ipModalVisible} transparent animationType="fade">
+        <View style={styles.ipModalOverlay}>
+          <View style={styles.ipModalCard}>
+            <Text style={styles.ipModalTitle}>Server IP</Text>
+            <Text style={styles.ipModalHint}>
+              Enter the IP your FastAPI server (server.py) is running on, e.g.
+              192.168.1.42. This is saved on this device so you only need to set
+              it once per network.
+            </Text>
+            <TextInput
+              value={ipInput}
+              onChangeText={setIpInput}
+              placeholder="192.168.1.42"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="numbers-and-punctuation"
+              style={styles.ipInput}
+            />
+            <View style={styles.ipModalButtons}>
+              {serverIp && (
+                <TouchableOpacity
+                  style={styles.ipCancelButton}
+                  onPress={() => setIpModalVisible(false)}
+                >
+                  <Text style={styles.noText}>Cancel</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.ipSaveButton}
+                onPress={saveIpOverride}
+              >
+                <Text style={styles.yesText}>Save & Connect</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -528,15 +625,16 @@ const styles = StyleSheet.create({
   },
   wsBadge: {
     position: "absolute",
-    top: 20,
-    right: 16,
+    top: -180,
+    right: -290,
     color: "white",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 3,
+    paddingVertical: 2,
     borderRadius: 8,
-    fontSize: 11,
+    fontSize: 6,
     fontWeight: "700",
-    zIndex: 99999,
+    zIndex: 9999,
+    overflow: "hidden",
   },
   wordHelpButtons: {
     position: "absolute",
@@ -715,4 +813,56 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   score: { textAlign: "center", color: "#64748B", marginTop: 10, fontSize: 18 },
+  ipModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  ipModalCard: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 24,
+    width: "100%",
+    maxWidth: 420,
+  },
+  ipModalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1E293B",
+    marginBottom: 8,
+  },
+  ipModalHint: {
+    fontSize: 14,
+    color: "#64748B",
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  ipInput: {
+    borderWidth: 2,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  ipModalButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  ipCancelButton: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  ipSaveButton: {
+    flex: 1,
+    backgroundColor: "#2563EB",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
 });
