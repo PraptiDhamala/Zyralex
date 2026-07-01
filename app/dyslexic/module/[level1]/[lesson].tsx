@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { Mascot } from "../../../../components/lesson/Mascot";
+import TraceActivity from "../../../../components/lesson/TraceActivity";
 import letterReversal from "../../../../data/level1/easy/letter_reversal";
 import phonics from "../../../../data/level1/easy/phonics";
 import vowel_processing from "../../../../data/level1/easy/vowel_processing";
@@ -32,7 +33,9 @@ import {
   resolveServerIp,
   setServerIpOverride,
 } from "../../../../utils/serverConfig";
-
+// import ExplanationVisual from "../../../../components/lesson/ExplanationVisual";
+import DragDropCard from "../../../../components/lesson/Dragdropcard";
+import TapToRevealCard from "../../../../components/lesson/TapToRevealCard";
 const curriculumMap: Record<string, Record<string, any>> = {
   level1: {
     letter_reversal: letterReversal,
@@ -358,6 +361,10 @@ export default function LessonScreen() {
             <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
           </View>
           <Text style={styles.text}>{item.content}</Text>
+          {item.type === "activity" ? (
+            <TraceActivity letter={item.visualAnchor} />
+          ) : null}
+
           <TouchableOpacity
             style={styles.button}
             onPress={() => speakWord(item.content)}
@@ -407,8 +414,23 @@ export default function LessonScreen() {
         </View>
       );
     }
-
     if (lessonData.guidedPractice && currentPractice) {
+      if (currentPractice.interactionType === "tap-to-reveal") {
+        return (
+          <TapToRevealCard
+            practice={currentPractice}
+            onAnswer={handlePracticeAnswer}
+          />
+        );
+      }
+      if (currentPractice.interactionType === "drag-and-drop") {
+        return (
+          <DragDropCard
+            practice={currentPractice}
+            onAnswer={handlePracticeAnswer}
+          />
+        );
+      }
       return (
         <View style={styles.card}>
           <Text style={styles.question}>{currentPractice.question}</Text>
@@ -426,6 +448,7 @@ export default function LessonScreen() {
         </View>
       );
     }
+
     return null;
   };
 
