@@ -2,7 +2,7 @@ const lesson = {
   id: "letter_reversal",
   title: "Learning b and d",
   subtitle:
-    "Let's learn how these letters face different directions in a fun way! 🎯",
+    "Let's learn how these letters face different directions in a fun way!",
   color: "#DBEAFE",
   mascot: "🐼",
 
@@ -17,7 +17,7 @@ const lesson = {
     {
       type: "story",
       content:
-        "Many learners mix up these letters because they are mirror twins 🪞",
+        "Many learners mix up these letters because they are mirror twins",
       animationType: "mirror-flip",
       visualAnchor: "b",
     },

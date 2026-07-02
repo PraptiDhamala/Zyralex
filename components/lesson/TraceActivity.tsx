@@ -33,7 +33,6 @@ export default function TraceActivity({ letter }: { letter: string }) {
   const d = points
     .map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`)
     .join(" ");
-
   const clear = () => {
     setPoints([]);
     setStrokeCount(0);

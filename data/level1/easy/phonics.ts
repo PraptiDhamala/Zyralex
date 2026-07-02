@@ -1,47 +1,43 @@
 const lesson = {
   id: "phonics",
-
   title: "Phonics & Sound Blends",
-
-  subtitle: "Let’s hear, see, and play with sounds together! 🎵",
-
+  subtitle: "Let's hear, see, and play with sounds together! 🎵",
   color: "#FEF3C7",
-
   mascot: "🐼",
-
   progressColor: "#F59E0B",
-
   explanation: [
     {
       type: "text",
       content: "Letters can work together like teammates to create new sounds.",
     },
-
     {
       type: "story",
       title: "🚂 Sound Story",
       content: "The CH sound is loud like a train going: CHOO CHOO!",
+      animationType: "pulse-on-audio",
+      visualAnchor: "ch",
     },
-
     {
       type: "tip",
       title: "👂 Listening Tip",
       content: "Put your hand near your mouth and say: CH CH CH",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "ch",
     },
-
     {
       type: "tip",
       title: "🤫 Quiet Sound",
       content: "The SH sound is soft and quiet like telling someone: SHHH 🤫",
+      animationType: "mirror-flip",
+      visualAnchor: "sh",
     },
-
     {
       type: "activity",
       title: "✍️ Finger Trace",
       content: "Trace the letters 'ch' in the air with your finger.",
+      visualAnchor: "ch",
     },
   ],
-
   examples: [
     {
       letter: "ch",
@@ -51,7 +47,6 @@ const lesson = {
       sentence: "CH-air starts with the CH sound.",
       color: "#EF4444",
     },
-
     {
       letter: "sh",
       word: "shoe",
@@ -60,7 +55,6 @@ const lesson = {
       sentence: "SH-oe starts with the SH sound.",
       color: "#3B82F6",
     },
-
     {
       letter: "ch",
       word: "cheese",
@@ -69,7 +63,6 @@ const lesson = {
       sentence: "CH-eese starts with CH.",
       color: "#EF4444",
     },
-
     {
       letter: "sh",
       word: "ship",
@@ -79,83 +72,48 @@ const lesson = {
       color: "#3B82F6",
     },
   ],
-
   guidedPractice: [
     {
       type: "game",
-
+      interactionType: "tap-to-reveal",
       question: "🎯 Which sound starts the word CHIEF?",
-
       options: ["ch", "sh"],
-
       answer: "ch",
-
       successMessage: "Excellent! 🌟 You found the CH sound!",
     },
-
     {
       type: "game",
-
+      interactionType: "drag-and-drop",
       question: "🏖️ Complete the beach word: ___ell",
-
       options: ["ch", "sh"],
-
       answer: "sh",
-
       successMessage: "Amazing! 🐚 SHELL starts with SH!",
     },
-
     {
       type: "game",
-
+      interactionType: "tap-to-reveal",
       question: "🚢 Which sound belongs to SHIP?",
-
       options: ["ch", "sh"],
-
       answer: "sh",
-
       successMessage: "Correct! 🚀 You are learning fast!",
     },
   ],
-
   miniGame: {
     title: "🪣 Sort the Sounds",
-
     instruction: "Put words into the correct sound bucket.",
-
     categories: ["CH", "SH"],
-
     words: [
-      {
-        word: "chair",
-        answer: "CH",
-      },
-
-      {
-        word: "shoe",
-        answer: "SH",
-      },
-
-      {
-        word: "cheese",
-        answer: "CH",
-      },
-
-      {
-        word: "ship",
-        answer: "SH",
-      },
+      { word: "chair", answer: "CH" },
+      { word: "shoe", answer: "SH" },
+      { word: "cheese", answer: "CH" },
+      { word: "ship", answer: "SH" },
     ],
   },
-
   rewards: {
     stars: 3,
-
     badge: "🎵 Sound Explorer",
-
     message: "You unlocked the Sound Explorer badge!",
   },
-
   completionMessage: "Fantastic work! 🎉 You are becoming a sound detective 🔍",
 };
 

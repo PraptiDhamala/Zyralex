@@ -15,7 +15,10 @@ import {
   View,
 } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
+import DragDropCard from "../../../../components/lesson/Dragdropcard";
+import ExplanationVisual from "../../../../components/lesson/ExplanationVisual";
 import { Mascot } from "../../../../components/lesson/Mascot";
+import TapToRevealCard from "../../../../components/lesson/TapToRevealCard";
 import TraceActivity from "../../../../components/lesson/TraceActivity";
 import letterReversal from "../../../../data/level1/easy/letter_reversal";
 import phonics from "../../../../data/level1/easy/phonics";
@@ -33,9 +36,6 @@ import {
   resolveServerIp,
   setServerIpOverride,
 } from "../../../../utils/serverConfig";
-// import ExplanationVisual from "../../../../components/lesson/ExplanationVisual";
-import DragDropCard from "../../../../components/lesson/Dragdropcard";
-import TapToRevealCard from "../../../../components/lesson/TapToRevealCard";
 const curriculumMap: Record<string, Record<string, any>> = {
   level1: {
     letter_reversal: letterReversal,
@@ -360,6 +360,8 @@ export default function LessonScreen() {
           <View style={[styles.badge, item.type === "tip" && styles.tipBadge]}>
             <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
           </View>
+          <ExplanationVisual item={item} />
+          
           <Text style={styles.text}>{item.content}</Text>
           {item.type === "activity" ? (
             <TraceActivity letter={item.visualAnchor} />
