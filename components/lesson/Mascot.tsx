@@ -53,9 +53,6 @@ const TITLE: Record<Props["mood"], string> = {
   encourage: "Keep it up!",
 };
 
-// A couple of extra sparkle emoji shown only on happy moods, positioned
-// around the card. Purely decorative — cheap way to make "correct" feel
-// like a small celebration instead of a static popup.
 const SPARKLE_MOODS: Props["mood"][] = ["correct", "cheer"];
 
 export const Mascot: React.FC<Props> = ({
@@ -74,12 +71,10 @@ export const Mascot: React.FC<Props> = ({
   const sparkle2 = useSharedValue(0);
 
   useEffect(() => {
-    // Entrance: fade the backdrop, spring the card up into place.
     backdropOpacity.value = withTiming(1, { duration: 200 });
     cardScale.value = withSpring(1, { damping: 9, stiffness: 140 });
     cardTranslateY.value = withSpring(0, { damping: 11, stiffness: 140 });
 
-    // Mood-specific reaction on the mascot itself.
     if (mood === "correct" || mood === "cheer") {
       mimoRotate.value = withSequence(
         withTiming(-8, { duration: 120 }),
@@ -96,8 +91,6 @@ export const Mascot: React.FC<Props> = ({
       );
     }
 
-    // Gentle continuous "breathing" float so the mascot never feels frozen
-    // while the child reads the message.
     mimoFloat.value = withRepeat(
       withSequence(
         withTiming(-6, { duration: 900, easing: Easing.inOut(Easing.ease) }),

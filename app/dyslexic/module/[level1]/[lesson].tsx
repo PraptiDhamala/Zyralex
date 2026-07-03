@@ -359,6 +359,7 @@ export default function LessonScreen() {
       Speech.speak("Nice try! Keep going!");
     }
   };
+  
 
   const renderContent = () => {
     if (step < lessonData.explanation.length) {
