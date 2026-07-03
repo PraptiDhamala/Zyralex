@@ -33,8 +33,9 @@ import level2chunking from "../../../../data/level2/medium/chunking";
 import level2decoding from "../../../../data/level2/medium/decoding";
 import level3LetterReversal from "../../../../data/level3/easy/letter_reversal";
 import level3Phonics from "../../../../data/level3/easy/phonics";
-// import level3decoding from "../../../../data/level3/medium/decoding";
 import level3VowelProcessing from "../../../../data/level3/easy/vowel_processing";
+import level3chunkining from "../../../../data/level3/medium/chunking";
+import level3decoding from "../../../../data/level3/medium/decoding";
 import {
   buildUrls,
   resolveServerIp,
@@ -59,8 +60,8 @@ const curriculumMap: Record<string, Record<string, any>> = {
     letter_reversal: level3LetterReversal,
     phonics: level3Phonics,
     vowel_processing: level3VowelProcessing,
-    // chunking: level3chunking,
-    // decoding: level3decoding,
+    chunking: level3chunkining,
+    decoding: level3decoding,
   },
 };
 
@@ -479,6 +480,7 @@ export default function LessonScreen() {
           <TapToRevealCard
             practice={currentPractice}
             onAnswer={handlePracticeAnswer}
+            onSpeak={speakWord}
             variant={lessonKey === "letter_reversal" ? "mirror-flip" : "pop"}
           />
         );
@@ -488,6 +490,7 @@ export default function LessonScreen() {
           <DragDropCard
             practice={currentPractice}
             onAnswer={handlePracticeAnswer}
+            onSpeak={speakWord}
           />
         );
       }
