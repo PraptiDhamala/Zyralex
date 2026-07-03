@@ -1,37 +1,35 @@
-const level2Phonics = {
-  id: "level2_phonics",
-  title: "Advanced Phonics",
-  subtitle:
-    "Learn more complex sounds and blend letter teammates together! 🧩🎵",
-  color: "#E0F2FE",
+const level3Decoding = {
+  id: "decoding_level3",
+  title: "Sound Team Blends",
+  subtitle: "Meet the letter teammates that team up to make new sounds! 🤝🔤",
+  color: "#DDD6FE",
   mascot: "assets/mimo1.png",
-  progressColor: "#2563EB",
+  progressColor: "#7C3AED",
 
   introduction: {
     mascotMessage:
-      "Welcome back, Sound Detective! 🕵️‍♂️ Mimo is here. Let's find out how secret blend pairs like 'tr' and 'dr' change how we read words!",
+      "You're a real Sound Blender now! 🕵️‍♂️ This time we're hunting for sneaky sound teams — like sh, ch, tr, and dr — where two letters team up to make one brand-new sound!",
   },
+
   explanation: [
     {
       type: "info",
       content:
-        "Phonics maps out the secret lines that connect letter symbols straight to spoken sounds!",
-      animationType: "pulse-on-audio",
-      visualAnchor: "🔤 CONNECT",
+        "Some letter pairs stand side by side and team up to make ONE new sound.",
+      animationType: "morph-asset",
+      visualAnchor: "s + h ➔ sh",
     },
     {
       type: "tip",
-      content:
-        "When two distinct letter blocks stand next to each other, they work together like teammates to form a fresh sound blend!",
+      content: "sh locks together into a soft, quiet whisper: shhh! 🤫",
+      animationType: "pulse-on-audio",
+      visualAnchor: "sh 🦈",
+    },
+    {
+      type: "tip",
+      content: "tr and dr blend two sounds fast, right at the start of a word.",
       animationType: "morph-asset",
       visualAnchor: "t + r ➔ tr",
-    },
-    {
-      type: "tip",
-      content:
-        "Listen closely to 'sh' — it locks together to make a clean, continuous whisper: shhhhh! 🤫",
-      animationType: "morph-asset",
-      visualAnchor: "sh 🦈",
     },
   ],
 
@@ -40,29 +38,28 @@ const level2Phonics = {
       emoji: "🦈",
       letter: "sh",
       word: "shark",
-      sentence:
-        "The SH-ark zooms gracefully through the deep blue ocean water.",
+      sentence: "The SH-ark swims fast through the deep blue sea.",
       color: "#2563EB",
     },
     {
-      emoji: "🪑",
+      emoji: "🙂",
       letter: "ch",
-      word: "chair",
-      sentence: "Pull up the wooden CH-air to join our workspace table.",
+      word: "chin",
+      sentence: "Your CH-in sits right below your mouth.",
       color: "#DC2626",
     },
     {
       emoji: "🚂",
       letter: "tr",
       word: "train",
-      sentence: "The steel TR-ain chugs swiftly down the winding tracks.",
+      sentence: "The TR-ain runs quickly along the shiny tracks.",
       color: "#16A34A",
     },
     {
-      emoji: "🌧️",
+      emoji: "🥁",
       letter: "dr",
-      word: "drip",
-      sentence: "Cool, crystal clear water drops DR-ip down slowly.",
+      word: "drum",
+      sentence: "Bang the DR-um and hear it go boom, boom!",
       color: "#7C3AED",
     },
   ],
@@ -70,47 +67,43 @@ const level2Phonics = {
   guidedPractice: [
     {
       interactionType: "tap-to-reveal",
-      question:
-        "🦈 Which powerful sound blend teammate starts the word 'shark'?",
+      question: "🦈 Which sound team starts the word 'shark'?",
       options: ["sh", "ch", "dr"],
       answer: "sh",
       successMessage: "Splendid tracking! SH-ark starts with 'sh'! 🌊",
     },
     {
       interactionType: "tap-to-reveal",
-      question:
-        "🪑 Look around! Which target object word starts right up with 'ch'?",
-      options: ["chair", "train", "drip"],
-      answer: "chair",
-      successMessage: "Awesome reading! CH-air is exactly right! 🪑",
+      question: "🙂 Which word starts with the 'ch' sound team?",
+      options: ["chin", "train", "drum"],
+      answer: "chin",
+      successMessage: "Awesome reading! CH-in is exactly right! 🙂",
     },
     {
       interactionType: "drag-and-drop",
-      question:
-        "🚂 Inspect the puzzle! Which blended block pair hides inside 'train'?",
-      options: ["tr", "sh", "ch", "fg"],
+      question: "🚂 Which sound team hides inside the word 'train'?",
+      options: ["tr", "sh", "ch"],
       answer: "tr",
       successMessage: "Boom! TR-ain combines T and R perfectly! 🚂",
     },
     {
       interactionType: "drag-and-drop",
-      question:
-        "🌧️ Listen to the drop sound! Which action word starts with a 'dr' blend?",
-      options: ["drip", "chair", "shark"],
-      answer: "drip",
-      successMessage: "Fantastic! DR-ip has that clear starting blend! 💧",
+      question: "🥁 Which word starts with the 'dr' sound team?",
+      options: ["drum", "chin", "shark"],
+      answer: "drum",
+      successMessage: "Fantastic! DR-um has that clear starting blend! 🥁",
     },
   ],
 
   rewards: {
-    stars: 5,
-    badge: "🚀 Blend Master",
+    stars: 6,
+    badge: "🎧 Sound Team Champion",
     message:
-      "Incredible decoding! You unlocked the Advanced Blend Master Badge! 🎖️",
+      "Incredible decoding! You unlocked the Sound Team Champion badge! 🎖️",
   },
 
   completionMessage:
-    "Awesome! You conquered Level 2 Advanced Phonics and mastered complex letter blending! Mimo is cheering for you! 🏆🎉",
+    "🏆 Awesome! You conquered Sound Team Blends and mastered tricky letter teammates! Mimo is cheering wildly for you! 🎉",
 };
 
-export default level2Phonics;
+export default level3Decoding;

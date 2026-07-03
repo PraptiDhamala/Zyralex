@@ -1,138 +1,111 @@
-const lesson = {
-  id: "decoding-level-2",
-  title: "Blending Tricky Teams",
-  subtitle:
-    "Two consonants can team up. Let's blend them and read bigger words! 🚀",
+const level2Decoding = {
+  id: "decoding_level2",
+  title: "Blending Simple Words",
+  subtitle: "Sound out letters slowly, then blend them into real words! 🔊",
   color: "#FDE68A",
-  mascot: "🦊",
+  mascot: "assets/mimo1.png",
+  progressColor: "#F59E0B",
+
+  introduction: {
+    mascotMessage:
+      "You cracked the b and d mystery — nice! 🕵️‍♂️ Now let's become Sound Blenders. We'll say each letter's sound one at a time, then push them together into a real word!",
+  },
+
   explanation: [
     {
-      type: "text",
+      type: "info",
       content:
-        "Some letters are totally silent! We must write them down, but when we say them out loud, they stay quiet.",
+        "Decoding means saying each letter's sound, then sliding them together into one word.",
       animationType: "pulse-on-audio",
-      visualAnchor: "SILENT",
+      visualAnchor: "c-a-t ➔ cat",
     },
     {
       type: "tip",
       content:
-        "Look at 'knee'! The letter K acts like a ghost — it's completely silent, so we just say 'nee'!",
+        "Always start on the left and move slowly to the right from a to c",
+      animationType: "left-to-right-reading",
+      visualAnchor: "abc",
+    },
+    {
+      type: "tip",
+      content:
+        "Stretch each sound like a rubber band before you let them snap together!",
       animationType: "morph-asset",
-      visualAnchor: "kn",
-    },
-    {
-      type: "tip",
-      content:
-        "In the word 'wrist', the W is taking a nap! Zip right past it and start your sound with 'rist'.",
-      animationType: "mirror-flip",
-      visualAnchor: "wr",
-    },
-    {
-      type: "story",
-      content:
-        "Meet the R-Controlled Bosses: ar, er, ir, or, ur! The letter R changes how the vowels sound.",
-      animationType: "pulse-on-audio",
-      visualAnchor: "ar",
-    },
-    {
-      type: "tip",
-      content:
-        "Say 'car'. Hear how the R stretches out the A sound? That's an r-controlled vowel team.",
-      animationType: "stroke-by-stroke",
-      visualAnchor: "car",
-    },
-    {
-      type: "speaking_warmup",
-      content:
-        "Let's warm up your detective voice! Whisper the word first, then say it out loud at normal speed.",
-      visualAnchor: "🗣️",
+      visualAnchor: "s-u-n",
     },
   ],
 
   examples: [
     {
-      letter: "st",
-      word: "stop",
-      emoji: "🛑",
-      sentence: "St-op starts with the ST team.",
+      emoji: "🐱",
+      letter: "c",
+      word: "cat",
+      sentence: "C-A-T blends together to make CAT, a fluffy little pet.",
       color: "#EF4444",
     },
     {
-      letter: "cr",
-      word: "crab",
-      emoji: "🦀",
-      sentence: "Cr-ab starts with the CR team.",
-      color: "#F97316",
+      emoji: "🐶",
+      letter: "d",
+      word: "dog",
+      sentence: "D-O-G blends together to make DOG, a loyal furry friend.",
+      color: "#2563EB",
     },
     {
-      letter: "bl",
-      word: "black",
-      emoji: "⚫",
-      sentence: "Bl-ack starts with the BL team.",
-      color: "#3B82F6",
+      emoji: "☀️",
+      letter: "s",
+      word: "sun",
+      sentence: "S-U-N blends together to make SUN, shining bright above.",
+      color: "#F59E0B",
     },
     {
-      letter: "gr",
-      word: "grape",
-      emoji: "🍇",
-      sentence: "Gr-ape starts with the GR team.",
-      color: "#8B5CF6",
+      emoji: "🧢",
+      letter: "c",
+      word: "cap",
+      sentence: "C-A-P blends together to make CAP, worn on your head.",
+      color: "#16A34A",
     },
   ],
 
   guidedPractice: [
     {
       interactionType: "tap-to-reveal",
-      question: "🛑 Blend these sounds: s-t-o-p",
-      options: ["stop", "step", "spot"],
-      answer: "stop",
+      question: "🐶 Blend these sounds: d-o-g",
+      options: ["dig", "dog", "dug"],
+      answer: "dog",
+      successMessage: "You blended it perfectly! DOG! 🐶",
     },
     {
       interactionType: "drag-and-drop",
-      question: "🦀 What word do these sounds make: c-r-a-b?",
-      options: ["crab", "cab", "grab"],
-      answer: "crab",
+      question: "☀️ What word do these sounds make: s-u-n?",
+      options: ["sun", "son", "sin"],
+      answer: "sun",
+      successMessage: "Bright thinking! s-u-n makes SUN! ☀️",
     },
     {
       interactionType: "tap-to-reveal",
-      question: "🍇 Which sounds make the word 'grape'?",
-      options: ["g-r-a-p-e", "g-a-r-p-e", "g-r-p-a-e"],
-      answer: "g-r-a-p-e",
+      question: "🐱 Which sounds make the word 'cat'?",
+      options: ["c-a-t", "ca-t", "c-t-a"],
+      answer: "c-a-t",
+      successMessage: "You found it! c-a-t blends into CAT! 🐱",
     },
     {
       interactionType: "drag-and-drop",
-      question: "⚫ Blend these sounds: b-l-a-c-k",
-      options: ["black", "back", "block"],
-      answer: "black",
+      question: "🧢 Blend these sounds: c-a-p",
+      options: ["cap", "cop", "cup"],
+      answer: "cap",
+      successMessage: "Nailed it! c-a-p makes CAP! 🧢",
     },
   ],
 
-  challengeRound: [
-    { scrambled: "pots", answer: "stop", hint: "🛑" },
-    { scrambled: "abcr", answer: "crab", hint: "🦀" },
-    { scrambled: "epagr", answer: "grape", hint: "🍇" },
-  ],
-
-  miniGame: {
-    title: "🧲 Sort by Team",
-    instruction: "Put each word into the correct blend bucket.",
-    categories: ["ST", "CR", "BL", "GR"],
-    words: [
-      { word: "stop", answer: "ST" },
-      { word: "crab", answer: "CR" },
-      { word: "black", answer: "BL" },
-      { word: "grape", answer: "GR" },
-    ],
+  rewards: {
+    stars: 5,
+    badge: "🧩 Sound Blender",
+    message:
+      "Sensational blending! You earned the official Sound Blender badge!",
   },
 
-  motivationalTips: [
-    "🌟 Blending takes practice — you're doing great.",
-    "🌟 Say it slow first, then say it fast.",
-    "🌟 Every blend you learn makes the next word easier.",
-  ],
-
   completionMessage:
-    "Awesome! 🎉 You're blending consonant teams like a pro reader!",
+    "🎉 Great job, Sound Blender! You can now sound out and blend simple words all on your own. Keep shining! 🚀",
 };
 
-export default lesson;
+export default level2Decoding;
