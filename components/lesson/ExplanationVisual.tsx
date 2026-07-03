@@ -26,7 +26,6 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
   const wiggle = useSharedValue(0);
 
   useEffect(() => {
-
     rotate.value = 0;
     scale.value = 1;
     translateX.value = 0;
@@ -123,7 +122,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
     transform: [{ translateY: translateY.value }, { scale: scale.value }],
   }));
 
-    const defaultStyle = useAnimatedStyle(() => ({
+  const defaultStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));

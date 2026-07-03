@@ -29,8 +29,11 @@ import decoding from "../../../../data/level1/medium/decoding";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
 import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
+import level2chunking from "../../../../data/level2/medium/chunking";
+import level2decoding from "../../../../data/level2/medium/decoding";
 import level3LetterReversal from "../../../../data/level3/easy/letter_reversal";
 import level3Phonics from "../../../../data/level3/easy/phonics";
+// import level3decoding from "../../../../data/level3/medium/decoding";
 import level3VowelProcessing from "../../../../data/level3/easy/vowel_processing";
 import {
   buildUrls,
@@ -49,11 +52,15 @@ const curriculumMap: Record<string, Record<string, any>> = {
     letter_reversal: level2LetterReversal,
     phonics: level2Phonics,
     visual_tracking: level2VisualTracking,
+    chunking: level2chunking,
+    decoding: level2decoding,
   },
   level3: {
     letter_reversal: level3LetterReversal,
     phonics: level3Phonics,
     vowel_processing: level3VowelProcessing,
+    // chunking: level3chunking,
+    // decoding: level3decoding,
   },
 };
 

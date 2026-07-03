@@ -1,155 +1,126 @@
 const lesson = {
-  id: "letter_reversal_level3",
-
-  title: "b and d Reading Champion",
-
+  id: "vowel_processing_level3",
+  title: "Vowel Team Explorer",
   subtitle:
-    "You're becoming an expert! Let's read words, sentences, and spot tricky letters like a detective 🕵️",
-
+    "oi, oy, ou, ow — the same sound, spelled two ways. Let's find the pattern! 🔍",
   color: "#93C5FD",
-
   mascot: "🦉",
 
   explanation: [
     {
       type: "text",
       content:
-        "Awesome work! Now you'll practice reading without getting tricked by mirror letters.",
+        "Some vowel teams make the same sound but are spelled differently.",
     },
     {
       type: "tip",
-      content: "Pause before every word. Check the first letter carefully.",
-    },
-    {
-      type: "activity",
-      content: "Use your finger under every word while reading.",
+      content: "'oi' and 'oy' both make the same sound, like in coin and toy.",
+      animationType: "pulse-on-audio",
+      visualAnchor: "oi oy",
     },
     {
       type: "story",
-      content: "Even expert readers slow down when they see tricky words.",
+      content: "We use 'oy' at the end of a word, and 'oi' in the middle.",
+      animationType: "bounce-in",
+      visualAnchor: "boy coin",
     },
     {
       type: "tip",
-      content: "Don't guess. Look carefully, then read.",
+      content: "'ou' and 'ow' both make the same sound, like in cloud and cow.",
+      animationType: "wiggle",
+      visualAnchor: "ou ow",
+    },
+    {
+      type: "activity",
+      content: "Say each word slowly and listen for the matching sound.",
+      visualAnchor: "listen",
     },
   ],
 
   examples: [
     {
-      letter: "b",
-      word: "black",
-      emoji: "⚫",
-      sentence: "Black begins with b.",
-      color: "#2563EB",
+      letter: "oi",
+      word: "coin",
+      emoji: "🪙",
+      sentence: "C-oi-n has the OI sound in the middle.",
+      color: "#0284C7",
     },
     {
-      letter: "b",
-      word: "bread",
-      emoji: "🍞",
-      sentence: "Bread begins with b.",
-      color: "#2563EB",
+      letter: "oy",
+      word: "toy",
+      emoji: "🧸",
+      sentence: "T-oy has the OY sound at the end.",
+      color: "#7C3AED",
     },
     {
-      letter: "d",
-      word: "dress",
-      emoji: "👗",
-      sentence: "Dress begins with d.",
-      color: "#F59E0B",
+      letter: "ou",
+      word: "cloud",
+      emoji: "☁️",
+      sentence: "Cl-ou-d has the OU sound in the middle.",
+      color: "#059669",
     },
     {
-      letter: "d",
-      word: "dragon",
-      emoji: "🐉",
-      sentence: "Dragon begins with d.",
-      color: "#F59E0B",
+      letter: "ow",
+      word: "cow",
+      emoji: "🐄",
+      sentence: "C-ow has the OW sound at the end.",
+      color: "#DC2626",
     },
   ],
 
   guidedPractice: [
     {
-      question: "🐶 Which word starts with d?",
-      options: ["dog", "ball"],
-      answer: "dog",
+      interactionType: "tap-to-reveal",
+      question: "🪙 Which word has the OI sound?",
+      options: ["coin", "cat"],
+      answer: "coin",
     },
-
     {
-      question: "🍞 Which word starts with b?",
-      options: ["bread", "dress"],
-      answer: "bread",
+      interactionType: "tap-to-reveal",
+      question: "🧸 Which word has the OY sound?",
+      options: ["toy", "top"],
+      answer: "toy",
     },
-
     {
-      question: "Fill in the missing letter: _og",
-      options: ["b", "d"],
-      answer: "d",
+      interactionType: "drag-and-drop",
+      question: "☁️ Which word has the OU sound?",
+      options: ["cloud", "clap"],
+      answer: "cloud",
     },
-
     {
-      question: "Fill in the missing letter: _all",
-      options: ["b", "d"],
-      answer: "b",
+      interactionType: "drag-and-drop",
+      question: "🐄 Which word has the OW sound?",
+      options: ["cow", "car"],
+      answer: "cow",
     },
-
     {
-      question: "Which sentence is correct?",
-      options: ["Dad has a dog.", "Bad has a bog."],
-      answer: "Dad has a dog.",
+      question:
+        "We usually spell this sound 'oy' when it's at the ___ of a word.",
+      options: ["end", "middle"],
+      answer: "end",
     },
-
     {
-      question: "Which sentence is correct?",
-      options: ["The bird is blue.", "The dird is blue."],
-      answer: "The bird is blue.",
-    },
-
-    {
-      question: "How many b letters are in 'blue bird'?",
-      options: ["1", "2", "3"],
-      answer: "2",
-    },
-
-    {
-      question: "How many d letters are in 'Dad has a dog'?",
-      options: ["2", "3", "4"],
-      answer: "3",
+      question:
+        "We usually spell this sound 'oi' when it's in the ___ of a word.",
+      options: ["middle", "end"],
+      answer: "middle",
     },
   ],
 
   challengeRound: [
-    {
-      scrambled: "lalb",
-      answer: "ball",
-      hint: "⚽",
-    },
-
-    {
-      scrambled: "god",
-      answer: "dog",
-      hint: "🐶",
-    },
-
-    {
-      scrambled: "dribe",
-      answer: "bird",
-      hint: "🐦",
-    },
-
-    {
-      scrambled: "rbeda",
-      answer: "bread",
-      hint: "🍞",
-    },
+    { scrambled: "cnoi", answer: "coin", hint: "🪙" },
+    { scrambled: "oty", answer: "toy", hint: "🧸" },
+    { scrambled: "wco", answer: "cow", hint: "🐄" },
   ],
 
   motivationalTips: [
-    "🌟 You checked carefully before reading.",
-    "🌟 Slow reading makes strong readers.",
-    "🌟 Your brain is getting better every day.",
-    "🌟 You're becoming a b and d detective!",
+    "🌟 Same sound, different spelling — you're spotting the pattern.",
+    "🌟 Listening carefully is a superpower for reading.",
+    "🌟 You're building real reader instincts.",
   ],
 
   completionMessage:
-    "🏆 Amazing! You can now recognize b and d in words, sentences, and reading challenges. You're becoming a Reading Champion!",
+    "🎉 Fantastic! You can now match vowel team sounds to their spelling pattern!",
 };
 
 export default lesson;

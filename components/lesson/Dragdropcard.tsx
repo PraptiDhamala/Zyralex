@@ -54,8 +54,6 @@ function DraggableTile({
       if (inside) {
         runOnJS(onDrop)(label);
       } else {
-        // Bounce back with a little overshoot so a miss still feels
-        // responsive rather than a hard snap.
         translateX.value = withSpring(0, { damping: 10, stiffness: 150 });
         translateY.value = withSpring(0, { damping: 10, stiffness: 150 });
         grabScale.value = withSpring(1);
