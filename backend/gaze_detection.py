@@ -4,7 +4,10 @@ import asyncio
 import websockets
 import json
 
+<<<<<<< HEAD
 # Load tracking configurations globally
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
 
@@ -12,11 +15,17 @@ async def stream_gaze():
     uri = "ws://127.0.0.1:8000/ws/camera"
     cap = cv2.VideoCapture(0)
     
+<<<<<<< HEAD
     # Define your actual display/screen coordinates dimensions
     SCREEN_WIDTH = 1920
     SCREEN_HEIGHT = 1080
     
     # Fetch physical dimensions of the connected webcam frame
+=======
+    SCREEN_WIDTH = 1920
+    SCREEN_HEIGHT = 1080
+    
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     CAM_WIDTH = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 640
     CAM_HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 480
 
@@ -31,7 +40,10 @@ async def stream_gaze():
                     print("Error: Failed to grab frame from webcam.")
                     break
 
+<<<<<<< HEAD
                 # Flip horizontally to create a mirror view (easier coordinate mapping)
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
                 frame = cv2.flip(frame, 1)
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 faces = face_cascade.detectMultiScale(gray, 1.3, 5)
@@ -64,6 +76,7 @@ async def stream_gaze():
                                 continue
 
                             (cx, cy, cw, ch) = cv2.boundingRect(cnt)
+<<<<<<< HEAD
                             # Convert local eye ROI pixel to full camera coordinate framework
                             pupil_cam_x = x + ex + cx + cw // 2
                             pupil_cam_y = y + ey + cy + ch // 2
@@ -91,6 +104,28 @@ async def stream_gaze():
                     break
                 
                 # Yield control back to async scheduler (~30 iterations/sec)
+=======
+                            pupil_cam_x = x + ex + cx + cw // 2
+                            pupil_cam_y = y + ey + cy + ch // 2
+
+                            screen_x = int((pupil_cam_x / CAM_WIDTH) * SCREEN_WIDTH)
+                            screen_y = int((pupil_cam_y / CAM_HEIGHT) * SCREEN_HEIGHT)
+
+                            packet["raw_x"] = max(0, min(SCREEN_WIDTH, screen_x))
+                            packet["raw_y"] = max(0, min(SCREEN_HEIGHT, screen_y))
+
+                            cv2.circle(frame, (pupil_cam_x, pupil_cam_y), 5, (0, 0, 255), -1)
+                            break
+                        break  
+                    break 
+
+                await websocket.send(json.dumps(packet))
+                
+                cv2.imshow("ZyraLex Eye Tracking Stream", frame)
+                if cv2.waitKey(1) == 27: 
+                    break
+                
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
                 await asyncio.sleep(0.03)
 
     except Exception as e:

@@ -8,7 +8,6 @@ function CustomHeader({ handleReset }: { handleReset: () => void }) {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.header}>
-        {/* Logo + tagline */}
         <View style={styles.logoRow}>
           <View style={styles.logoIcon}>
             <Text style={styles.logoLetter}>Z</Text>
@@ -19,7 +18,6 @@ function CustomHeader({ handleReset }: { handleReset: () => void }) {
           </View>
         </View>
 
-        {/* Header icons */}
         <View style={styles.headerIcons}>
           <Ionicons
             name="settings-outline"
@@ -51,9 +49,7 @@ export default function DyslexicLayout() {
   const router = useRouter();
 
   const handleReset = async () => {
-    // clear the saved module choice so onboarding shows again
     await AsyncStorage.removeItem("moduleChoice");
-    // navigate to onboarding screen
     router.replace("/onboarding");
   };
 
@@ -76,9 +72,8 @@ export default function DyslexicLayout() {
         name="learn"
         options={{
           title: "Assesment",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="clipboard-outline" color={color} size={20} />
-          ),
+          href: null,
+          tabBarStyle: { display: "none" },
         }}
       />
       <Tabs.Screen

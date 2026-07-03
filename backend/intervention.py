@@ -2,7 +2,10 @@ import re
 
 class InterventionEngine:
     def __init__(self):
+<<<<<<< HEAD
         # A dictionary dictionary fallback for words that are notoriously hard to split algorithmically
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
         self.custom_dictionary = {
             "dyslexia": ["dys", "lex", "i", "a"],
             "intervention": ["in", "ter", "ven", "tion"],
@@ -10,6 +13,7 @@ class InterventionEngine:
         }
 
     def get_syllables(self, word):
+<<<<<<< HEAD
         """
         Splits a word into its phonetic syllable components.
         Checks custom dictionary first, then applies linguistic rules.
@@ -22,22 +26,35 @@ class InterventionEngine:
             
         # Fallback procedural regex rule (Vowel-Consonant structures)
         # Matches typical patterns for English vowel segments
+=======
+        clean_word = re.sub(r'[^\w]', '', word).lower()
+        
+        if clean_word in self.custom_dictionary:
+            return self.custom_dictionary[clean_word]
+            
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
         syllables = re.findall(r'(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?)', clean_word)
         
         return syllables if syllables else [word]
 
     def format_syllable_breakdown(self, word, style="hyphen"):
+<<<<<<< HEAD
         """
         Intervention 1: Visual Syllable Splits
         Styles available: 'hyphen' (dys-lex-i-a) or 'color' (wrapped in alternating HTML tags)
         """
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
         syllables = self.get_syllables(word)
         
         if style == "hyphen":
             return "-".join(syllables)
             
         elif style == "color":
+<<<<<<< HEAD
             # Alternates colors between red and blue to help tracking across phone boundaries
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
             colors = ["#FF4B4B", "#1C6DD0"]
             colored_word = ""
             for i, syl in enumerate(syllables):
@@ -48,16 +65,22 @@ class InterventionEngine:
         return word
 
     def apply_bionic_reading(self, text):
+<<<<<<< HEAD
         """
         Intervention 2: Bionic Reading (Fixation Points)
         Boldifies the first 40-50% of every word to guide the eye's saccadic jumps smoothly.
         Transforms: 'model' -> '<b>mo</b>del'
         """
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
         words = text.split()
         bionic_words = []
         
         for word in words:
+<<<<<<< HEAD
             # Clean punctuation mapping
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
             clean_word = re.sub(r'[^\w]', '', word)
             if not clean_word:
                 bionic_words.append(word)
@@ -65,7 +88,11 @@ class InterventionEngine:
                 
             mid = max(1, len(clean_word) // 2)
             if len(clean_word) <= 3:
+<<<<<<< HEAD
                 mid = 1 # Bold just the first letter for tiny words
+=======
+                mid = 1 
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
                 
             bold_part = word[:mid]
             rest_part = word[mid:]
@@ -75,6 +102,7 @@ class InterventionEngine:
         return " ".join(bionic_words)
 
     def trigger_audio_cue(self, word):
+<<<<<<< HEAD
         """
         Intervention 3: Text-to-Speech Payload Generation
         Prepares instructions for the frontend to play a clear phonetic utterance.
@@ -85,25 +113,44 @@ class InterventionEngine:
             "rate": 0.75 # Slower speech rate for struggling learners
         }
 # Add this to the very bottom of intervention.py to verify its logic!
+=======
+        return {
+            "action": "PLAY_AUDIO",
+            "text_to_speak": word,
+            "rate": 0.75
+        }
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
 if __name__ == "__main__":
     print("---Testing ZyraLex Intervention Engine --- \n")
     engine = InterventionEngine()
     
+<<<<<<< HEAD
     # 1. Test Syllable Splitter (Hyphen Style)
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     test_word_1 = "dyslexia"
     print(f"Original: {test_word_1}")
     print(f"Syllable (Hyphen): {engine.format_syllable_breakdown(test_word_1, style='hyphen')}\n")
     
+<<<<<<< HEAD
     # 2. Test Syllable Splitter (Color HTML Style)
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     test_word_2 = "intervention"
     print(f"Original: {test_word_2}")
     print(f"Syllable (HTML Color): {engine.format_syllable_breakdown(test_word_2, style='color')}\n")
     
+<<<<<<< HEAD
     # 3. Test Bionic Reading Engine
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     sample_sentence = "The student is fixating on a single word for too long."
     print(f"Original Sentence: {sample_sentence}")
     print(f"Bionic Version:    {engine.apply_bionic_reading(sample_sentence)}\n")
     
+<<<<<<< HEAD
     # 4. Test Audio Cue Generator
+=======
+>>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     print("Audio Payload Generation:")
     print(engine.trigger_audio_cue("fixation"))

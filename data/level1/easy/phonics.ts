@@ -1,162 +1,222 @@
 const lesson = {
   id: "phonics",
-
-  title: "Phonics & Sound Blends",
-
-  subtitle: "Let’s hear, see, and play with sounds together! 🎵",
-
+  title: "Phonics Adventure",
+  subtitle:
+    "Become a Sound Detective! Listen, look, speak and play with sounds!",
   color: "#FEF3C7",
-
-  mascot: "🐼",
-
+  mascot: "assets/mimo1.png",
   progressColor: "#F59E0B",
+
+  introduction: {
+    mascotMessage:
+      "Hi! I'm Mimo. Today we're meeting two super sound teammates: CH and SH. Let's solve some mysteries together!",
+  },
+  seeIt: {
+    title: "Look Carefully",
+    instruction:
+      "Tap each card to watch the sounds transform! CH is strong, SH is super quiet.",
+    cards: [
+      {
+        sound: "CH",
+        emoji: "🚂",
+        word: "Chair",
+        description: "CH sounds like a speedy steam train going CHOO CHOO!",
+        animationType: "pulse-on-audio",
+        visualAnchor: "CH 🚂",
+        cardColor: "#FEE2E2",
+      },
+      {
+        sound: "SH",
+        emoji: "🤫",
+        word: "Ship",
+        description: "SH sounds like a soft, magical whisper... SHHH!",
+        animationType: "mirror-flip",
+        visualAnchor: "SH 🤫",
+        cardColor: "#E0F2FE",
+      },
+    ],
+  },
+  hearIt: {
+    title: "👂 Listen Carefully",
+    instruction:
+      "Tap Mimo to hear the secret sound, then pick the matching card!",
+    rounds: [
+      {
+        audio: "ch",
+        answer: "CH",
+        options: ["CH", "SH"],
+        interactionType: "tap-to-reveal",
+        successMessage: "Whoosh! You have the ears of a true detective! 🚂",
+      },
+      {
+        audio: "sh",
+        answer: "SH",
+        options: ["CH", "SH"],
+        interactionType: "tap-to-reveal",
+        successMessage: "Awesome! You caught that quiet whisper sound! 🤫",
+      },
+    ],
+  },
+  sayIt: {
+    title: "🗣 Say the Sound",
+    instruction: "Say each sound out loud into your space with Mimo!",
+    rounds: [
+      {
+        expected: "CH",
+        hint: "Open your mouth wide and make it snappy: CH-CH-CH! 💥",
+        animationType: "pulse-on-audio",
+        visualAnchor: "CH",
+      },
+      {
+        expected: "SH",
+        hint: "Put one finger near your lips and whisper softly: SHHH... 🤫",
+        animationType: "stroke-by-stroke",
+        visualAnchor: "SH",
+      },
+    ],
+  },
+  traceIt: {
+    title: "✍ Trace the Magic Letters",
+    instruction:
+      "Follow the ghost lines slowly with your finger to lock the shapes into your memory!",
+    items: [
+      {
+        text: "CH",
+        color: "#EF4444",
+        guideHint: "Start from the top for the C, then build your tall H!",
+      },
+      {
+        text: "SH",
+        color: "#3B82F6",
+        guideHint: "Curve like a little snake for the S, then drop down the H!",
+      },
+    ],
+  },
+
+  buildIt: {
+    title: "🤏 Build the Word",
+    instruction:
+      "Pop the missing sound team into the blank space to save the word!",
+    rounds: [
+      {
+        image: "🪑",
+        word: "__air",
+        answer: "CH",
+        options: ["CH", "SH"],
+        interactionType: "drag-and-drop",
+        successMessage: "Perfect! You built the CH-air! 🪑",
+      },
+      {
+        image: "🐑",
+        word: "__eep",
+        answer: "SH",
+        options: ["CH", "SH"],
+        interactionType: "drag-and-drop",
+        successMessage: "Baaah! The SH-eep is happy now! 🐑",
+      },
+      {
+        image: "🧀",
+        word: "__eese",
+        answer: "CH",
+        options: ["CH", "SH"],
+        interactionType: "drag-and-drop",
+        successMessage: "Yum! Say CH-eese! 🧀",
+      },
+    ],
+  },
+  playTime: {
+    type: "sorting",
+    title: "🎮 Help Mimo Sort the Words",
+    instruction:
+      "Fling or drag each moving word into its matching sound bucket!",
+    categories: ["CH", "SH"],
+    words: [
+      { word: "chair", answer: "CH", emoji: "🪑" },
+      { word: "cheese", answer: "CH", emoji: "🧀" },
+      { word: "chicken", answer: "CH", emoji: "🐔" },
+      { word: "ship", answer: "SH", emoji: "🚢" },
+      { word: "shoe", answer: "SH", emoji: "👟" },
+      { word: "sheep", answer: "SH", emoji: "🐑" },
+    ],
+  },
 
   explanation: [
     {
-      type: "text",
-      content: "Letters can work together like teammates to create new sounds.",
+      type: "story",
+      content:
+        "CH is a bright, loud train engine. SH is a quiet, peaceful ocean whisper.",
+      animationType: "pulse-on-audio",
+      visualAnchor: "CH 🚂 vs SH 🤫",
     },
-
     {
       type: "story",
-      title: "🚂 Sound Story",
-      content: "The CH sound is loud like a train going: CHOO CHOO!",
-    },
-
-    {
-      type: "tip",
-      title: "👂 Listening Tip",
-      content: "Put your hand near your mouth and say: CH CH CH",
-    },
-
-    {
-      type: "tip",
-      title: "🤫 Quiet Sound",
-      content: "The SH sound is soft and quiet like telling someone: SHHH 🤫",
-    },
-
-    {
-      type: "activity",
-      title: "✍️ Finger Trace",
-      content: "Trace the letters 'ch' in the air with your finger.",
+      content: "Can your detective ears pick up the difference between them?",
+      animationType: "mirror-flip",
+      visualAnchor: "🔍 SOUND TEST",
     },
   ],
 
   examples: [
     {
-      letter: "ch",
+      letter: "CH",
       word: "chair",
       emoji: "🪑",
-      sound: "ch",
-      sentence: "CH-air starts with the CH sound.",
+      sentence: "The CH-air makes a solid sound!",
       color: "#EF4444",
     },
-
     {
-      letter: "sh",
-      word: "shoe",
-      emoji: "👟",
-      sound: "sh",
-      sentence: "SH-oe starts with the SH sound.",
-      color: "#3B82F6",
-    },
-
-    {
-      letter: "ch",
+      letter: "CH",
       word: "cheese",
       emoji: "🧀",
-      sound: "ch",
-      sentence: "CH-eese starts with CH.",
+      sentence: "Mice love to nibble yellow CH-eese!",
       color: "#EF4444",
     },
-
     {
-      letter: "sh",
+      letter: "SH",
       word: "ship",
       emoji: "🚢",
-      sound: "sh",
-      sentence: "SH-ip starts with SH.",
+      sentence: "The big SH-ip sails smoothly across the deep blue sea.",
+      color: "#3B82F6",
+    },
+    {
+      letter: "SH",
+      word: "shoe",
+      emoji: "👟",
+      sentence: "Tie up your SH-oe lace tight before you sprint!",
       color: "#3B82F6",
     },
   ],
 
   guidedPractice: [
     {
-      type: "game",
-
-      question: "🎯 Which sound starts the word CHIEF?",
-
-      options: ["ch", "sh"],
-
-      answer: "ch",
-
-      successMessage: "Excellent! 🌟 You found the CH sound!",
+      interactionType: "tap-to-reveal",
+      question: "🚂 Which sound teammate starts the word CHAIR?",
+      options: ["CH", "SH"],
+      answer: "CH",
     },
-
     {
-      type: "game",
-
-      question: "🏖️ Complete the beach word: ___ell",
-
-      options: ["ch", "sh"],
-
-      answer: "sh",
-
-      successMessage: "Amazing! 🐚 SHELL starts with SH!",
+      interactionType: "drag-and-drop",
+      question: "🤫 Which soft sound teammate starts the word SHIP?",
+      options: ["CH", "SH"],
+      answer: "SH",
     },
-
     {
-      type: "game",
-
-      question: "🚢 Which sound belongs to SHIP?",
-
-      options: ["ch", "sh"],
-
-      answer: "sh",
-
-      successMessage: "Correct! 🚀 You are learning fast!",
+      interactionType: "tap-to-reveal",
+      question: "🧀 Tap the delicious snack that starts with the CH sound!",
+      options: ["Cheese", "Ship"],
+      answer: "Cheese",
     },
   ],
 
-  miniGame: {
-    title: "🪣 Sort the Sounds",
-
-    instruction: "Put words into the correct sound bucket.",
-
-    categories: ["CH", "SH"],
-
-    words: [
-      {
-        word: "chair",
-        answer: "CH",
-      },
-
-      {
-        word: "shoe",
-        answer: "SH",
-      },
-
-      {
-        word: "cheese",
-        answer: "CH",
-      },
-
-      {
-        word: "ship",
-        answer: "SH",
-      },
-    ],
-  },
-
   rewards: {
     stars: 3,
-
-    badge: "🎵 Sound Explorer",
-
-    message: "You unlocked the Sound Explorer badge!",
+    badge: "🎵 Sound Detective",
+    message:
+      "Sensational tracking! You earned the official Sound Detective badge!",
   },
 
-  completionMessage: "Fantastic work! 🎉 You are becoming a sound detective 🔍",
+  completionMessage:
+    "🎉 Spectacular job, Sound Detective! You can now confidently see, trace, hear, and say CH and SH sound teams perfectly! Keep shining!",
 };
 
 export default lesson;

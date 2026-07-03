@@ -1,3 +1,4 @@
+import { SignOfTheDayPanel } from "@/components/signoftheday";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { RelativePathString, useRouter } from 'expo-router';
@@ -7,7 +8,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 import { DifficultySelector } from '../../components/DifficultySelector';
 import { PracticeSessionCard } from '../../components/PracticeSessionCard';
@@ -76,6 +77,7 @@ useFocusEffect(
           selectedDifficulty={selectedDifficulty}
           onSelectDifficulty={setSelectedDifficulty}
         />
+        <SignOfTheDayPanel />
 
         {/* Practice Modes */}
         <View style={styles.practiceContainer}>
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
   practiceContainer: {
     paddingHorizontal: 16,
     marginBottom: 24,
-    gap: 16, // more breathing room between rows
+    gap: 16, 
   },
   bottomPadding: {
     height: 40,

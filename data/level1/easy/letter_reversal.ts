@@ -1,13 +1,9 @@
 const lesson = {
   id: "letter_reversal",
-
   title: "Learning b and d",
-
   subtitle:
-    "Let’s learn how these letters face different directions in a fun way! 🎯",
-
+    "Let's learn how these letters face different directions in a fun way!",
   color: "#DBEAFE",
-
   mascot: "🐼",
 
   explanation: [
@@ -15,42 +11,51 @@ const lesson = {
       type: "text",
       content:
         "Sometimes letters like b and d can look confusing. That is completely okay.",
+      animationType: "fade-in-gentle",
+      visualAnchor: "b d",
     },
-
     {
       type: "story",
       content:
-        "Many learners mix up these letters because they are mirror twins 🪞",
+        "Many learners mix up these letters because they are mirror twins",
+      animationType: "mirror-flip",
+      visualAnchor: "b",
     },
-
     {
       type: "tip",
       content: "The letter b has the stick first, then the belly → b",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "b",
     },
-
     {
       type: "tip",
       content: "The letter d has the donut first, then the stick ← d",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "d",
     },
-
     {
       type: "story",
       content: "Think of b like a bat 🏏 and ball ⚽. Bat first, ball second!",
+      animationType: "morph-asset",
+      visualAnchor: "b 🏏⚽",
     },
-
     {
       type: "story",
       content: "Think of d like a donut 🍩 before the stick.",
+      animationType: "morph-asset",
+      visualAnchor: "d 🍩",
     },
-
     {
       type: "activity",
-      content: "Trace the letters slowly with your finger in the air ✍️",
+      content: "Trace the letters slowly with your finger 👇",
+      animationType: "follow-the-dot",
+      visualAnchor: "b",
     },
-
     {
       type: "tip",
       content: "Say the sounds aloud: /b/ /b/ /b/ and /d/ /d/ /d/",
+      animationType: "pulse-on-audio",
+      visualAnchor: "b d",
     },
   ],
 
@@ -62,7 +67,6 @@ const lesson = {
       sentence: "B-all starts with the /b/ sound.",
       color: "#2563EB",
     },
-
     {
       letter: "b",
       word: "banana",
@@ -70,7 +74,6 @@ const lesson = {
       sentence: "B-anana starts with the /b/ sound.",
       color: "#2563EB",
     },
-
     {
       letter: "d",
       word: "dog",
@@ -78,7 +81,6 @@ const lesson = {
       sentence: "D-og starts with the /d/ sound.",
       color: "#F59E0B",
     },
-
     {
       letter: "d",
       word: "door",
@@ -93,24 +95,25 @@ const lesson = {
       question: "🎯 Which letter is b?",
       options: ["b", "d"],
       answer: "b",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "🐶 Which word starts with d?",
+      question: "🐶 Drag the word that starts with d",
       options: ["dog", "ball"],
       answer: "dog",
+      interactionType: "drag-and-drop",
     },
-
     {
       question: "🍌 Which word starts with b?",
       options: ["banana", "door"],
       answer: "banana",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "🚪 Choose the letter d",
+      question: "🚪 Drag the letter d into the box",
       options: ["b", "d"],
       answer: "d",
+      interactionType: "drag-and-drop",
     },
   ],
 
@@ -121,7 +124,7 @@ const lesson = {
   ],
 
   completionMessage:
-    "Amazing work! 🎉 You are getting better at recognizing b and d!",
+    "Amazing work! You are getting better at recognizing b and d! 🚀",
 };
 
 export default lesson;
