@@ -2,16 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import * as Speech from "expo-speech";
-<<<<<<< HEAD
-import { default as React, useEffect, useRef, useState } from "react";
-import {
-  Dimensions,
-=======
 import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   Modal,
   ScrollView,
   StyleSheet,
@@ -35,10 +29,6 @@ import decoding from "../../../../data/level1/medium/decoding";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
 import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
-<<<<<<< HEAD
-
-const curriculumMap: Record<string, any> = {
-=======
 import level2chunking from "../../../../data/level2/medium/chunking";
 import level2decoding from "../../../../data/level2/medium/decoding";
 import level3LetterReversal from "../../../../data/level3/easy/letter_reversal";
@@ -51,7 +41,6 @@ import {
   setServerIpOverride,
 } from "../../../../utils/serverConfig";
 const curriculumMap: Record<string, Record<string, any>> = {
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   level1: {
     letter_reversal: letterReversal,
     phonics: phonics,
@@ -62,13 +51,9 @@ const curriculumMap: Record<string, Record<string, any>> = {
   level2: {
     letter_reversal: level2LetterReversal,
     phonics: level2Phonics,
-<<<<<<< HEAD
-    vowel_processing: level2VisualTracking,
-=======
     visual_tracking: level2VisualTracking,
     chunking: level2chunking,
     decoding: level2decoding,
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   },
   level3: {
     letter_reversal: level3LetterReversal,
@@ -116,8 +101,6 @@ type MascotConfig = {
 
 export default function LessonScreen() {
   const router = useRouter();
-<<<<<<< HEAD
-=======
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const frameInterval = useRef<NodeJS.Timeout | null>(null);
@@ -128,7 +111,6 @@ export default function LessonScreen() {
     hyphenated: string;
   } | null>(null);
 
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
@@ -140,26 +122,11 @@ export default function LessonScreen() {
   const [score, setScore] = useState(0);
   const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
 
-<<<<<<< HEAD
-  const [intervention, setIntervention] = useState<{
-    word: string;
-    hyphenated: string;
-  } | null>(null);
-  const [isDistracted, setIsDistracted] = useState(false);
-
-  const ws = useRef<WebSocket | null>(null);
-  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-  // DYNAMIC LESSON LOOKUP
-  const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
-  const lessonData =
-    curriculumMap[level1 as string]?.[lessonKey as string] || letterReversal;
-=======
   const ws = useRef<WebSocket | null>(null);
   const distractionTimer = useRef<any>(null);
   const reconnectTimer = useRef<any>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   const explanationLength = lessonData.explanation?.length || 0;
   const examplesLength = lessonData.examples?.length || 0;
   const totalSteps =
@@ -169,62 +136,6 @@ export default function LessonScreen() {
   const currentPractice =
     lessonData.guidedPractice?.[step - explanationLength - examplesLength];
 
-<<<<<<< HEAD
-  // --- WEBSOCKET LIFECYCLE MANAGEMENT ---
-  useEffect(() => {
-    // Fast API development endpoint.
-    // NOTE: If using a physical testing device, replace "127.0.0.1" with your computer's Local IP address (e.g., 192.168.X.X)
-    const socketUrl = "ws://192.168.1.XX:8000/ws/app";
-    ws.current = new WebSocket(socketUrl);
-
-    ws.current.onopen = () => {
-      console.log("Connected seamlessly to ZyraLex FastAPI Server Engine");
-      sendCurrentWordsToTracker();
-    };
-
-    ws.current.onmessage = (event) => {
-      try {
-        const response = JSON.parse(event.data);
-
-        // Handle Distraction Engine Intercept
-        if (response.type === "DISTRACTION_ALERT") {
-          setIsDistracted(true);
-          Speech.speak(
-            "Hey there! Let's bring our attention back to the lesson map.",
-            { rate: 0.85 },
-          );
-        }
-
-        // Handle Fixation / Syllable Breakdown Intercept
-        if (response.type === "INTERVENTION_TRIGGER") {
-          setIntervention({
-            word: response.word,
-            hyphenated: response.adaptations.hyphenated,
-          });
-
-          // Trigger audio reading cue seamlessly
-          Speech.speak(
-            `Let's break down the word: ${response.word}. It is pronounced as: ${response.adaptations.hyphenated}`,
-            {
-              rate: 0.75,
-            },
-          );
-        }
-      } catch (err) {
-        console.error("Error parsing socket incoming frame stream data:", err);
-      }
-    };
-
-    ws.current.onerror = (e) => console.log("WebSocket Connection Error: ", e);
-    ws.current.onclose = () =>
-      console.log("Disconnected from ZyraLex Socket Loop.");
-    return () => {
-      if (ws.current) ws.current.close();
-    };
-  }, [step]); // Triggers reload sequence whenever step shifts to refresh local screen word coordinate data
-
-  // Helper function to map current textual blocks to backend tracker coordinate grid maps
-=======
   const [serverIp, setServerIp] = useState<string | null>(null);
   const [ipModalVisible, setIpModalVisible] = useState(false);
   const [ipInput, setIpInput] = useState("");
@@ -387,16 +298,10 @@ export default function LessonScreen() {
     sendCurrentWordsToTracker();
   }, [step]);
 
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   const sendCurrentWordsToTracker = () => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
     let targetWords: string[] = [];
-<<<<<<< HEAD
-
-    // Parse visual words on current active view layer layout frame
-=======
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     if (step < explanationLength) {
       targetWords = lessonData.explanation[step].content.split(" ");
     } else if (
@@ -409,24 +314,14 @@ export default function LessonScreen() {
       targetWords = currentPractice.question.split(" ");
     }
 
-<<<<<<< HEAD
-    // Map screen words dynamically to fill the Python server's text layout grid system bounding-box array
-=======
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     const mappedScreenWords = targetWords.map((word) => ({
       word: word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""),
       x1: 0,
       y1: 0,
-<<<<<<< HEAD
-      x2: screenWidth, // Map dynamically across structural viewing area
-      y2: screenHeight,
-    }));
-=======
       x2: screenWidth,
       y2: screenHeight,
     }));
 
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     if (mappedScreenWords.length > 0) {
       ws.current.send(JSON.stringify({ screen_words: mappedScreenWords }));
     }
@@ -447,15 +342,12 @@ export default function LessonScreen() {
   const handlePracticeAnswer = (selected: string, correct: string) => {
     if (selected === correct) {
       setScore((prev) => prev + 1);
-<<<<<<< HEAD
-=======
       confettiRef.current?.start();
       setMascotConfig({
         mood: "correct",
         message: "Amazing! You got it right! Your hard work is paying off! ",
         displayMode: "modal",
       });
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
       Speech.speak("Amazing job!");
     } else {
       setMascotConfig({
@@ -466,12 +358,7 @@ export default function LessonScreen() {
       });
       Speech.speak("Nice try! Keep going!");
     }
-<<<<<<< HEAD
-    handleNext();
-=======
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   };
-  
 
   const renderContent = () => {
     if (step < lessonData.explanation.length) {
@@ -481,17 +368,62 @@ export default function LessonScreen() {
           <View style={[styles.badge, item.type === "tip" && styles.tipBadge]}>
             <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
           </View>
-<<<<<<< HEAD
-          <Text style={styles.text}>{item.content}</Text>
-=======
           <ExplanationVisual item={item} />
 
           <Text style={styles.text}>{item.content}</Text>
-          {item.type === "activity" ? (
-            <TraceActivity letter={item.visualAnchor} />
-          ) : null}
+          {item.type === "activity" &&
+            (() => {
+              const contentString = item.content?.toLowerCase() || "";
+              const isVocalActivity =
+                contentString.includes("whisper") ||
+                contentString.includes("say");
 
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
+              if (isVocalActivity) {
+                return (
+                  <View
+                    style={{
+                      marginVertical: 16,
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <TouchableOpacity
+                      style={[
+                        styles.button,
+                        {
+                          backgroundColor: "#10B981",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 10,
+                          width: "100%",
+                          paddingVertical: 16,
+                        },
+                      ]}
+                      onPress={() => {
+                        speakWord(item.content);
+                        router.push({
+                          pathname: "/dyslexic/practice",
+                          params: {
+                            lesson: lessonKey,
+                            level: activeLevel,
+                            anchor: item.visualAnchor,
+                          },
+                        });
+                      }}
+                    >
+                      <Ionicons name="mic-circle" size={26} color="white" />
+                      <Text style={styles.buttonText}>
+                        Tap to Practice with Mimo! 🐼
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              }
+
+              return <TraceActivity letter={item.visualAnchor || "A"} />;
+            })()}
+
           <TouchableOpacity
             style={styles.button}
             onPress={() => speakWord(item.content)}
@@ -541,10 +473,6 @@ export default function LessonScreen() {
         </View>
       );
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     if (lessonData.guidedPractice && currentPractice) {
       if (currentPractice.interactionType === "tap-to-reveal") {
         return (
@@ -580,6 +508,7 @@ export default function LessonScreen() {
         </View>
       );
     }
+
     return null;
   };
 
@@ -591,84 +520,6 @@ export default function LessonScreen() {
         : "#ef4444";
 
   return (
-<<<<<<< HEAD
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{lessonData.title}</Text>
-      <Text style={styles.subtitle}>{lessonData.subtitle}</Text>
-
-      <View style={styles.progressBarBackground}>
-        <View
-          style={[
-            styles.progressBarFill,
-            { width: `${((step + 1) / totalSteps) * 100}%` },
-          ]}
-        />
-      </View>
-
-      {!finished ? (
-        renderContent()
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.complete}>🎉 {lessonData.completionMessage}</Text>
-          <Text style={styles.score}>
-            Score: {score} / {lessonData.guidedPractice.length}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { marginTop: 24, backgroundColor: "#2563EB" },
-            ]}
-            onPress={() => {
-              setStep(0);
-              setFinished(false);
-              setScore(0);
-              let nextLesson = lessonKey;
-              if (lessonKey === "vowel_processing") {
-                nextLesson = "visual_tracking";
-              }
-              router.replace({
-                pathname: "/dyslexic/module/[level1]/[lesson]",
-                params: { level1: "level2", lesson: nextLesson },
-              });
-            }}
-          >
-            <Text style={styles.buttonText}>Start Level 2</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* --- INTEGRATED MODAL OVERLAY: FIXATION / SYLLABLE ASSISTANCE ASSISTANT --- */}
-      <Modal visible={intervention !== null} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.interventionCard}>
-            <Text style={styles.modalAlertTitle}>Let's Break It Down! 🧩</Text>
-            <Text style={styles.originalWord}>{intervention?.word}</Text>
-            <Text style={styles.syllableBreakdown}>
-              {intervention?.hyphenated}
-            </Text>
-            <Text style={styles.modalMessage}>
-              Take your time parsing out these core individual phonetic sounds!
-            </Text>
-            <TouchableOpacity
-              style={styles.closeModalButton}
-              onPress={() => setIntervention(null)}
-            >
-              <Text style={styles.buttonText}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* --- INTEGRATED MODAL OVERLAY: DISTRACTION / RE-ENGAGEMENT DIALOGUE --- */}
-      <Modal visible={isDistracted} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.distractionCard}>
-            <Ionicons name="eye-off-outline" size={50} color="#F59E0B" />
-            <Text style={styles.distractionTitle}>Are you still reading?</Text>
-            <Text style={styles.distractionText}>
-              Let's re-align together! We paused right where you left off on
-              this module screen step.
-=======
     <View style={styles.screenContainer}>
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity
@@ -706,23 +557,10 @@ export default function LessonScreen() {
             <Text style={styles.complete}>{lessonData.completionMessage}</Text>
             <Text style={styles.score}>
               Score: {score} / {lessonData.guidedPractice.length}
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
             </Text>
             <TouchableOpacity
               style={[
                 styles.button,
-<<<<<<< HEAD
-                { width: "100%", backgroundColor: "#F59E0B" },
-              ]}
-              onPress={() => setIsDistracted(false)}
-            >
-              <Text style={styles.buttonText}>Resume Learning</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </ScrollView>
-=======
                 { marginTop: 24, backgroundColor: "#2563EB" },
               ]}
               onPress={() => {
@@ -862,7 +700,6 @@ export default function LessonScreen() {
         </View>
       </Modal>
     </View>
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   );
 }
 
@@ -879,9 +716,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
-<<<<<<< HEAD
-  title: { fontSize: 30, fontWeight: "800", color: "#1E293B", marginBottom: 8 },
-=======
   wsBadge: {
     position: "absolute",
     top: -180,
@@ -927,7 +761,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   subtitle: {
     fontSize: 18,
     color: "#64748B",
@@ -1073,81 +906,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   score: { textAlign: "center", color: "#64748B", marginTop: 10, fontSize: 18 },
-<<<<<<< HEAD
-
-  // Modal layout structural layout extensions
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-=======
   ipModalOverlay: {
     flex: 1,
     backgroundColor: "rgba(15, 23, 42, 0.55)",
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
   },
-<<<<<<< HEAD
-  interventionCard: {
-    backgroundColor: "white",
-    borderRadius: 24,
-    padding: 28,
-    alignItems: "center",
-    width: "100%",
-    elevation: 5,
-  },
-  modalAlertTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#64748B",
-    marginBottom: 12,
-  },
-  originalWord: { fontSize: 24, fontWeight: "300", color: "#94A3B8" },
-  syllableBreakdown: {
-    fontSize: 36,
-    fontWeight: "800",
-    color: "#2563EB",
-    marginVertical: 12,
-    letterSpacing: 2,
-  },
-  modalMessage: {
-    fontSize: 15,
-    textAlign: "center",
-    color: "#475569",
-    marginBottom: 20,
-    lineHeight: 22,
-  },
-  closeModalButton: {
-    backgroundColor: "#2563EB",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    width: "100%",
-    alignItems: "center",
-  },
-  distractionCard: {
-    backgroundColor: "white",
-    borderRadius: 24,
-    padding: 32,
-    alignItems: "center",
-    width: "100%",
-    elevation: 5,
-  },
-  distractionTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#1E293B",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  distractionText: {
-    fontSize: 15,
-    color: "#64748B",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 22,
-=======
   ipModalCard: {
     backgroundColor: "white",
     borderRadius: 20,
@@ -1192,6 +957,5 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
->>>>>>> 9b73812b7db82ac4a67f385e4b7d5ec4bf748575
   },
 });
