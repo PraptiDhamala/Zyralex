@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dimensions,
   Image,
@@ -7,6 +7,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { COLORS } from "../../constants/colors";
 
 const { width, height } = Dimensions.get("window");
@@ -43,52 +53,173 @@ const TITLE: Record<Props["mood"], string> = {
   encourage: "Keep it up!",
 };
 
+// A couple of extra sparkle emoji shown only on happy moods, positioned
+// around the card. Purely decorative — cheap way to make "correct" feel
+// like a small celebration instead of a static popup.
+const SPARKLE_MOODS: Props["mood"][] = ["correct", "cheer"];
+
 export const Mascot: React.FC<Props> = ({
   mood,
   message,
   onDismiss,
   showNext = false,
   nextLabel = "Next",
-}) => (
-  <View style={styles.overlay}>
-    {/* Dark background */}
-    <View style={styles.backdrop} />
+}) => {
+  const backdropOpacity = useSharedValue(0);
+  const cardScale = useSharedValue(0.6);
+  const cardTranslateY = useSharedValue(40);
+  const mimoRotate = useSharedValue(0);
+  const mimoFloat = useSharedValue(0);
+  const sparkle1 = useSharedValue(0);
+  const sparkle2 = useSharedValue(0);
 
-    {/* Card */}
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: BUBBLE_COLORS[mood],
-          borderColor: BORDER_COLORS[mood],
-        },
-      ]}
-    >
-      <Image
-        source={require("../../assets/mimoimg.png")}
-        style={styles.mimo}
-        resizeMode="contain"
-      />
+  useEffect(() => {
+    // Entrance: fade the backdrop, spring the card up into place.
+    backdropOpacity.value = withTiming(1, { duration: 200 });
+    cardScale.value = withSpring(1, { damping: 9, stiffness: 140 });
+    cardTranslateY.value = withSpring(0, { damping: 11, stiffness: 140 });
 
-      <Text style={[styles.title, { color: BORDER_COLORS[mood] }]}>
-        {TITLE[mood]}
-      </Text>
+    // Mood-specific reaction on the mascot itself.
+    if (mood === "correct" || mood === "cheer") {
+      mimoRotate.value = withSequence(
+        withTiming(-8, { duration: 120 }),
+        withTiming(8, { duration: 120 }),
+        withTiming(-6, { duration: 120 }),
+        withTiming(0, { duration: 120 }),
+      );
+    } else if (mood === "wrong" || mood === "frustrated") {
+      mimoRotate.value = withSequence(
+        withTiming(-4, { duration: 90 }),
+        withTiming(4, { duration: 90 }),
+        withTiming(-3, { duration: 90 }),
+        withTiming(0, { duration: 90 }),
+      );
+    }
 
-      {/* Message */}
-      <Text style={styles.message}>{message}</Text>
+    // Gentle continuous "breathing" float so the mascot never feels frozen
+    // while the child reads the message.
+    mimoFloat.value = withRepeat(
+      withSequence(
+        withTiming(-6, { duration: 900, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 900, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      true,
+    );
 
-      {showNext && onDismiss && (
-        <TouchableOpacity
-          style={[styles.nextBtn, { backgroundColor: BORDER_COLORS[mood] }]}
-          onPress={onDismiss}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.nextBtnText}>{nextLabel} →</Text>
-        </TouchableOpacity>
-      )}
+    if (SPARKLE_MOODS.includes(mood)) {
+      sparkle1.value = withDelay(
+        150,
+        withRepeat(
+          withSequence(
+            withTiming(1, { duration: 500 }),
+            withTiming(0, { duration: 500 }),
+          ),
+          -1,
+          true,
+        ),
+      );
+      sparkle2.value = withDelay(
+        450,
+        withRepeat(
+          withSequence(
+            withTiming(1, { duration: 500 }),
+            withTiming(0, { duration: 500 }),
+          ),
+          -1,
+          true,
+        ),
+      );
+    } else {
+      sparkle1.value = 0;
+      sparkle2.value = 0;
+    }
+  }, [mood, message]);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value,
+  }));
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: cardScale.value },
+      { translateY: cardTranslateY.value },
+    ],
+  }));
+
+  const mimoStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${mimoRotate.value}deg` },
+      { translateY: mimoFloat.value },
+    ],
+  }));
+
+  const sparkle1Style = useAnimatedStyle(() => ({
+    opacity: sparkle1.value,
+    transform: [{ scale: 0.6 + sparkle1.value * 0.6 }],
+  }));
+
+  const sparkle2Style = useAnimatedStyle(() => ({
+    opacity: sparkle2.value,
+    transform: [{ scale: 0.6 + sparkle2.value * 0.6 }],
+  }));
+
+  return (
+    <View style={styles.overlay}>
+      <Animated.View style={[styles.backdrop, backdropStyle]} />
+
+      <Animated.View
+        style={[
+          styles.card,
+          cardStyle,
+          {
+            backgroundColor: BUBBLE_COLORS[mood],
+            borderColor: BORDER_COLORS[mood],
+          },
+        ]}
+      >
+        {SPARKLE_MOODS.includes(mood) && (
+          <>
+            <Animated.Text
+              style={[styles.sparkle, styles.sparkleLeft, sparkle1Style]}
+            >
+              ✨
+            </Animated.Text>
+            <Animated.Text
+              style={[styles.sparkle, styles.sparkleRight, sparkle2Style]}
+            >
+              🌟
+            </Animated.Text>
+          </>
+        )}
+
+        <Animated.View style={mimoStyle}>
+          <Image
+            source={require("../../assets/mimoimg.png")}
+            style={styles.mimo}
+            resizeMode="contain"
+          />
+        </Animated.View>
+
+        <Text style={[styles.title, { color: BORDER_COLORS[mood] }]}>
+          {TITLE[mood]}
+        </Text>
+
+        <Text style={styles.message}>{message}</Text>
+
+        {showNext && onDismiss && (
+          <TouchableOpacity
+            style={[styles.nextBtn, { backgroundColor: BORDER_COLORS[mood] }]}
+            onPress={onDismiss}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.nextBtnText}>{nextLabel} →</Text>
+          </TouchableOpacity>
+        )}
+      </Animated.View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   overlay: {
@@ -115,6 +246,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
+  sparkle: {
+    position: "absolute",
+    fontSize: 26,
+    top: 10,
+  },
+  sparkleLeft: { left: 18 },
+  sparkleRight: { right: 18 },
   mimo: {
     width: 120,
     height: 120,

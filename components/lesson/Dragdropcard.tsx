@@ -1,11 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 type Practice = {
@@ -16,11 +19,13 @@ type Practice = {
 
 function DraggableTile({
   label,
+  index,
   dropZoneRef,
   disabled,
   onDrop,
 }: {
   label: string;
+  index: number;
   dropZoneRef: React.RefObject<View | null>;
   disabled: boolean;
   onDrop: (label: string) => void;
@@ -29,11 +34,19 @@ function DraggableTile({
   const translateY = useSharedValue(0);
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
+  const grabScale = useSharedValue(1);
+  const entranceScale = useSharedValue(0);
+
+  useEffect(() => {
+    entranceScale.value = withDelay(
+      index * 100,
+      withSpring(1, { damping: 8, stiffness: 140 }),
+    );
+  }, []);
 
   const checkDrop = (absX: number, absY: number) => {
     if (!dropZoneRef.current) return;
 
-    // Use measureInWindow to get reliable window-relative positions matching absX and absY
     dropZoneRef.current.measureInWindow((x, y, width, height) => {
       const inside =
         absX >= x && absX <= x + width && absY >= y && absY <= y + height;
@@ -41,9 +54,11 @@ function DraggableTile({
       if (inside) {
         runOnJS(onDrop)(label);
       } else {
-        // Reset position if dropped outside
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
+        // Bounce back with a little overshoot so a miss still feels
+        // responsive rather than a hard snap.
+        translateX.value = withSpring(0, { damping: 10, stiffness: 150 });
+        translateY.value = withSpring(0, { damping: 10, stiffness: 150 });
+        grabScale.value = withSpring(1);
       }
     });
   };
@@ -53,12 +68,14 @@ function DraggableTile({
     .onStart(() => {
       startX.value = translateX.value;
       startY.value = translateY.value;
+      grabScale.value = withSpring(1.12, { damping: 8, stiffness: 200 });
     })
     .onUpdate((e) => {
       translateX.value = startX.value + e.translationX;
       translateY.value = startY.value + e.translationY;
     })
     .onEnd((e) => {
+      grabScale.value = withSpring(1);
       runOnJS(checkDrop)(e.absoluteX, e.absoluteY);
     });
 
@@ -66,8 +83,9 @@ function DraggableTile({
     transform: [
       { translateX: translateX.value },
       { translateY: translateY.value },
+      { scale: entranceScale.value * grabScale.value },
     ],
-    zIndex: disabled ? 1 : 999, // Keep dragged item on top of other elements
+    zIndex: disabled ? 1 : 999,
   }));
 
   return (
@@ -91,13 +109,45 @@ export default function DragDropCard({
   const dropZoneRef = useRef<View>(null);
   const [dropped, setDropped] = useState<string | null>(null);
   const [locked, setLocked] = useState(false);
+  const [wasCorrect, setWasCorrect] = useState<boolean | null>(null);
+
+  const zoneScale = useSharedValue(1);
+  const zoneShake = useSharedValue(0);
 
   const handleDrop = (label: string) => {
     if (locked) return;
+    const correct = label === practice.answer;
     setDropped(label);
     setLocked(true);
-    onAnswer(label, practice.answer);
+    setWasCorrect(correct);
+
+    if (correct) {
+      zoneScale.value = withSequence(
+        withTiming(1.08, { duration: 150 }),
+        withSpring(1, { damping: 7, stiffness: 160 }),
+      );
+    } else {
+      zoneShake.value = withSequence(
+        withTiming(-8, { duration: 80 }),
+        withTiming(8, { duration: 80 }),
+        withTiming(-5, { duration: 80 }),
+        withTiming(0, { duration: 80 }),
+      );
+    }
+
+    setTimeout(() => onAnswer(label, practice.answer), 260);
   };
+
+  const zoneStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: zoneScale.value }, { translateX: zoneShake.value }],
+  }));
+
+  const zoneColor =
+    wasCorrect === null
+      ? styles.dropZone
+      : wasCorrect
+        ? styles.dropZoneCorrect
+        : styles.dropZoneWrong;
 
   return (
     <View style={styles.card}>
@@ -106,17 +156,18 @@ export default function DragDropCard({
         Drag the correct card into the box below
       </Text>
 
-      <View ref={dropZoneRef} style={styles.dropZone}>
+      <Animated.View ref={dropZoneRef} style={[zoneColor, zoneStyle]}>
         <Text style={styles.dropZoneText}>
           {dropped ? dropped : "Drop here"}
         </Text>
-      </View>
+      </Animated.View>
 
       <View style={styles.tileRow}>
         {practice.options.map((option, index) => (
           <DraggableTile
             key={index}
             label={option}
+            index={index}
             dropZoneRef={dropZoneRef}
             disabled={locked}
             onDrop={handleDrop}
@@ -159,6 +210,26 @@ const styles = StyleSheet.create({
     borderColor: "#93C5FD",
     borderStyle: "dashed",
     backgroundColor: "#EFF6FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 28,
+  },
+  dropZoneCorrect: {
+    height: 90,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderColor: "#28A745",
+    backgroundColor: "#D4EDDA",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 28,
+  },
+  dropZoneWrong: {
+    height: 90,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderColor: "#FFC107",
+    backgroundColor: "#FFF3CD",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 28,

@@ -24,13 +24,8 @@ const lesson = {
     {
       type: "tip",
       content: "Start from the left and move slowly to the right ➡️",
-      animationType: "mirror-flip",
+      animationType: "pulse-on-audio",
       visualAnchor: "abc",
-    },
-    {
-      type: "activity",
-      content: "Tap each sound with your finger while reading ✍️",
-      visualAnchor: "tap",
     },
   ],
   examples: [

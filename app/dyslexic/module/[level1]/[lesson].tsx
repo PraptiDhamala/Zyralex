@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
+import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
 import DragDropCard from "../../../../components/lesson/Dragdropcard";
 import ExplanationVisual from "../../../../components/lesson/ExplanationVisual";
 import { Mascot } from "../../../../components/lesson/Mascot";
@@ -361,7 +362,7 @@ export default function LessonScreen() {
             <Text style={styles.badgeText}>{item.type.toUpperCase()}</Text>
           </View>
           <ExplanationVisual item={item} />
-          
+
           <Text style={styles.text}>{item.content}</Text>
           {item.type === "activity" ? (
             <TraceActivity letter={item.visualAnchor} />
@@ -422,6 +423,7 @@ export default function LessonScreen() {
           <TapToRevealCard
             practice={currentPractice}
             onAnswer={handlePracticeAnswer}
+            variant={lessonKey === "letter_reversal" ? "mirror-flip" : "pop"}
           />
         );
       }
@@ -487,7 +489,13 @@ export default function LessonScreen() {
           />
         </View>
         {!finished ? (
-          renderContent()
+          <Animated.View
+            key={step}
+            entering={FadeInRight.duration(350)}
+            exiting={FadeOutLeft.duration(200)}
+          >
+            {renderContent()}
+          </Animated.View>
         ) : (
           <View style={styles.card}>
             <Text style={styles.complete}>{lessonData.completionMessage}</Text>
