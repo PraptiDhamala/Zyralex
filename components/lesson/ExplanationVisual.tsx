@@ -129,11 +129,17 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
 
   if (!item.visualAnchor) return null;
 
+  // Clean layout artifacts like emojis, arrows, or description content text blocks
+  const cleanAnchor = item.visualAnchor
+    .replace(/[\u00A0-\u9999\u2000-\u32FF]/g, "")
+    .split("➔")[0]
+    .trim();
+
   if (item.animationType === "mirror-flip") {
     return (
       <View style={styles.wrap}>
         <Animated.Text style={[styles.bigLetter, flipStyle]}>
-          {item.visualAnchor}
+          {cleanAnchor}
         </Animated.Text>
       </View>
     );
@@ -143,7 +149,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
     return (
       <View style={styles.wrap}>
         <Animated.Text style={[styles.bigLetter, pulseStyle]}>
-          {item.visualAnchor}
+          {cleanAnchor}
         </Animated.Text>
       </View>
     );
@@ -153,7 +159,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
     return (
       <View style={styles.wrap}>
         <Animated.Text style={[styles.bigLetter, shakeStyle]}>
-          {item.visualAnchor}
+          {cleanAnchor}
         </Animated.Text>
       </View>
     );
@@ -163,7 +169,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
     return (
       <View style={styles.wrap}>
         <Animated.Text style={[styles.bigLetter, wiggleStyle]}>
-          {item.visualAnchor}
+          {cleanAnchor}
         </Animated.Text>
       </View>
     );
@@ -176,7 +182,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
     return (
       <View style={styles.wrap}>
         <Animated.Text style={[styles.bigLetter, popStyle]}>
-          {item.visualAnchor}
+          {cleanAnchor}
         </Animated.Text>
         {item.animationType === "sparkle-burst" && (
           <Text style={styles.sparkleDeco}>✨</Text>
@@ -189,7 +195,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
     return (
       <View style={styles.wrap}>
         <Animated.Text style={[styles.bigLetter, popStyle]}>
-          {item.visualAnchor}
+          {cleanAnchor}
         </Animated.Text>
       </View>
     );
@@ -198,7 +204,7 @@ export default function ExplanationVisual({ item }: { item: ExplanationItem }) {
   return (
     <View style={styles.wrap}>
       <Animated.Text style={[styles.bigLetter, defaultStyle]}>
-        {item.visualAnchor}
+        {cleanAnchor}
       </Animated.Text>
     </View>
   );

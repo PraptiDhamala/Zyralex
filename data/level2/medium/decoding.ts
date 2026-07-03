@@ -5,41 +5,47 @@ const lesson = {
     "Two consonants can team up. Let's blend them and read bigger words! 🚀",
   color: "#FDE68A",
   mascot: "🦊",
-
   explanation: [
     {
       type: "text",
-      content: "Some words start with two consonants blended together.",
+      content:
+        "Some letters are totally silent! We must write them down, but when we say them out loud, they stay quiet.",
+      animationType: "pulse-on-audio",
+      visualAnchor: "SILENT",
     },
     {
-      type: "text",
+      type: "tip",
       content:
-        "Each letter keeps its own sound, but we say them fast, side by side.",
-      animationType: "pulse-on-audio",
-      visualAnchor: "s-t",
+        "Look at 'knee'! The letter K acts like a ghost — it's completely silent, so we just say 'nee'!",
+      animationType: "morph-asset",
+      visualAnchor: "kn",
+    },
+    {
+      type: "tip",
+      content:
+        "In the word 'wrist', the W is taking a nap! Zip right past it and start your sound with 'rist'.",
+      animationType: "mirror-flip",
+      visualAnchor: "wr",
     },
     {
       type: "story",
-      content: "s-t-o-p becomes STOP 🛑 when we blend s and t together first.",
+      content:
+        "Meet the R-Controlled Bosses: ar, er, ir, or, ur! The letter R changes how the vowels sound.",
+      animationType: "pulse-on-audio",
+      visualAnchor: "ar",
+    },
+    {
+      type: "tip",
+      content:
+        "Say 'car'. Hear how the R stretches out the A sound? That's an r-controlled vowel team.",
       animationType: "stroke-by-stroke",
-      visualAnchor: "stop",
+      visualAnchor: "car",
     },
     {
-      type: "tip",
-      content: "Try it slowly: s...t...op. Then say it fast: stop!",
-      animationType: "bounce-in",
-      visualAnchor: "st",
-    },
-    {
-      type: "tip",
-      content: "Common teams: bl, cr, st, gr, sh, ch.",
-      animationType: "wiggle",
-      visualAnchor: "bl cr st",
-    },
-    {
-      type: "activity",
-      content: "Tap each letter team with your finger before reading the word.",
-      visualAnchor: "tap",
+      type: "speaking_warmup",
+      content:
+        "Let's warm up your detective voice! Whisper the word first, then say it out loud at normal speed.",
+      visualAnchor: "🗣️",
     },
   ],
 
