@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Modal,
   SafeAreaView,
@@ -14,14 +14,17 @@ import LetterRecognitionGame from "../../components/LetterRecognitionGame";
 import SimpleWordsGame from "../../components/SimpleWordsGame";
 import SyllableBasicsGame from "../../components/SyllableBasicsGame";
 import ReadAloudModule from "../../components/practice/ReadAloudModule";
-import { beginnerReadAloud } from "../../data/readAloudData";
 import { useAppProgress } from "../../hooks/useAppProgress";
 
 // Structural Modular Connections
 import { AttentionMeter } from "../../components/AttentionMeter";
 import { CameraPreview } from "../../components/CameraPreview";
-import { beginnerPhonics } from "../../data/phonicsData";
 import { useGazeTracking } from "../../hooks/useGazeTracking";
+
+// Central matched 3-level data matrices
+import { practiceDataMatrix as PRACTICE_DATA_MATRIX } from '../../data/practice';
+
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
 export default function DyslexicPractice() {
   const {
@@ -33,7 +36,7 @@ export default function DyslexicPractice() {
     isLearnGatePassed
   } = useAppProgress();
 
-  const [wordIndex, setWordIndex]                   = useState(0);
+  const [wordIndex, setWordIndex]               = useState(0);
   const [spokenText, setSpokenText]                 = useState("");
   
   const [mimoFeedback, setMimoFeedback]             = useState<{
@@ -54,26 +57,107 @@ export default function DyslexicPractice() {
 
   const { metrics, handleFaceDetected, getEvaluationReport, resetSession } = useGazeTracking();
 
-  const currentEntry = beginnerReadAloud[wordIndex] ?? beginnerReadAloud[0];
-  const currentWord  = currentEntry.sentence;
-  const activePhonics = beginnerPhonics[phonicsIndex] ?? beginnerPhonics[0];
+  // Dynamically derive current level data streams mapping onto selections safely typed
+  // Dynamically derive current level data streams mapping onto selections safely typed
+  const activeLevelKey: DifficultyLevel = (currentLevel === "intermediate" || currentLevel === "advanced" || currentLevel === "beginner") 
+    ? (currentLevel as DifficultyLevel) 
+    : "beginner";
+
+  // 1. Get the raw module mapping root from your index matrix
+  const rawLevelRoot = PRACTICE_DATA_MATRIX[activeLevelKey];
+
+  // 2. Comprehensive Deep Adapter Layer
+  const selectedLevelData = useMemo(() => {
+    if (!rawLevelRoot) return null;
+
+    // A list of every possible place your dataset arrays could be nesting inside index.ts
+    const searchTargets = [
+      (rawLevelRoot as any).lessons,
+      (rawLevelRoot as any).lessonPractice,
+      (rawLevelRoot as any).BEGINNER_LESSON_DATA,
+      (rawLevelRoot as any).INTERMEDIATE_LESSON_DATA,
+      (rawLevelRoot as any).ADVANCED_LESSON_DATA,
+      (rawLevelRoot as any).default,
+      rawLevelRoot
+    ];
+
+    // Look through each candidate target for your arrays
+    let finalSimpleWords: any[] = [];
+    let finalSyllableBasics: any[] = [];
+    let finalLetterRec: any[] = [];
+
+    for (const target of searchTargets) {
+      if (target) {
+        if (Array.isArray(target.simpleWords) && target.simpleWords.length > 0) {
+          finalSimpleWords = target.simpleWords;
+        }
+        if (Array.isArray(target.syllableBasics) && target.syllableBasics.length > 0) {
+          finalSyllableBasics = target.syllableBasics;
+        }
+        if (Array.isArray(target.letterRecognition) && target.letterRecognition.length > 0) {
+          finalLetterRec = target.letterRecognition;
+        }
+      }
+    }
+
+    // Double-check: If they are STILL empty, check if index.ts accidentally passed the arrays under 'lessons' directly
+    if (finalSimpleWords.length === 0 && (rawLevelRoot as any).lessons) {
+      const nested = (rawLevelRoot as any).lessons;
+      finalSimpleWords = nested?.simpleWords || [];
+      finalSyllableBasics = nested?.syllableBasics || [];
+      finalLetterRec = nested?.letterRecognition || [];
+    }
+
+    // Log this to your developer console so you can instantly verify what was found
+    console.log(`[Data Bridge Debug] Level: ${activeLevelKey} | Found simpleWords count: ${finalSimpleWords.length}`);
+
+    return {
+      ...rawLevelRoot,
+      simpleWords: finalSimpleWords,
+      syllableBasics: finalSyllableBasics,
+      letterRecognition: finalLetterRec
+    };
+  }, [rawLevelRoot, activeLevelKey]);
+
+  // Reset internal tracking offsets gracefully when user flips tabs to prevent out-of-bounds array reads
+  useEffect(() => {
+    setWordIndex(0);
+    setPhonicsIndex(0);
+    setActiveChunkIndex(0);
+    setSpokenText("");
+    setMimoFeedback(null);
+  }, [currentLevel]);
+
+  // Dynamic Array Assertions with strict boundaries 
+  const totalReadAloudItems = selectedLevelData?.readAloud?.length || 0;
+  const safeWordIndex       = wordIndex < totalReadAloudItems ? wordIndex : 0;
+  const currentEntry        = selectedLevelData?.readAloud?.[safeWordIndex] || { sentence: "" };
+  const currentWord         = currentEntry.sentence;
+
+  const totalPhonicsItems   = selectedLevelData?.phonics?.length || 0;
+  const safePhonicsIndex    = phonicsIndex < totalPhonicsItems ? phonicsIndex : 0;
+  const activePhonics       = selectedLevelData?.phonics?.[safePhonicsIndex] || { word: "", phonemes: [], sounds: [] };
+
+  // Calculate maximum session steps based strictly on real dataset sizes instead of hardcoded numbers
+  const totalSessionSteps = useMemo(() => {
+    return totalReadAloudItems + totalPhonicsItems;
+  }, [totalReadAloudItems, totalPhonicsItems]);
 
   const DIFFICULTIES = useMemo(() => [
-    { id: "beginner" as const,     label: "Beginner",     emoji: "🌱", words: 20 },
-    { id: "intermediate" as const, label: "Intermed.",    emoji: "🔥", words: 30 }, 
-    { id: "advanced" as const,     label: "Advanced",     emoji: "⚡", words: 40 },
-    { id: "expert" as const,       label: "Expert",       emoji: "🏆", words: 50 },
+    { id: "beginner" as const,     label: "Beginner",     emoji: "🌱", words: PRACTICE_DATA_MATRIX.beginner?.readAloud?.length + PRACTICE_DATA_MATRIX.beginner?.phonics?.length || 20 },
+    { id: "intermediate" as const, label: "Intermed.",    emoji: "🔥", words: PRACTICE_DATA_MATRIX.intermediate?.readAloud?.length + PRACTICE_DATA_MATRIX.intermediate?.phonics?.length || 30 }, 
+    { id: "advanced" as const,     label: "Advanced",     emoji: "⚡", words: PRACTICE_DATA_MATRIX.advanced?.readAloud?.length + PRACTICE_DATA_MATRIX.advanced?.phonics?.length || 40 },
   ], []);
 
   const LESSON_ITEMS = useMemo(() => [
-    { id: "LETTER_RECOGNITION", icon: "🔤", name: "Letter Recognition", meta: "Identify letters A–Z",      bg: "#EFF6FF" },
-    { id: "SIMPLE_WORDS",       icon: "✍️",  name: "Simple Words",        meta: "3–4 letter basic words",    bg: "#FDF4FF" },
-    { id: "SYLLABLE_BASICS",    icon: "🗣️", name: "Syllable Basics",     meta: "Break words into parts",    bg: "#F0FFF4" },
+    { id: "LETTER_RECOGNITION", icon: "🔤", name: "Letter Recognition", meta: "Identify letter variants", bg: "#EFF6FF" },
+    { id: "SIMPLE_WORDS",       icon: "✍️",  name: "Simple Words",        meta: "Assemble structural blocks", bg: "#FDF4FF" },
+    { id: "SYLLABLE_BASICS",    icon: "🗣️", name: "Syllable Basics",     meta: "Break down vocal sound rhythms", bg: "#F0FFF4" },
   ], []);
 
   const currentDiff = useMemo(() => {
-    return DIFFICULTIES.find((d) => d.id === currentLevel) || DIFFICULTIES[0];
-  }, [DIFFICULTIES, currentLevel]);
+    return DIFFICULTIES.find((d) => d.id === activeLevelKey) || DIFFICULTIES[0];
+  }, [DIFFICULTIES, activeLevelKey]);
 
   const handleSelectDifficulty = (diff: typeof DIFFICULTIES[0]) => {
     setCurrentLevel(diff.id);
@@ -89,7 +173,8 @@ export default function DyslexicPractice() {
   };
  
   const goToNextWord = () => {
-    setWordIndex((prev) => (prev < beginnerReadAloud.length - 1 ? prev + 1 : 0));
+    if (totalReadAloudItems === 0) return;
+    setWordIndex((prev) => (prev < totalReadAloudItems - 1 ? prev + 1 : 0));
     setSpokenText("");
     setMimoFeedback(null);
   };
@@ -100,13 +185,15 @@ export default function DyslexicPractice() {
       setActiveChunkIndex((p) => p + 1);
     } else {
       setActiveChunkIndex(0);
-      setPhonicsIndex((p) => (p < beginnerPhonics.length - 1 ? p + 1 : 0));
+      if (totalPhonicsItems === 0) return;
+      setPhonicsIndex((p) => (p < totalPhonicsItems - 1 ? p + 1 : 0));
     }
   };
 
   const goToNextPhonicsWord = () => {
     setActiveChunkIndex(0);
-    setPhonicsIndex((p) => (p < beginnerPhonics.length - 1 ? p + 1 : 0));
+    if (totalPhonicsItems === 0) return;
+    setPhonicsIndex((p) => (p < totalPhonicsItems - 1 ? p + 1 : 0));
   };
 
   const handleStopAndEvaluate = () => {
@@ -121,6 +208,7 @@ export default function DyslexicPractice() {
   };
  
   const handleProcessMimoSpeech = (outcome: "well_done" | "keep_trying" | "slow") => {
+    if (!currentWord) return;
     setSpokenText(currentWord);
 
     if (outcome === "well_done") {
@@ -151,9 +239,39 @@ export default function DyslexicPractice() {
     }
   };
  
-  if (activeLessonGame === "LETTER_RECOGNITION") return <LetterRecognitionGame onComplete={handleGameComplete} onClose={() => setActiveLessonGame(null)} />;
-  if (activeLessonGame === "SIMPLE_WORDS") return <SimpleWordsGame onComplete={handleGameComplete} onClose={() => setActiveLessonGame(null)} />;
-  if (activeLessonGame === "SYLLABLE_BASICS") return <SyllableBasicsGame onComplete={handleGameComplete} onClose={() => setActiveLessonGame(null)} />;
+  // ── DYNAMIC LESSON GAME OVERLAYS ──
+  if (activeLessonGame === "LETTER_RECOGNITION") {
+    return (
+      <LetterRecognitionGame 
+        level={activeLevelKey}
+        data={selectedLevelData} 
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    );
+  }
+  
+  if (activeLessonGame === "SIMPLE_WORDS") {
+    return (
+      <SimpleWordsGame 
+        level={activeLevelKey}
+        data={selectedLevelData}
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    );
+  }
+  
+  if (activeLessonGame === "SYLLABLE_BASICS") {
+    return (
+      <SyllableBasicsGame 
+        level={activeLevelKey}
+        data={selectedLevelData}
+        onComplete={handleGameComplete} 
+        onClose={() => setActiveLessonGame(null)} 
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={s.safeArea}>
@@ -163,14 +281,14 @@ export default function DyslexicPractice() {
         {/* 🛠️ TESTING HUD */}
         <View style={s.debugHud}>
           <Text style={s.debugText} numberOfLines={2}>
-            Learn Status: {isLearnGatePassed(currentLevel) ? "✅ COMPLETED" : "❌ NOT LEARNED"}
+            Learn Status: {isLearnGatePassed(activeLevelKey) ? "✅ COMPLETED" : "❌ NOT LEARNED"}
           </Text>
-          <TouchableOpacity style={s.debugBtn} onPress={() => debugCompleteLearnModule(currentLevel)}>
+          <TouchableOpacity style={s.debugBtn} onPress={() => debugCompleteLearnModule(activeLevelKey)}>
             <Text style={s.debugBtnText}>🔧 Clear Gate</Text>
           </TouchableOpacity> 
         </View>
 
-        {/* 👁️ REAL-TIME PERFORMANCE GRAPHICS PANEL */}
+        {/* 👁️ REAL-TIME PERFORMANCE PANEL */}
         <View style={s.attentionStatusHud}>
           <Text style={s.hudIndicator}>{metrics.isFacePresent ? "👤 Connected" : "👤 Off-camera"}</Text>
           <Text style={[s.hudIndicator, { color: metrics.isLookingAtScreen ? '#15803D' : '#EF4444' }]} numberOfLines={1}>
@@ -179,7 +297,6 @@ export default function DyslexicPractice() {
           <Text style={s.hudIndicator} numberOfLines={1}>Read: {metrics.estimatedReadingDirection}</Text>
         </View>
 
-        {/* Eye Tracking Look-at-Camera Guard Alert */}
         {!metrics.isLookingAtScreen && (
           <View style={s.gazeAlert}>
             <Text style={s.gazeAlertText}>👀 Keep looking here while reading!</Text>
@@ -190,13 +307,13 @@ export default function DyslexicPractice() {
    
           <Text style={s.pageTitle}>Practice Sessions</Text>
    
-          {/* ── Difficulty ── */}
+          {/* ── Difficulty Switcher Tab Row ── */}
           <View style={s.card}>
             <Text style={s.cardTitle}>DIFFICULTY LEVEL</Text>
    
             <View style={s.diffRow}>
               {DIFFICULTIES.map((d) => {
-                const isActive = currentLevel === d.id;
+                const isActive = activeLevelKey === d.id;
                 return (
                   <TouchableOpacity
                     key={d.id}
@@ -209,7 +326,7 @@ export default function DyslexicPractice() {
                       {d.label}
                     </Text>
                     <Text style={[s.diffWords, isActive && s.diffWordsActive]} numberOfLines={1}>
-                      {d.words} words
+                      {d.words} steps
                     </Text>
                   </TouchableOpacity>
                 );
@@ -218,15 +335,15 @@ export default function DyslexicPractice() {
    
             <View style={s.progRow}>
               <View style={s.progBar}>
-                <View style={[s.progFill, { width: `${Math.min((wordsCompletedCount / currentDiff.words) * 100, 100)}%` }]} />
+                <View style={[s.progFill, { width: `${Math.min((wordsCompletedCount / totalSessionSteps) * 100, 100)}%` }]} />
               </View>
-              <Text style={s.progTxt}>{wordsCompletedCount}/{currentDiff.words} words</Text>
+              <Text style={s.progTxt}>{wordsCompletedCount}/{totalSessionSteps}</Text>
             </View>
           </View>
    
           {/* ── Lesson Practice Section ── */}
           <View style={s.card}>
-            <Text style={s.cardTitle}>📚 LESSON PRACTICE</Text>
+            <Text style={s.cardTitle}>📚 LESSON PRACTICE ({currentDiff.label})</Text>
             {LESSON_ITEMS.map((item, i) => (
               <TouchableOpacity
                 key={item.id}
@@ -256,7 +373,7 @@ export default function DyslexicPractice() {
             <Text style={s.phonicsHint}>Tap chunks from left to right as you read aloud!</Text>
             
             <View style={s.gazePracticeBox}>
-              <Text style={s.phonicsTargetWord} numberOfLines={1}>TARGET WORD: {activePhonics.word}</Text>
+              <Text style={s.phonicsTargetWord} numberOfLines={1}>TARGET WORD: {activePhonics.word?.toUpperCase()}</Text>
               
               <View style={s.chunksInteractiveRow}>
                 {(activePhonics.phonemes ?? []).map((chunk: string, idx: number) => {
@@ -272,7 +389,9 @@ export default function DyslexicPractice() {
                   );
                 })}
               </View>
-              <Text style={s.soundHint} numberOfLines={2}>Current sound helper: {activePhonics.sounds[activeChunkIndex]}</Text>
+              <Text style={s.soundHint} numberOfLines={2}>
+                Current sound helper: {activePhonics.sounds?.[activeChunkIndex] ?? "/../"}
+              </Text>
             </View>
 
             <View style={s.meterContainer}>
@@ -295,14 +414,22 @@ export default function DyslexicPractice() {
           </View>
 
           {/* ── Read Aloud Section ── */}
-          <ReadAloudModule
-            wordIndex={wordIndex}
-            totalSentences={beginnerReadAloud.length}
-            currentEntry={currentEntry}
-            mimoFeedback={mimoFeedback}
-            onSpeechResult={handleProcessMimoSpeech}
-            onNextWord={goToNextWord}
-          />
+          {totalReadAloudItems > 0 && (
+  <ReadAloudModule
+    wordIndex={safeWordIndex}
+    totalSentences={totalReadAloudItems}
+    currentEntry={{
+      id: safeWordIndex, // Using safeWordIndex since it is already defined and in scope!
+      sentence: currentEntry?.sentence || "",
+      words: (currentEntry?.sentence || "").split(" ")
+    }}
+    mimoFeedback={mimoFeedback}
+    onSpeechResult={handleProcessMimoSpeech}
+    onNextWord={goToNextWord}
+  />
+)}
+
+
         </ScrollView>
 
         {/* ── EVALUATION REPORT MODAL ── */}
@@ -342,13 +469,13 @@ const s = StyleSheet.create({
   card: { backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: "#BFDBFE", padding: 16, marginBottom: 16 },
   cardTitle: { fontSize: 12, fontWeight: "700", color: "#6B9EC8", letterSpacing: 1, marginBottom: 12 },
   
-  diffRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "space-between", paddingVertical: 4 },
-  diffItem: { width: "48%", borderRadius: 12, borderWidth: 1.5, borderColor: "#BFDBFE", backgroundColor: "#fff", paddingVertical: 10, paddingHorizontal: 8, alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  diffRow: { flexDirection: "row", gap: 6, justifyContent: "space-between", paddingVertical: 4 },
+  diffItem: { flex: 1, borderRadius: 12, borderWidth: 1.5, borderColor: "#BFDBFE", backgroundColor: "#fff", paddingVertical: 12, paddingHorizontal: 4, alignItems: "center", justifyContent: "center" },
   diffActive: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
-  diffEmoji: { fontSize: 16, marginBottom: 2 },
-  diffLabel: { fontSize: 13, fontWeight: "600", color: "#1E3A5F", textAlign: "center" },
+  diffEmoji: { fontSize: 18, marginBottom: 2 },
+  diffLabel: { fontSize: 12, fontWeight: "700", color: "#1E3A5F", textAlign: "center" },
   diffLabelActive: { color: "#fff" },
-  diffWords: { fontSize: 11, color: "#6B9EC8", textAlign: "center", fontWeight: "500", marginTop: 1 },
+  diffWords: { fontSize: 10, color: "#6B9EC8", textAlign: "center", fontWeight: "500", marginTop: 1 },
   diffWordsActive: { color: "#BFDBFE" },
   
   progRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14 },

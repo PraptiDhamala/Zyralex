@@ -1,0 +1,22 @@
+export const beginnerPhonics = [
+  { word: "cat", phonemes: ["c", "a", "t"], sounds: ["/k/", "/æ/", "/t/"] },
+  { word: "dog", phonemes: ["d", "o", "g"], sounds: ["/d/", "/ɒ/", "/ɡ/"] },
+  { word: "sun", phonemes: ["s", "u", "n"], sounds: ["/s/", "/ʌ/", "/n/"] },
+  { word: "bat", phonemes: ["b", "a", "t"], sounds: ["/b/", "/æ/", "/t/"] },
+  { word: "map", phonemes: ["m", "a", "p"], sounds: ["/m/", "/æ/", "/p/"] },
+  { word: "hat", phonemes: ["h", "a", "t"], sounds: ["/h/", "/æ/", "/t/"] },
+  { word: "pig", phonemes: ["p", "i", "g"], sounds: ["/p/", "/ɪ/", "/ɡ/"] },
+  { word: "net", phonemes: ["n", "e", "t"], sounds: ["/n/", "/ɛ/", "/t/"] },
+  { word: "bus", phonemes: ["b", "u", "s"], sounds: ["/b/", "/ʌ/", "/s/"] },
+  { word: "fox", phonemes: ["f", "o", "x"], sounds: ["/f/", "/ɒ/", "/ks/"] },
+  { word: "pen", phonemes: ["p", "e", "n"], sounds: ["/p/", "/ɛ/", "/n/"] },
+  { word: "log", phonemes: ["l", "o", "g"], sounds: ["/l/", "/ɒ/", "/ɡ/"] },
+  { word: "cup", phonemes: ["c", "u", "p"], sounds: ["/k/", "/ʌ/", "/p/"] },
+  { word: "red", phonemes: ["r", "e", "d"], sounds: ["/r/", "/ɛ/", "/d/"] },
+  { word: "bug", phonemes: ["b", "u", "g"], sounds: ["/b/", "/ʌ/", "/ɡ/"] },
+  { word: "milk", phonemes: ["m", "i", "l", "k"], sounds: ["/m/", "/ɪ/", "/l/", "/k/"] },
+  { word: "fish", phonemes: ["f", "i", "sh"], sounds: ["/f/", "/ɪ/", "/ʃ/"] },
+  { word: "duck", phonemes: ["d", "u", "ck"], sounds: ["/d/", "/ʌ/", "/k/"] },
+  { word: "ship", phonemes: ["sh", "i", "p"], sounds: ["/ʃ/", "/ɪ/", "/p/"] },
+  { word: "tent", phonemes: ["t", "e", "n", "t"], sounds: ["/t/", "/ɛ/", "/n/", "/t/"] }
+];

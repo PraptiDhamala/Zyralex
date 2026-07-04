@@ -1,32 +1,37 @@
 // components/LetterRecognitionGame.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BEGINNER_LESSON_DATA } from '../data/lessonPractice';
 import { speakWord } from '../services/speech';
 
 const { width, height } = Dimensions.get('window');
 
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
 interface Props {
+  level: DifficultyLevel;
+  data: any;
   onComplete: () => void;
   onClose: () => void;
 }
 
-export default function LetterRecognitionGame({ onComplete, onClose }: Props) {
+export default function LetterRecognitionGame({ level, data, onComplete, onClose }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
-  const totalQuestions = BEGINNER_LESSON_DATA.letterRecognition.length;
-  const currentData = BEGINNER_LESSON_DATA.letterRecognition[currentIndex];
+  // Safely grab game content directly from passed dynamic data matrix
+  const gameDataList = data?.letterRecognition || [];
+  const totalQuestions = gameDataList.length;
+  const currentData = gameDataList[currentIndex] || { targetLetter: '', audioPrompt: '', options: [] };
 
   // Animation values
   const bubbleScale = useRef(new Animated.Value(0)).current;
   const textFade = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(-height)).current; // For celebration card entry
+  const slideAnim = useRef(new Animated.Value(-height)).current; 
 
   // Trigger bubble entry layout animations
   useEffect(() => {
-    if (isFinished) return;
+    if (isFinished || totalQuestions === 0) return;
 
     bubbleScale.setValue(0);
     textFade.setValue(0);
@@ -45,8 +50,10 @@ export default function LetterRecognitionGame({ onComplete, onClose }: Props) {
       })
     ]).start();
 
-    speakWord(currentData.audioPrompt);
-  }, [currentIndex, isFinished]);
+    if (currentData?.audioPrompt) {
+      speakWord(currentData.audioPrompt);
+    }
+  }, [currentIndex, isFinished, totalQuestions]);
 
   // Handle Celebration Modal Animation Slide-in
   useEffect(() => {
@@ -76,6 +83,17 @@ export default function LetterRecognitionGame({ onComplete, onClose }: Props) {
     }
   };
 
+  if (totalQuestions === 0) {
+    return (
+      <View style={s.container}>
+        <Text style={s.instruction}>No practice content available for this level.</Text>
+        <TouchableOpacity style={s.actionBtn} onPress={onClose}>
+          <Text style={s.actionBtnText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={s.container}>
       {/* MAIN GAME INTERFACE CONTENT */}
@@ -90,11 +108,11 @@ export default function LetterRecognitionGame({ onComplete, onClose }: Props) {
 
           <Animated.View style={[s.contentBox, { opacity: textFade }]}>
             <Text style={s.instruction}>Tap the bubble that matches:</Text>
-            <Text style={s.targetLetter}>{currentData.targetLetter.toUpperCase()}</Text>
+            <Text style={s.targetLetter}>{currentData.targetLetter?.toUpperCase()}</Text>
           </Animated.View>
 
           <View style={s.bubbleContainer}>
-            {currentData.options.map((letter, index) => (
+            {(currentData.options || []).map((letter: string, index: number) => (
               <Animated.View 
                 key={index} 
                 style={{ transform: [{ scale: bubbleScale }] }}
@@ -104,7 +122,7 @@ export default function LetterRecognitionGame({ onComplete, onClose }: Props) {
                   style={s.bubble}
                   onPress={() => handlePop(letter)}
                 >
-                  <Text style={s.bubbleText}>{letter.toUpperCase()}</Text>
+                  <Text style={s.bubbleText}>{letter?.toUpperCase()}</Text>
                 </TouchableOpacity>
               </Animated.View>
             ))}
@@ -145,15 +163,7 @@ export default function LetterRecognitionGame({ onComplete, onClose }: Props) {
 }
 
 const s = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#EFF6FF', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 40
-  },
+  container: { flex: 1, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 },
   headerRow: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   scoreText: { fontSize: 13, fontWeight: '700', color: '#1E40AF', backgroundColor: '#DBEAFE', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, overflow: 'hidden' },
   closeBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#BFDBFE' },
@@ -162,42 +172,14 @@ const s = StyleSheet.create({
   instruction: { fontSize: 16, fontWeight: '500', color: '#6B9EC8', marginBottom: 5 },
   targetLetter: { fontSize: 100, fontWeight: '900', color: '#2563EB', letterSpacing: 2 },
   bubbleContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 20, width: '100%' },
-  bubble: {
-    width: width * 0.38,
-    height: width * 0.38,
-    borderRadius: (width * 0.38) / 2,
-    backgroundColor: '#fff',
-    borderWidth: 5,
-    borderColor: '#3B82F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
-  },
+  bubble: { width: width * 0.38, height: width * 0.38, borderRadius: (width * 0.38) / 2, backgroundColor: '#fff', borderWidth: 5, borderColor: '#3B82F6', alignItems: 'center', justifyContent: 'center', shadowColor: '#2563EB', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 },
   bubbleText: { fontSize: 48, fontWeight: '800', color: '#1E3A5F' },
   progressText: { color: '#6B9EC8', fontSize: 12, fontWeight: '600', backgroundColor: '#fff', paddingVertical: 6, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: '#E0F2FE' },
-  
-  // Celebration UI styles
   celebrationCard: { flex: 1, backgroundColor: '#fff', width: '100%', borderRadius: 24, borderWidth: 1, borderColor: '#BFDBFE', padding: 24, alignItems: 'center', justifyContent: 'center', marginVertical: 20 },
   fireworks: { fontSize: 44, marginBottom: 15 },
   celebrationTitle: { fontSize: 26, fontWeight: '800', color: '#1E3A5F', marginBottom: 8 },
   celebrationSub: { fontSize: 14, color: '#6B9EC8', textAlign: 'center', marginBottom: 25, paddingHorizontal: 10 },
-  badgeBox: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 12, 
-    backgroundColor: '#FEF3C7', 
-    borderWidth: 1, // <-- Fixed from borderHorizontalWidth
-    borderColor: '#FDE68A', 
-    paddingVertical: 12, 
-    paddingHorizontal: 16, 
-    borderRadius: 16, 
-    width: '100%', 
-    marginBottom: 25 
-  },
+  badgeBox: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FEF3C7', borderWidth: 1, borderColor: '#FDE68A', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 16, width: '100%', marginBottom: 25 },
   badgeEmoji: { fontSize: 32 },
   badgeName: { fontSize: 14, fontWeight: '700', color: '#92400E' },
   badgeMeta: { fontSize: 11, color: '#B45309', marginTop: 1 },
