@@ -110,7 +110,7 @@ export default function DyslexicHome() {
         .eq("user_id", user.id);
 
       if (progressData) {
-        const totalLessons = 4;
+        const totalLessons = 5;
         const completed = progressData.filter((p) => p.completed).length;
         setCompletedLessonsCount(completed);
         setProgressPercent(

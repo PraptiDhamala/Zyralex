@@ -1,27 +1,42 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Slot, useRouter, useNavigationContainerRef } from "expo-router";
+import { Slot, useNavigationContainerRef, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { AuthProvider } from "../hooks/AuthProvider";
 import { supabase } from "../lib/supabase";
 
+// single entry point for our layout engine
 export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <MainNavigationApp />
+    </AuthProvider>
+  );
+}
+
+function MainNavigationApp() {
   const router = useRouter();
-  
-  // Reference to the navigation state
   const rootNavigationRef = useNavigationContainerRef();
-  
+
   const [isNavigationReady, setIsNavigationReady] = useState(false);
   const [ready, setReady] = useState(false);
 
-  // Monitor when the root navigator is actually mounted and ready
+  // Monitor when Expo Router's navigation tree is fully assembled
   useEffect(() => {
-    if (rootNavigationRef?.current) {
+    const unsubscribe = rootNavigationRef?.addListener("state", () => {
+      setIsNavigationReady(true);
+    });
+
+    // Fallback if state is already mounted out-of-the-box
+    if (rootNavigationRef?.getCurrentRoute()) {
       setIsNavigationReady(true);
     }
+
+    return unsubscribe;
   }, [rootNavigationRef]);
 
   useEffect(() => {
-    // Block execution until Expo Router is mounted and ready for redirects
+    // Prevent premature redirects before Expo Router is mounted
     if (!isNavigationReady) return;
 
     const checkAuth = async () => {
@@ -53,20 +68,29 @@ export default function RootLayout() {
         console.error("Auth check failed:", error);
         router.replace("/signup");
       } finally {
-        setReady(true); 
+        setReady(true);
       }
     };
 
     checkAuth();
-  }, [isNavigationReady]); //Runs once the navigation tree is safe
+  }, [isNavigationReady]);
 
-  // Always render the loading screen(slot) to let the navigator mount
+  // Keep Slot mounted at all times so navigation routes are loaded properly
   if (!ready) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        {/*Wrap Slot here hidden or just let it mount so navigation loads */}
-        <View style={{ display: 'none' }}><Slot /></View>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#F8FAFC",
+        }}
+      >
+        {/* Render Slot invisibly so the routing paths mount successfully in the background */}
+        <View style={{ display: "none" }}>
+          <Slot />
+        </View>
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }

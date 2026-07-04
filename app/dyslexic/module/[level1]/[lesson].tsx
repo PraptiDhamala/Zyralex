@@ -36,6 +36,14 @@ import level3Phonics from "../../../../data/level3/easy/phonics";
 import level3VowelProcessing from "../../../../data/level3/easy/vowel_processing";
 import level3chunkining from "../../../../data/level3/medium/chunking";
 import level3decoding from "../../../../data/level3/medium/decoding";
+import level4MixedMastery from "../../../../data/level4/Level4_mixed_mastery";
+import level5Test from "../../../../data/level5/test";
+import { useAuth } from "../../../../hooks/AuthProvider"; // ← adjust path to wherever your session lives
+import {
+  getLatestAssessment,
+  getLessonRow,
+  upsertLessonProgress,
+} from "../../../../utils/progress";
 import {
   buildUrls,
   getHostUriIp,
@@ -53,7 +61,7 @@ const curriculumMap: Record<string, Record<string, any>> = {
   level2: {
     letter_reversal: level2LetterReversal,
     phonics: level2Phonics,
-    visual_tracking: level2VisualTracking,
+    vowel_processing: level2VisualTracking,
     chunking: level2chunking,
     decoding: level2decoding,
   },
@@ -64,37 +72,33 @@ const curriculumMap: Record<string, Record<string, any>> = {
     chunking: level3chunkining,
     decoding: level3decoding,
   },
+  level4: {
+    mixed_mastery: level4MixedMastery,
+  },
+  level5: {
+    test: level5Test,
+  },
 };
 
-const LEVEL_ORDER = ["level1", "level2", "level3"];
+const LEVEL_ORDER = ["level1", "level2", "level3", "level4", "level5"];
 
 function getNextRoute(currentLevel: string, lessonKey: string): Href | null {
-  const idx = LEVEL_ORDER.indexOf(currentLevel);
-  const nextLevel = LEVEL_ORDER[idx + 1];
-  if (!nextLevel) return null;
+  const levelIdx = LEVEL_ORDER.indexOf(currentLevel);
+  const nextLevel = LEVEL_ORDER[levelIdx + 1];
+  if (!nextLevel) return null; // finished level5 → nothing left
 
   const nextLevelLessons = curriculumMap[nextLevel];
   if (!nextLevelLessons) return null;
 
-  if (nextLevelLessons[lessonKey]) {
-    return {
-      pathname: "/dyslexic/module/[level1]/[lesson]",
-      params: { level1: nextLevel, lesson: lessonKey },
-    };
-  }
+  const nextLessonKey = nextLevelLessons[lessonKey]
+    ? lessonKey
+    : Object.keys(nextLevelLessons)[0];
 
-  console.warn(
-    `${nextLevel} has no "${lessonKey}" lesson yet — student was defaulted instead.`,
-  );
   return {
     pathname: "/dyslexic/module/[level1]/[lesson]",
-    params: { level1: nextLevel, lesson: Object.keys(nextLevelLessons)[0] },
+    params: { level1: nextLevel, lesson: nextLessonKey },
   };
 }
-
-// Mascot config now carries an explicit displayMode so placement is a
-// deliberate choice per alert type, not an accidental side effect of
-// which fields happen to be set.
 type MascotConfig = {
   mood: "cheer" | "correct" | "wrong" | "encourage" | "frustrated";
   message: string;
@@ -107,19 +111,27 @@ export default function LessonScreen() {
   const cameraRef = useRef<CameraView>(null);
   const frameInterval = useRef<NodeJS.Timeout | null>(null);
   const confettiRef = useRef<any>(null);
-
+  const hasGreetedRef = useRef(false);
   const [pendingWordHelp, setPendingWordHelp] = useState<{
     word: string;
     hyphenated: string;
   } | null>(null);
 
+  const { session } = useAuth();
   const { lesson, level1 } = useLocalSearchParams();
   const [step, setStep] = useState(0);
   const lessonKey = Array.isArray(lesson) ? lesson[0] : lesson;
   const activeLevel = Array.isArray(level1) ? level1[0] : level1;
 
+  const [resolvedLevel, setResolvedLevel] = useState<string | null>(null);
+  const [resolvedLessonKey, setResolvedLessonKey] = useState<string | null>(
+    null,
+  );
+  const [lessonRowId, setLessonRowId] = useState<string | null>(null);
+
   const lessonData =
-    curriculumMap[activeLevel]?.[lessonKey as string] ?? letterReversal;
+    curriculumMap[resolvedLevel ?? ""]?.[resolvedLessonKey ?? ""] ??
+    letterReversal;
   const [finished, setFinished] = useState(false);
   const [score, setScore] = useState(0);
   const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
@@ -158,6 +170,43 @@ export default function LessonScreen() {
     setMascotConfig(null);
     setPendingWordHelp(null);
   }, [activeLevel, lessonKey]);
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    (async () => {
+      if (lessonKey && activeLevel) {
+        setResolvedLevel(activeLevel);
+        setResolvedLessonKey(lessonKey as string);
+      } else {
+        const assessment = await getLatestAssessment(session.user.id);
+        if (!assessment) {
+          router.replace("/dyslexic/welcome");
+          return;
+        }
+        setResolvedLevel(assessment.level ?? "level1");
+        setResolvedLessonKey(assessment.weak_area ?? "letter_reversal");
+
+        if (!hasGreetedRef.current) {
+          hasGreetedRef.current = true;
+          const topic = (assessment.weak_area ?? "letter_reversal").replace(
+            "_",
+            " ",
+          );
+          Speech.speak(
+            `Welcome back! Let's keep working on ${topic} together.`,
+            { language: "en", pitch: 1, rate: 0.85 },
+          );
+        }
+      }
+    })();
+  }, [session?.user?.id, activeLevel, lessonKey]);
+
+  useEffect(() => {
+    if (!resolvedLevel || !resolvedLessonKey) return;
+    getLessonRow(resolvedLevel, resolvedLessonKey).then((row) =>
+      setLessonRowId(row.id),
+    );
+  }, [resolvedLevel, resolvedLessonKey]);
 
   // Resolve the server IP once on mount
   useEffect(() => {
@@ -448,16 +497,29 @@ export default function LessonScreen() {
     if (lessonData.examples && step < explanationLength + examplesLength) {
       const exampleIndex = step - explanationLength;
       const example = lessonData.examples[exampleIndex];
+
+      const prefix = example.letter || example.chunk || "";
+
       return (
         <View style={styles.card}>
           <Text style={styles.bigLetter}>{example.emoji}</Text>
           <Text style={styles.word}>
-            <Text
-              style={{ color: example.color || "#2563EB", fontWeight: "bold" }}
-            >
-              {example.letter}
-            </Text>
-            {example.word.slice(example.letter.length)}
+            {prefix ? (
+              <>
+                <Text
+                  style={{
+                    color: example.color || "#2563EB",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {prefix}
+                </Text>
+                {/* Safely slice using the verified prefix length string */}
+                {example.word.slice(prefix.length)}
+              </>
+            ) : (
+              <Text>{example.word}</Text>
+            )}
           </Text>
           {example.sentence && (
             <Text style={styles.exampleSentence}>{example.sentence}</Text>
@@ -567,14 +629,24 @@ export default function LessonScreen() {
                 styles.button,
                 { marginTop: 24, backgroundColor: "#2563EB" },
               ]}
-              onPress={() => {
+              onPress={async () => {
+                if (session?.user?.id && lessonRowId) {
+                  await upsertLessonProgress({
+                    userId: session.user.id,
+                    lessonId: lessonRowId,
+                    completed: true,
+                    score,
+                    duration: 0,
+                  });
+                }
+
                 setStep(0);
                 setFinished(false);
                 setScore(0);
 
                 const nextRoute = getNextRoute(
-                  activeLevel,
-                  lessonKey as string,
+                  resolvedLevel as string,
+                  resolvedLessonKey as string,
                 );
 
                 if (nextRoute) {

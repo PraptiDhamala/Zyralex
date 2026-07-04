@@ -1,113 +1,84 @@
 const lesson = {
-  id: "vowel_processing_l3",
-  title: "Vowel Teams: Level 3",
-  subtitle: "Let's meet the 'Bossy R' and shifting vowel teams! 👑",
-  color: "#F0FDF4", // Light green tone to signify advanced mastery
-  mascot: "🦁",
-
+  id: "vowel_processing",
+  title: "Advanced Vowel Anchoring",
+  subtitle:
+    "Mastering complex multi-syllable vowel shifting for rapid reading. ⚡",
+  color: "#F3E8FF", // Soft premium purple theme for advanced level
+  mascot: "🦉",
   explanation: [
     {
       type: "text",
       content:
-        "Welcome to Level 3! Here, we meet letters that completely change how a vowel sounds.",
+        "In larger words, vowels change their behavior based on the letters surrounding them.",
       animationType: "fade-in-gentle",
-      visualAnchor: "ar oo",
+      visualAnchor: "com-pu-ter",
     },
     {
       type: "story",
       content:
-        "When the letter 'r' sits next to 'a', it becomes 'Bossy R' and makes the 'a' say its name like a pirate: 'Arr!' 🏴‍☠️",
-      animationType: "pulse-on-audio",
-      visualAnchor: "ar",
-    },
-    {
-      type: "tip",
-      content: "The pair 'ar' creates the strong sound you hear in st-AR ⭐",
-      animationType: "stroke-by-stroke",
-      visualAnchor: "ar",
+        "By anchoring your eyes directly to the vowels in each syllable chunk, you can decode complex multi-syllable words instantly.",
+      animationType: "follow-the-dot",
+      visualAnchor: "vol-ca-no",
     },
     {
       type: "tip",
       content:
-        "The double 'oo' team can stretch out long like a ghost saying 'Ooo!' in m-OO-n 🌙",
-      animationType: "mirror-flip",
-      visualAnchor: "oo",
+        "Watch out for diphthongs like 'ou' and 'oy' where two vowels blend smoothly together into a shifting sound.",
+      animationType: "pulse-on-audio",
+      visualAnchor: "s o u n d",
     },
     {
       type: "activity",
       content:
-        "Growl the 'ar' sound and stretch the 'oo' sound to feel the difference! 🗣️",
+        "Say these shifting diphthong sounds aloud: /ou/ as in ground, and /oy/ as in destroy!",
       animationType: "pulse-on-audio",
-      visualAnchor: "ar oo",
+      visualAnchor: "ou oy",
     },
   ],
-
   examples: [
     {
-      letter: "ar",
-      word: "star",
-      emoji: "⭐",
-      sentence: "Look up at the shining st-AR.",
-      color: "#16A34A",
+      letter: "ou",
+      word: "mountain",
+      emoji: "🏔️",
+      sentence: "We climbed up the steep m-ou-n-t-ai-n path.",
+      color: "#8B5CF6",
     },
     {
-      letter: "ar",
-      word: "park",
-      emoji: "🛝",
-      sentence: "We love to play at the p-AR-k.",
-      color: "#16A34A",
-    },
-    {
-      letter: "oo",
-      word: "moon",
-      emoji: "🌙",
-      sentence: "The m-OO-n glows bright at night.",
-      color: "#059669",
-    },
-    {
-      letter: "oo",
-      word: "spoon",
-      emoji: "🥄",
-      sentence: "Eat your soup with a sp-OO-n.",
-      color: "#059669",
+      letter: "oy",
+      word: "destroy",
+      emoji: "💥",
+      sentence: "Do not destr-oy the fragile display.",
+      color: "#8B5CF6",
     },
   ],
-
   guidedPractice: [
     {
-      question: "⭐ Select the missing letters to spell: St___",
-      options: ["ar", "ee"],
-      answer: "ar",
+      question:
+        "🧠 Syllable Check: Which vowel sounds anchor the word 'explode'?",
+      options: ["short e + long o", "short e + short o"],
+      answer: "short e + long o",
       interactionType: "tap-to-reveal",
     },
     {
-      question: "🌙 Drag the vowel team that spells m___n",
-      options: ["oo", "oa"],
-      answer: "oo",
+      question: "⏰ Drag the word that contains a shifting diphthong sound:",
+      options: ["ground", "grown"],
+      answer: "ground",
       interactionType: "drag-and-drop",
     },
     {
-      question: "🛝 Which word is controlled by the Bossy R?",
-      options: ["park", "feet"],
-      answer: "park",
+      question: "⚡ Identify the anchoring vowels in the word 'shouting':",
+      options: ["ou + i", "o + u + i"],
+      answer: "ou + i",
       interactionType: "tap-to-reveal",
-    },
-    {
-      question: "🥄 Drag the letters into the box to finish sp___n",
-      options: ["oo", "oi"],
-      answer: "oo",
-      interactionType: "drag-and-drop",
     },
   ],
-
   motivationalTips: [
-    "🌟 Wow, Level 3! You are reading big kid words now!",
-    "🌟 Bossy R doesn't scare you—you're the boss of these words!",
-    "🌟 Think of how far you've come since Level 1! Awesome job. 🙌",
+    "🌟 Advanced decoding is all about spotting patterns. Trust your training!",
+    "🌟 Splitting words at vowel boundaries keeps complex passages effortless.",
+    "🌟 You are training your brain to scan like a high-speed text processor.",
   ],
-
   completionMessage:
-    "Unbelievable! 🥇 You have officially completed Level 3 and mastered the most complex vowel rules! Expert reader unlocked! 🚀",
+    "Absolute Mastery! Your advanced visual tracking is top tier. 🚀",
 };
 
 export default lesson;

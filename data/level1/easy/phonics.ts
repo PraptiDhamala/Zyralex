@@ -30,7 +30,7 @@ const lesson = {
         emoji: "🤫",
         word: "Ship",
         description: "SH sounds like a soft, magical whisper... SHHH!",
-        animationType: "mirror-flip",
+        animationType: "stroke-by-stroke",
         visualAnchor: "SH 🤫",
         cardColor: "#E0F2FE",
       },
@@ -151,7 +151,7 @@ const lesson = {
     {
       type: "story",
       content: "Can your detective ears pick up the difference between them?",
-      animationType: "mirror-flip",
+      animationType: "stroke-by-stroke",
       visualAnchor: "🔍 SOUND TEST",
     },
   ],
