@@ -4,11 +4,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RelativePathString, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View
 } from 'react-native';
 import { DifficultySelector } from '../../components/DifficultySelector';
 import { PracticeSessionCard } from '../../components/PracticeSessionCard';
