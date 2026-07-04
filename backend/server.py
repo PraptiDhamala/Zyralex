@@ -7,6 +7,14 @@ from typing import List
 from fixation_detector import FixationDetector
 from word_tracker import WordTracker
 from intervention import InterventionEngine
+import base64
+import io
+import re
+
+import pytesseract
+from fastapi import UploadFile, File
+from PIL import Image
+from pydantic import BaseModel
 
 app = FastAPI(title="ZyraLex Dual-Stream Hub")
 
@@ -133,6 +141,35 @@ async def receive_mood(data: dict):
         "received": True,
         "adapted_tone": mood
     }
+
+
+class SyllableRequest(BaseModel):
+    word: str
+
+
+@app.post("/api/syllables")
+async def get_syllables(req: SyllableRequest):
+    word = re.sub(r"[^a-zA-Z]", "", req.word).lower()
+    if not word:
+        return {"word": req.word, "syllables": [], "error": "empty word"}
+
+    hyphenated = intervention.format_syllable_breakdown(word, style="hyphen")
+    syllables = hyphenated.split("-")
+
+    return {"word": word, "syllables": syllables}
+
+
+@app.post("/api/ocr")
+async def scan_flashcard(file: UploadFile = File(...)):
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents)).convert("L")
+
+    raw_text = pytesseract.image_to_string(image)
+    match = re.search(r"[A-Za-z]+", raw_text)
+    word = match.group(0) if match else ""
+
+    return {"raw_text": raw_text.strip(), "word": word}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
