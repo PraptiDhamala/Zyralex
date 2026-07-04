@@ -79,7 +79,7 @@ async def camera_endpoint(websocket: WebSocket):
                     await broadcast_to_apps({
                         "type": "DISTRACTION_ALERT",
                         "payload": {
-                            "message": status_update.get("sel_message", "Hey! Let's get back to it 😊")
+                            "message":{"message":status_update.get("sel_message", "Hey! Let's get back to it 😊")}
                         }
                     })
                 continue
