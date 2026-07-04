@@ -28,6 +28,9 @@ function getHostFromExpo(): string | null {
   if (!hostUri) return null;
   return hostUri.replace("exp://", "").split(":")[0];
 }
+export function getHostUriIp(): string | null {
+  return getHostFromExpo();
+}
 export async function resolveServerIp(): Promise<string | null> {
   const override = await loadOverride();
   if (override) return override;

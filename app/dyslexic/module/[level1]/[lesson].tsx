@@ -38,6 +38,7 @@ import level3chunkining from "../../../../data/level3/medium/chunking";
 import level3decoding from "../../../../data/level3/medium/decoding";
 import {
   buildUrls,
+  getHostUriIp,
   resolveServerIp,
   setServerIpOverride,
 } from "../../../../utils/serverConfig";
@@ -222,7 +223,8 @@ export default function LessonScreen() {
             if (distractionTimer.current)
               clearTimeout(distractionTimer.current);
             const alertMessage =
-              "Hey! Lost your place? It is completely normal take a rest but don't quit, you got this!!";
+              response.sel_message ||
+              "Hey! Lost your place? It is completely normal to take a rest but don't quit, you got this!!";
             setMascotConfig({
               mood: "encourage",
               message: alertMessage,
@@ -687,9 +689,12 @@ export default function LessonScreen() {
               {serverIp && (
                 <TouchableOpacity
                   style={styles.ipCancelButton}
-                  onPress={() => setIpModalVisible(false)}
+                  onPress={() => {
+                    const detected = getHostUriIp();
+                    if (detected) setIpInput(detected);
+                  }}
                 >
-                  <Text style={styles.noText}>Cancel</Text>
+                  <Text style={styles.noText}>Auto-detect</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -719,17 +724,30 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
+  // wsBadge: {
+  //   position: "absolute",
+  //   top: -180,
+  //   right: -290,
+  //   color: "white",
+  //   paddingHorizontal: 3,
+  //   paddingVertical: 2,
+  //   borderRadius: 8,
+  //   fontSize: 6,
+  //   fontWeight: "700",
+  //   zIndex: 9999,
+  //   overflow: "hidden",
+  // },
   wsBadge: {
     position: "absolute",
-    top: -180,
+    top: -100,
     right: -290,
     color: "white",
-    paddingHorizontal: 3,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
     fontSize: 6,
     fontWeight: "700",
-    zIndex: 9999,
+    zIndex: 99999,
     overflow: "hidden",
   },
   wordHelpButtons: {
