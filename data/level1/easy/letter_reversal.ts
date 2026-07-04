@@ -28,7 +28,7 @@ const lesson = {
       visualAnchor: "b",
     },
     {
-      type: "tip",
+    type: "tip",
       content: "The letter d has the donut first, then the stick ← d",
       animationType: "stroke-by-stroke",
       visualAnchor: "d",

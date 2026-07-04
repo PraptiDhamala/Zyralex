@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
@@ -16,11 +17,32 @@ type Practice = {
 };
 
 type Variant = "mirror-flip" | "pop";
+
+interface TapToRevealCardProps {
+  practice: Practice;
+  onAnswer: (selected: string, correct: string) => void;
+  variant?: Variant;
+  onSpeak: (text: string) => void;
+}
+
+/**
+ * A single option tile.
+ *
+ * IMPORTANT FIX: every tile starts hidden behind "❓" — not just the
+ * correct one. A tile only reveals its text when:
+ *   1. the child taps it (a private "peek" — only that tile flips), or
+ *   2. the round is confirmed (showResult = true) — at which point
+ *      EVERY tile flips to reveal its word, with the correct one
+ *      highlighted green and the child's wrong pick highlighted red.
+ * This way a curious tap never leaks the answer, and after confirming
+ * the child always gets to see the full picture (not just their own card).
+ */
 function RevealTile({
   option,
   index,
   variant,
-  isFlipped,
+  isSelected,
+  isRevealed,
   isLocked,
   isCorrectAnswer,
   showResult,
@@ -29,18 +51,20 @@ function RevealTile({
   option: string;
   index: number;
   variant: Variant;
-  isFlipped: boolean;
+  isSelected: boolean;
+  isRevealed: boolean;
   isLocked: boolean;
   isCorrectAnswer: boolean;
   showResult: boolean;
   onPress: () => void;
 }) {
   const entranceScale = useSharedValue(0);
-  const flipProgress = useSharedValue(0); // 0 = showing "?", 1 = showing answer
+  const flipProgress = useSharedValue(0);
   const popScale = useSharedValue(1);
   const glow = useSharedValue(0);
   const shake = useSharedValue(0);
 
+  // Staggered entrance so cards feel alive rather than snapping in.
   useEffect(() => {
     entranceScale.value = withDelay(
       index * 90,
@@ -48,31 +72,43 @@ function RevealTile({
     );
   }, []);
 
+  // Flip / pop whenever revealed state changes (either a private peek
+  // tap, or the "reveal everything" moment after confirming).
   useEffect(() => {
     if (variant === "mirror-flip") {
-      flipProgress.value = withTiming(isFlipped ? 1 : 0, { duration: 350 });
+      flipProgress.value = withDelay(
+        showResult ? index * 110 : 0,
+        withTiming(isRevealed ? 1 : 0, { duration: 350 }),
+      );
     } else {
-      if (isFlipped) {
-        popScale.value = withSequence(
-          withTiming(1.15, { duration: 160 }),
-          withSpring(1, { damping: 7, stiffness: 160 }),
+      if (isRevealed) {
+        popScale.value = withDelay(
+          showResult ? index * 110 : 0,
+          withSequence(
+            withTiming(1.15, { duration: 160 }),
+            withSpring(1, { damping: 7, stiffness: 160 }),
+          ),
         );
-        glow.value = withTiming(1, { duration: 200 });
+        glow.value = withTiming(0.15, { duration: 200 });
       } else {
         popScale.value = 1;
         glow.value = 0;
       }
     }
-  }, [isFlipped]);
+  }, [isRevealed, variant, showResult]);
 
+  // Little celebratory bounce or shake once results are in.
   useEffect(() => {
-    if (!showResult || !isFlipped) return;
+    if (!showResult) return;
     if (isCorrectAnswer) {
-      entranceScale.value = withSequence(
-        withTiming(1.12, { duration: 150 }),
-        withSpring(1, { damping: 6, stiffness: 160 }),
+      entranceScale.value = withDelay(
+        index * 110 + 200,
+        withSequence(
+          withTiming(1.12, { duration: 150 }),
+          withSpring(1, { damping: 6, stiffness: 160 }),
+        ),
       );
-    } else {
+    } else if (isSelected) {
       shake.value = withSequence(
         withTiming(-6, { duration: 80 }),
         withTiming(6, { duration: 80 }),
@@ -80,16 +116,18 @@ function RevealTile({
         withTiming(0, { duration: 80 }),
       );
     }
-  }, [showResult]);
+  }, [showResult, isCorrectAnswer, isSelected]);
 
-  const resultStyle =
-    showResult && isFlipped
-      ? isCorrectAnswer
-        ? styles.tileCorrect
-        : styles.tileWrong
+  const tileStyle = showResult
+    ? isCorrectAnswer
+      ? styles.tileCorrect
+      : isSelected
+        ? styles.tileWrong
+        : styles.tileNeutralRevealed
+    : isSelected
+      ? styles.tileFlipped
       : null;
 
-  // ---- mirror-flip: two independently-rotating faces ----
   const containerAnimStyle = useAnimatedStyle(() => ({
     transform: [
       { perspective: 800 },
@@ -101,13 +139,11 @@ function RevealTile({
   const frontFaceStyle = useAnimatedStyle(() => ({
     transform: [{ rotateY: `${flipProgress.value * 180}deg` }],
     opacity: flipProgress.value > 0.5 ? 0 : 1,
-    zIndex: flipProgress.value > 0.5 ? 0 : 1,
   }));
 
   const backFaceStyle = useAnimatedStyle(() => ({
     transform: [{ rotateY: `${-180 + flipProgress.value * 180}deg` }],
     opacity: flipProgress.value > 0.5 ? 1 : 0,
-    zIndex: flipProgress.value > 0.5 ? 1 : 0,
   }));
 
   const popContainerStyle = useAnimatedStyle(() => ({
@@ -121,6 +157,18 @@ function RevealTile({
     opacity: glow.value,
   }));
 
+  const resultIcon = showResult ? (
+    isCorrectAnswer ? (
+      <View style={styles.badge}>
+        <Ionicons name="checkmark-circle" size={22} color="#28A745" />
+      </View>
+    ) : isSelected ? (
+      <View style={styles.badge}>
+        <Ionicons name="close-circle" size={22} color="#E53E3E" />
+      </View>
+    ) : null
+  ) : null;
+
   if (variant === "mirror-flip") {
     return (
       <TouchableOpacity
@@ -131,19 +179,16 @@ function RevealTile({
         <Animated.View
           style={[styles.tile, styles.flipWrap, containerAnimStyle]}
         >
+          {resultIcon}
           <Animated.View style={[styles.face, frontFaceStyle]}>
             <Text style={styles.tileText}>❓</Text>
           </Animated.View>
           <Animated.View
-            style={[
-              styles.face,
-              styles.faceBack,
-              isFlipped && styles.tileFlipped,
-              resultStyle,
-              backFaceStyle,
-            ]}
+            style={[styles.face, styles.faceBack, tileStyle, backFaceStyle]}
           >
-            <Text style={[styles.tileText, styles.tileTextFlipped]}>
+            <Text
+              style={[styles.tileText, isRevealed && styles.tileTextFlipped]}
+            >
               {option}
             </Text>
           </Animated.View>
@@ -154,17 +199,11 @@ function RevealTile({
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} disabled={isLocked}>
-      <Animated.View
-        style={[
-          styles.tile,
-          isFlipped && styles.tileFlipped,
-          resultStyle,
-          popContainerStyle,
-        ]}
-      >
+      <Animated.View style={[styles.tile, tileStyle, popContainerStyle]}>
+        {resultIcon}
         <Animated.View style={[styles.popGlow, glowStyle]} />
-        <Text style={[styles.tileText, isFlipped && styles.tileTextFlipped]}>
-          {isFlipped ? option : "❓"}
+        <Text style={[styles.tileText, isRevealed && styles.tileTextFlipped]}>
+          {isRevealed ? option : "❓"}
         </Text>
       </Animated.View>
     </TouchableOpacity>
@@ -175,31 +214,52 @@ export default function TapToRevealCard({
   practice,
   onAnswer,
   variant = "pop",
-}: {
-  practice: Practice;
-  onAnswer: (selected: string, correct: string) => void;
-  variant?: Variant;
-}) {
-  const [revealed, setRevealed] = useState<string | null>(null);
+  onSpeak,
+}: TapToRevealCardProps) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [locked, setLocked] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const confirmScale = useSharedValue(1);
 
-  const handleTap = (option: string) => {
-    if (locked) return;
-    setRevealed(option);
+  // Reset whenever a new question comes in (component is reused across
+  // guidedPractice rounds).
+  useEffect(() => {
+    setSelectedIndex(null);
+    setLocked(false);
     setShowResult(false);
+  }, [practice.question]);
+
+  const handleTap = (index: number) => {
+    if (locked) return;
+    setSelectedIndex(index);
   };
 
   const confirm = () => {
-    if (!revealed || locked) return;
+    if (selectedIndex === null || locked) return;
     setLocked(true);
     setShowResult(true);
     confirmScale.value = withSequence(
       withTiming(0.94, { duration: 90 }),
       withSpring(1, { damping: 8, stiffness: 160 }),
     );
-    setTimeout(() => onAnswer(revealed, practice.answer), 260);
+
+    const selectedOption = practice.options[selectedIndex];
+    const isCorrect = selectedOption === practice.answer;
+
+    if (!isCorrect) {
+      // Let the child hear the right word once every card has revealed.
+      setTimeout(
+        () => onSpeak(practice.answer),
+        practice.options.length * 110 + 250,
+      );
+    }
+
+    // Wait for the full staggered reveal to finish before advancing,
+    // so the child actually sees every card flip — not just theirs.
+    setTimeout(
+      () => onAnswer(selectedOption, practice.answer),
+      practice.options.length * 110 + 900,
+    );
   };
 
   const confirmStyle = useAnimatedStyle(() => ({
@@ -214,7 +274,10 @@ export default function TapToRevealCard({
   return (
     <View style={styles.card}>
       <Text style={styles.question}>{practice.question}</Text>
-      <Text style={styles.subhint}>{hint}</Text>
+
+      <Text style={styles.subhint}>
+        {showResult ? "Here's the answer!" : hint}
+      </Text>
 
       <View style={styles.grid}>
         {practice.options.map((option, index) => (
@@ -223,24 +286,38 @@ export default function TapToRevealCard({
             option={option}
             index={index}
             variant={variant}
-            isFlipped={revealed === option}
+            isSelected={selectedIndex === index}
+            isRevealed={showResult || selectedIndex === index}
             isLocked={locked}
             isCorrectAnswer={option === practice.answer}
             showResult={showResult}
-            onPress={() => handleTap(option)}
+            onPress={() => handleTap(index)}
           />
         ))}
       </View>
 
-      <Animated.View style={confirmStyle}>
-        <TouchableOpacity
-          style={[styles.confirmButton, !revealed && styles.confirmDisabled]}
-          onPress={confirm}
-          disabled={!revealed}
-        >
-          <Text style={styles.confirmText}>Confirm Answer</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <TouchableOpacity
+        style={styles.audioButton}
+        onPress={() => onSpeak(practice.question)}
+      >
+        <Ionicons name="volume-high" size={20} color="white" />
+        <Text style={styles.audioButtonText}>Hear It</Text>
+      </TouchableOpacity>
+
+      {!showResult && (
+        <Animated.View style={confirmStyle}>
+          <TouchableOpacity
+            style={[
+              styles.confirmButton,
+              selectedIndex === null && styles.confirmDisabled,
+            ]}
+            onPress={confirm}
+            disabled={selectedIndex === null}
+          >
+            <Text style={styles.confirmText}>Confirm Answer</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -259,14 +336,32 @@ const styles = StyleSheet.create({
   question: {
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: 12,
     color: "#1E293B",
     lineHeight: 34,
     textAlign: "center",
   },
+  audioButton: {
+    backgroundColor: "#6785b0",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    alignSelf: "center",
+    marginBottom: 16,
+    width: "70%",
+  },
+  audioButtonText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 16,
+  },
   subhint: {
     fontSize: 13,
-    color: "#94A3B8",
+    color: "#6785b0",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -290,6 +385,7 @@ const styles = StyleSheet.create({
   flipWrap: {
     backgroundColor: "transparent",
     borderWidth: 0,
+    borderColor: "transparent",
   },
   face: {
     position: "absolute",
@@ -301,6 +397,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#CBD5E1",
     backgroundColor: "#F1F5F9",
+    backfaceVisibility: "hidden",
   },
   faceBack: {
     borderColor: "#CBD5E1",
@@ -315,20 +412,32 @@ const styles = StyleSheet.create({
   },
   tileWrong: {
     backgroundColor: "#FFF3CD",
-    borderColor: "#FFC107",
+    borderColor: "#E53E3E",
+  },
+  tileNeutralRevealed: {
+    backgroundColor: "#F1F5F9",
+    borderColor: "#CBD5E1",
   },
   tileText: {
     fontSize: 32,
   },
   tileTextFlipped: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "800",
     color: "#2563EB",
   },
   popGlow: {
+    ...StyleSheet.absoluteFillObject,
     borderRadius: 18,
     backgroundColor: "#2563EB",
-    opacity: 0,
+  },
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "white",
+    borderRadius: 12,
+    zIndex: 10,
   },
   confirmButton: {
     backgroundColor: "#2563EB",

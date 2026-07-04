@@ -1,5 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -16,6 +17,12 @@ type Practice = {
   options: string[];
   answer: string;
 };
+
+interface DragDropCardProps {
+  practice: Practice;
+  onAnswer: (selected: string, correct: string) => void;
+  onSpeak: (text: string) => void; // Added type-safe prop
+}
 
 function DraggableTile({
   label,
@@ -100,10 +107,8 @@ function DraggableTile({
 export default function DragDropCard({
   practice,
   onAnswer,
-}: {
-  practice: Practice;
-  onAnswer: (selected: string, correct: string) => void;
-}) {
+  onSpeak,
+}: DragDropCardProps) {
   const dropZoneRef = useRef<View>(null);
   const [dropped, setDropped] = useState<string | null>(null);
   const [locked, setLocked] = useState(false);
@@ -150,6 +155,7 @@ export default function DragDropCard({
   return (
     <View style={styles.card}>
       <Text style={styles.question}>{practice.question}</Text>
+
       <Text style={styles.subhint}>
         Drag the correct card into the box below
       </Text>
@@ -172,6 +178,13 @@ export default function DragDropCard({
           />
         ))}
       </View>
+      <TouchableOpacity
+        style={styles.audioButton}
+        onPress={() => onSpeak(practice.question)}
+      >
+        <Ionicons name="volume-high" size={20} color="white" />
+        <Text style={styles.audioButtonText}>Hear It</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -190,10 +203,28 @@ const styles = StyleSheet.create({
   question: {
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: 6,
+    marginBottom: 12,
     color: "#1E293B",
     lineHeight: 34,
     textAlign: "center",
+  },
+  audioButton: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    alignSelf: "center",
+    marginBottom: 16,
+    width: "70%",
+  },
+  audioButtonText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 16,
   },
   subhint: {
     fontSize: 13,

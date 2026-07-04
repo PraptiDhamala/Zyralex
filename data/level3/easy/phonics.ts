@@ -2,45 +2,58 @@ const lesson = {
   id: "phonics_level3",
   title: "Silent Letter Detective",
   subtitle:
-    "Some letters hide in a word without making a sound. Let's catch them! 🕵️‍♀️",
+    "Some letters hide inside words without making a single peep. Let's catch them!",
   color: "#93C5FD",
-  mascot: "🦉",
+  mascot: "assets/mimo1.png",
+  progressColor: "#1D4ED8",
+
+  introduction: {
+    mascotMessage:
+      "Shhh... 🦉 I'm Detective Mimo! Some tricky letters are playing hide-and-seek inside our words today. Grab your magnifying glass and let's spot them together!",
+  },
 
   explanation: [
     {
       type: "text",
-      content: "Some letters are silent. We write them, but we don't say them.",
+      content:
+        "Some letters are totally silent! We must write them down, but when we say the word out loud, they stay perfectly quiet.",
+      animationType: "pulse-on-audio",
+      visualAnchor: "🤫 SILENT",
     },
     {
       type: "tip",
-      content: "In 'knee', the K is silent. We just say 'nee'.",
-      animationType: "bounce-in",
-      visualAnchor: "kn",
+      content:
+        "Look at 'knee'! The letter K acts like a ghost — it's completely silent, so we just say 'nee'!",
+      animationType: "morph-asset",
+      visualAnchor: "kn ➔ knee 🦵",
     },
     {
       type: "tip",
-      content: "In 'wrist', the W is silent. We just say 'rist'.",
-      animationType: "wiggle",
-      visualAnchor: "wr",
+      content:
+        "In the word 'wrist', the W is taking a nap! Zip right past it and start your sound with 'rist'.",
+      animationType: "morph-asset",
+      visualAnchor: "wr ➔ wrist ",
     },
     {
       type: "story",
       content:
-        "Another tricky team: ar, er, ir, or, ur. The R changes the vowel sound.",
+        "The letter R is superhero word such that it completely changes how the vowels sound.",
       animationType: "pulse-on-audio",
-      visualAnchor: "ar er ir",
+      visualAnchor: "ar er ir or ur",
     },
     {
       type: "tip",
       content:
-        "Say 'car'. Hear how the R changes the A sound? That's an r-controlled vowel.",
+        "Say 'car' out loud! Hear how the R stretches out the A sound? That is the magic R-controlled trick!",
       animationType: "stroke-by-stroke",
-      visualAnchor: "car",
+      visualAnchor: "c + ar = car 🚗",
     },
     {
       type: "activity",
-      content: "Whisper the word first, then say it at normal speed.",
-      visualAnchor: "whisper",
+      content:
+        "Let's warm up your  voice! Say the word or sentence at your pace.",
+      animationType: "follow-the-dot",
+      visualAnchor: "🗣️ SAY IT!",
     },
   ],
 
@@ -49,28 +62,29 @@ const lesson = {
       letter: "kn",
       word: "knee",
       emoji: "🦵",
-      sentence: "Kn-ee — the K is silent.",
+      sentence: "Kn-ee ➔ The K is sneaky and stays silent!",
       color: "#2563EB",
     },
     {
       letter: "wr",
       word: "wrist",
       emoji: "✋",
-      sentence: "Wr-ist — the W is silent.",
+      sentence: "Wr-ist ➔ The W hides while the R does the talking!",
       color: "#F59E0B",
     },
     {
-      letter: "ar",
       word: "car",
+      letter: "Car",
       emoji: "🚗",
-      sentence: "C-ar — the AR sound is one team.",
+      sentence:
+        "C-ar ➔ The AR sound works together like a single powerhouse team.",
       color: "#16A34A",
     },
     {
-      letter: "ir",
+      letter: "Bird",
       word: "bird",
       emoji: "🐦",
-      sentence: "B-ird — the IR sound is one team.",
+      sentence: "B-ird ➔ The IR combo makes a unique chirping sound team!",
       color: "#7C3AED",
     },
   ],
@@ -78,54 +92,85 @@ const lesson = {
   guidedPractice: [
     {
       interactionType: "tap-to-reveal",
-      question: "🦵 Which letter is silent in 'knee'?",
+      question: " Which letter stays completely silent in 'knee'?",
       options: ["k", "n", "e"],
       answer: "k",
+      successMessage: "Aha! You caught the silent ghost letter K! 🎉",
     },
     {
       interactionType: "tap-to-reveal",
-      question: "✋ Which letter is silent in 'wrist'?",
+      question:
+        " Inspect the word carefully! Which letter is hiding its voice in 'wrist'?",
       options: ["w", "r", "s"],
       answer: "w",
+      successMessage:
+        "Brilliant! The letter W was hiding, but you spotted it! 🔍",
     },
     {
       interactionType: "drag-and-drop",
-      question: "🚗 Which word has the AR sound?",
+      question:
+        " Listen to the engine zoom! Which word uses the blended AR vowel team?",
       options: ["car", "cat"],
       answer: "car",
+      successMessage: "Vroom! 'Car' has that strong R-controlled sound! 🚗",
     },
     {
       interactionType: "drag-and-drop",
-      question: "🐦 Which word has the IR sound?",
+      question: "🐦 Which flying friend contains the hidden 'ir' team sound?",
       options: ["bird", "bed"],
       answer: "bird",
+      successMessage: "Incredible! You tracked down the 'ir' blend in bird! 🐦",
     },
     {
-      question: "Which word starts with a silent letter?",
+      interactionType: "tap-to-reveal",
+      question:
+        "🔪 Look closely at these tools! Which word begins with a secret silent letter?",
       options: ["knife", "table"],
       answer: "knife",
+      successMessage: "Spot on! 'Knife' starts with that secret silent K! 🗡️",
     },
     {
-      question: "Which word starts with a silent letter?",
+      interactionType: "tap-to-reveal",
+      question:
+        "✏️ Which action word starts with a hidden, silent letter teammate?",
       options: ["write", "chair"],
       answer: "write",
+      successMessage: "Sensational! You found the hidden W in 'write'! 📝",
     },
   ],
-
   challengeRound: [
-    { scrambled: "eekn", answer: "knee", hint: "🦵" },
-    { scrambled: "tirsw", answer: "wrist", hint: "✋" },
-    { scrambled: "rac", answer: "car", hint: "🚗" },
+    {
+      scrambled: "eekn",
+      answer: "knee",
+      hint: "🦵 Tap to fix this leg joint word!",
+    },
+    {
+      scrambled: "tirsw",
+      answer: "wrist",
+      hint: "✋ Unscramble your hand connector!",
+    },
+    {
+      scrambled: "rac",
+      answer: "car",
+      hint: "🚗 Fix the broken car engine parts!",
+    },
   ],
 
   motivationalTips: [
-    "🌟 Silent letters trip up even great readers — you're learning the trick.",
-    "🌟 Noticing the R change your ear? That's real progress.",
-    "🌟 Careful readers spot the tricky parts first.",
+    "🌟 Tricky silent letters puzzle even grown-up readers — you are mastering an incredible secret trick!",
+    "🌟 Hearing how the bossy R changes the sound? Your ears are getting super strong!",
+    "🌟 Great readers read slowly to check for hidden letters. You're doing spectacular!",
   ],
 
+  rewards: {
+    stars: 5,
+    badge: "🕵️‍♂️ Master Detective",
+    message:
+      "Incredible deductions! You unlocked the Master Silent Letter Detective Badge! 🎖️",
+  },
+
   completionMessage:
-    "🏆 Amazing! You can spot silent letters and r-controlled vowels like a true detective!",
+    "🏆 Mission Accomplished! You can spot silent letters and decode bossy R-controlled vowels like a true certified Master Detective! Mimo is celebrating your big win! 🚀🎉",
 };
 
 export default lesson;
