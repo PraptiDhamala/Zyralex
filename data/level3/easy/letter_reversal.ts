@@ -1,155 +1,172 @@
 const lesson = {
-  id: "letter_reversal_level3",
-
-  title: "b and d Reading Champion",
-
+  id: "letter_reversal",
+  title: "Word Swap Trouble",
   subtitle:
-    "You're becoming an expert! Let's read words, sentences, and spot tricky letters like a detective 🕵️",
-
-  color: "#93C5FD",
-
-  mascot: "🦉",
-
+    "You've mastered tricky letters — now let's catch words that swap places!",
+  color: "#DBEAFE",
+  mascot: "🐼",
   explanation: [
     {
       type: "text",
       content:
-        "Awesome work! Now you'll practice reading without getting tricked by mirror letters.",
-    },
-    {
-      type: "tip",
-      content: "Pause before every word. Check the first letter carefully.",
-    },
-    {
-      type: "activity",
-      content: "Use your finger under every word while reading.",
+        "You're great at telling b and d apart now. But sometimes whole letters inside a word swap places, and the word turns into a different word!",
+      animationType: "fade-in-gentle",
+      visualAnchor: "was ↔ saw",
+      mascotTip: "New mission: catching words that flip their letters! 🕵️",
     },
     {
       type: "story",
-      content: "Even expert readers slow down when they see tricky words.",
+      content:
+        "'was' and 'saw' use the exact same letters — w, a, s — just in a different order. Same letters, different word!",
+      animationType: "mirror-flip",
+      visualAnchor: "WAS SAW",
+      mascotTip: "Same puzzle pieces, different picture! ",
     },
     {
       type: "tip",
-      content: "Don't guess. Look carefully, then read.",
+      content: "was = w first, then a, then s. Think: 'I WAS here.'",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "was",
+      mascotTip: "WAS starts with W — like 'Where' something happened! 📍",
+    },
+    {
+      type: "tip",
+      content: "saw = s first, then a, then w. Think: 'I SAW a bird.'",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "saw",
+      mascotTip: "SAW starts with S — like your Sight! 👀",
+    },
+    {
+      type: "story",
+      content:
+        "'on' and 'no' do the same trick. Read the letters left to right, one at a time, to catch which one you're looking at.",
+      animationType: "morph-asset",
+      visualAnchor: "on ↔ no",
+      mascotTip: "Slow down and read left to right — that's the secret! ➡️",
+    },
+    {
+      type: "tip",
+      content: "on = o first, then n. A light switch is ON.",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "on",
+    },
+    {
+      type: "tip",
+      content: "no = n first, then o. Shaking your head means NO.",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "no",
+    },
+    {
+      type: "story",
+      content:
+        "Even bigger words can swap: 'form' and 'from' use the same letters too! Reading slowly, letter by letter, always wins.",
+      animationType: "fade-in-gentle",
+      visualAnchor: "form ↔ from",
+      mascotTip: "Bigger word, same trick — go slow and check each letter! 🐢",
+    },
+    {
+      type: "activity",
+      content: "Say each pair out loud: was, saw... on, no... form, from!",
+      animationType: "pulse-on-audio",
+      visualAnchor: "was saw on no form from",
+      mascotTip: "Tap the mic and say each swap-pair with me! 🎤",
     },
   ],
-
   examples: [
     {
-      letter: "b",
-      word: "black",
-      emoji: "⚫",
-      sentence: "Black begins with b.",
+      letter: "was",
+      word: "was",
+      emoji: "📍",
+      sentence: "I WAS at the park yesterday.",
       color: "#2563EB",
     },
     {
-      letter: "b",
-      word: "bread",
-      emoji: "🍞",
-      sentence: "Bread begins with b.",
-      color: "#2563EB",
-    },
-    {
-      letter: "d",
-      word: "dress",
-      emoji: "👗",
-      sentence: "Dress begins with d.",
+      letter: "saw",
+      word: "saw",
+      emoji: "👀",
+      sentence: "I SAW a butterfly in the garden.",
       color: "#F59E0B",
     },
     {
-      letter: "d",
-      word: "dragon",
-      emoji: "🐉",
-      sentence: "Dragon begins with d.",
-      color: "#F59E0B",
+      letter: "on",
+      word: "on",
+      emoji: "💡",
+      sentence: "Turn the light ON, please.",
+      color: "#EC4899",
+    },
+    {
+      letter: "no",
+      word: "no",
+      emoji: "🙅",
+      sentence: "She shook her head and said NO.",
+      color: "#8B5CF6",
+    },
+    {
+      letter: "form",
+      word: "form",
+      emoji: "📝",
+      sentence: "Please fill out this FORM.",
+      color: "#10B981",
+    },
+    {
+      letter: "from",
+      word: "from",
+      emoji: "✉️",
+      sentence: "This letter is FROM my grandma.",
+      color: "#EF4444",
     },
   ],
-
   guidedPractice: [
     {
-      question: "🐶 Which word starts with d?",
-      options: ["dog", "ball"],
-      answer: "dog",
+      question: "📍 Which word means 'something that happened before'?",
+      options: ["was", "saw"],
+      answer: "was",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "🍞 Which word starts with b?",
-      options: ["bread", "dress"],
-      answer: "bread",
+      question: "👀 Drag the word that matches: 'I ___ a bird fly by.'",
+      options: ["saw", "was"],
+      answer: "saw",
+      interactionType: "drag-and-drop",
     },
-
     {
-      question: "Fill in the missing letter: _og",
-      options: ["b", "d"],
-      answer: "d",
+      question: "💡 Which word means the opposite of OFF?",
+      options: ["on", "no"],
+      answer: "on",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "Fill in the missing letter: _all",
-      options: ["b", "d"],
-      answer: "b",
+      question: "🙅 Drag the word that means 'not yes'",
+      options: ["no", "on"],
+      answer: "no",
+      interactionType: "drag-and-drop",
     },
-
     {
-      question: "Which sentence is correct?",
-      options: ["Dad has a dog.", "Bad has a bog."],
-      answer: "Dad has a dog.",
+      question: "📝 Which word do you fill out at the doctor's office?",
+      options: ["form", "from"],
+      answer: "form",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "Which sentence is correct?",
-      options: ["The bird is blue.", "The dird is blue."],
-      answer: "The bird is blue.",
+      question: "✉️ Drag the word that matches: 'A letter ___ grandma.'",
+      options: ["from", "form"],
+      answer: "from",
+      interactionType: "drag-and-drop",
     },
-
     {
-      question: "How many b letters are in 'blue bird'?",
-      options: ["1", "2", "3"],
-      answer: "2",
-    },
-
-    {
-      question: "How many d letters are in 'Dad has a dog'?",
-      options: ["2", "3", "4"],
-      answer: "3",
+      question: "🔍 'was' and 'saw' use the exact same what?",
+      options: ["letters", "colors"],
+      answer: "letters",
+      interactionType: "tap-to-reveal",
     },
   ],
-
-  challengeRound: [
-    {
-      scrambled: "lalb",
-      answer: "ball",
-      hint: "⚽",
-    },
-
-    {
-      scrambled: "god",
-      answer: "dog",
-      hint: "🐶",
-    },
-
-    {
-      scrambled: "dribe",
-      answer: "bird",
-      hint: "🐦",
-    },
-
-    {
-      scrambled: "rbeda",
-      answer: "bread",
-      hint: "🍞",
-    },
-  ],
-
   motivationalTips: [
-    "🌟 You checked carefully before reading.",
-    "🌟 Slow reading makes strong readers.",
-    "🌟 Your brain is getting better every day.",
-    "🌟 You're becoming a b and d detective!",
+    "🌟 Reading slowly, letter by letter, catches every swap.",
+    "🌟 Mixing up word order means you're really looking closely — that's a good habit.",
+    "🌟 You've beaten mirror letters. Swapped words are just the next puzzle.",
   ],
-
   completionMessage:
-    "🏆 Amazing! You can now recognize b and d in words, sentences, and reading challenges. You're becoming a Reading Champion!",
+    "Amazing detective work! You can now catch words that swap their letters! 🕵️🚀",
 };
 
 export default lesson;

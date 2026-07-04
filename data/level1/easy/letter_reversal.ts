@@ -22,28 +22,24 @@ const lesson = {
       visualAnchor: "b",
     },
     {
+      type: "story",
+      content:
+        "Many learners mix up these letters because they are mirror twins",
+      animationType: "mirror-flip",
+      visualAnchor: "d",
+    },
+
+    {
       type: "tip",
       content: "The letter b has the stick first, then the belly → b",
       animationType: "stroke-by-stroke",
-      visualAnchor: "b",
+      visualAnchor: "l+o -> b",
     },
     {
-    type: "tip",
-      content: "The letter d has the donut first, then the stick ← d",
+      type: "tip",
+      content: "The letter b has the stick first, then the belly → b",
       animationType: "stroke-by-stroke",
-      visualAnchor: "d",
-    },
-    {
-      type: "story",
-      content: "Think of b like a bat 🏏 and ball ⚽. Bat first, ball second!",
-      animationType: "morph-asset",
-      visualAnchor: "b 🏏⚽",
-    },
-    {
-      type: "story",
-      content: "Think of d like a donut 🍩 before the stick.",
-      animationType: "morph-asset",
-      visualAnchor: "d 🍩",
+      visualAnchor: "o+l -> d",
     },
     {
       type: "activity",
@@ -52,7 +48,7 @@ const lesson = {
       visualAnchor: "b",
     },
     {
-      type: "tip",
+      type: "activity",
       content: "Say the sounds aloud: /b/ /b/ /b/ and /d/ /d/ /d/",
       animationType: "pulse-on-audio",
       visualAnchor: "b d",

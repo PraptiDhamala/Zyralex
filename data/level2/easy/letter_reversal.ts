@@ -1,195 +1,146 @@
 const lesson = {
-  id: "letter_reversal_level2",
-
-  title: "Mastering b and d in Words",
-
+  id: "letter_reversal",
+  title: "b, d, p, and q — The Four Twins",
   subtitle:
-    "Now let’s practice spotting b and d inside words, sounds, and sentences like a reading detective 🔍",
-
-  color: "#BFDBFE",
-
-  mascot: "🦊",
-
+    "You've mastered b and d — now let's add p and q to the mix, gently!",
+  color: "#DBEAFE",
+  mascot: "🐼",
   explanation: [
     {
       type: "text",
       content:
-        "Great job learning the difference between b and d. Now your brain is ready for a bigger challenge 💪",
+        "You already know b and d. Now two more letters join the family: p and q. They love to flip and turn, just like b and d.",
+      animationType: "fade-in-gentle",
+      visualAnchor: "b d & p q",
+      mascotTip: "You already beat b and d — p and q don't stand a chance! 💪",
     },
-
     {
       type: "story",
       content:
-        "Sometimes b and d can still feel tricky when they appear inside longer words. That happens to many learners.",
+        "b, d, p, and q are all made from the same two shapes: a circle and a stick. Only the direction changes.",
+      animationType: "mirror-flip",
+      visualAnchor: "b d p q",
+      mascotTip:
+        "Same shapes, different directions — that's the whole secret! 🔄",
     },
-
     {
       type: "tip",
-      content: "Remember: b faces forward like a bat and ball → b",
+      content: "p: stick down-left, belly on the right → p",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "p",
+      mascotTip: "p is like b, but its stick points DOWN instead of up! ⬇️",
     },
-
     {
       type: "tip",
-      content: "Remember: d starts with the donut, then the stick ← d",
+      content: "p: The mirror twin of q",
+      animationType: "mirror-flip",
+      visualAnchor: "p",
+      mascotTip: "p is like b, but its stick points DOWN instead of up! ⬇️",
     },
-
+    {
+      type: "tip",
+      content: "q: belly on the left, stick down-right → q",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "q",
+      mascotTip: "q is like d, but its stick points DOWN instead of up! ⬇️",
+    },
+    {
+      type: "tip",
+      content: "q: The mirror twin of p",
+      animationType: "mirror-flip",
+      visualAnchor: "q",
+      mascotTip: "p is like b, but its stick points DOWN instead of up! ⬇️",
+    },
+    {
+      type: "story",
+      content:
+        "Think of a clock: b and d are the 'up' twins, p and q are the 'down' twins.",
+      animationType: "morph-asset",
+      visualAnchor: "b d  p q ",
+      mascotTip: "Up twins, down twins — easy to remember! 🕐",
+    },
     {
       type: "activity",
-      content:
-        "Cover the rest of the word and look only at the first letter before reading the whole word 👀",
-    },
-
-    {
-      type: "story",
-      content:
-        "Your brain gets stronger every time you slow down and check the letter direction.",
-    },
-
-    {
-      type: "tip",
-      content: "Touch under each letter while reading: b-e-d, d-a-d",
-    },
-
-    {
-      type: "activity",
-      content: "Say the sound before the word: /b/ bed, /d/ drum 🎵",
-    },
-
-    {
-      type: "story",
-      content: "Reading carefully is more important than reading fast 🚀",
+      content: "Say the sounds aloud: /b/ /d/ /p/ /q/",
+      animationType: "pulse-on-audio",
+      visualAnchor: "b d p q",
+      mascotTip: "Tap the mic and say each sound with me! 🎤",
     },
   ],
-
   examples: [
     {
       letter: "b",
-      word: "bed",
-      emoji: "🛏️",
-      sentence: "B-ed starts with the /b/ sound.",
+      word: "boat",
+      emoji: "⛵",
+      sentence: "The b-oat floats on the water.",
       color: "#2563EB",
     },
-
-    {
-      letter: "b",
-      word: "bird",
-      emoji: "🐦",
-      sentence: "B-ird starts with the /b/ sound.",
-      color: "#2563EB",
-    },
-
     {
       letter: "d",
-      word: "drum",
-      emoji: "🥁",
-      sentence: "D-rum starts with the /d/ sound.",
+      word: "duck",
+      emoji: "🦆",
+      sentence: "The d-uck swims in the pond.",
       color: "#F59E0B",
     },
-
     {
-      letter: "d",
-      word: "dad",
-      emoji: "👨",
-      sentence: "D-ad starts with the /d/ sound.",
-      color: "#F59E0B",
+      letter: "p",
+      word: "pig",
+      emoji: "🐷",
+      sentence: "The p-ig oinks loudly.",
+      color: "#EC4899",
     },
-
     {
-      letter: "b",
-      word: "ball",
-      emoji: "⚽",
-      sentence: "B-all starts with the /b/ sound.",
-      color: "#2563EB",
-    },
-
-    {
-      letter: "d",
-      word: "desk",
-      emoji: "💻",
-      sentence: "D-esk starts with the /d/ sound.",
-      color: "#F59E0B",
+      letter: "q",
+      word: "queen",
+      emoji: "👑",
+      sentence: "The q-ueen wears a crown.",
+      color: "#8B5CF6",
     },
   ],
-
   guidedPractice: [
     {
-      question: "🛏️ Which word starts with b?",
-      options: ["bed", "dog"],
-      answer: "bed",
+      question: "🎯 Which letter is p?",
+      options: ["p", "q"],
+      answer: "p",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "🥁 Which word starts with d?",
-      options: ["banana", "drum"],
-      answer: "drum",
+      question: "🦆 Drag the word that starts with d",
+      options: ["duck", "pig"],
+      answer: "duck",
+      interactionType: "drag-and-drop",
     },
-
     {
-      question: "⚽ Which word starts with the letter b?",
-      options: ["ball", "door"],
-      answer: "ball",
+      question: "👑 Which word starts with q?",
+      options: ["queen", "boat"],
+      answer: "queen",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "💻 Which word starts with the letter d?",
-      options: ["desk", "apple"],
-      answer: "desk",
+      question: "🐷 Drag the letter p into the box",
+      options: ["p", "q"],
+      answer: "p",
+      interactionType: "drag-and-drop",
     },
-
     {
-      question: "👨 Choose the correct spelling",
-      options: ["dad", "bad"],
-      answer: "dad",
+      question: "which letter looks like a mirror of b?",
+      options: ["d", "p"],
+      answer: "d",
+      interactionType: "tap-to-reveal",
     },
-
     {
-      question: "🐦 Which word begins with the /b/ sound?",
-      options: ["bird", "drum"],
-      answer: "bird",
-    },
-
-    {
-      question: "🎯 Which sentence is correct?",
-      options: ["The dog barked.", "The bog barked."],
-      answer: "The dog barked.",
-    },
-
-    {
-      question: "🎯 Which sentence is correct?",
-      options: ["I sleep on a bed.", "I sleep on a ded."],
-      answer: "I sleep on a bed.",
+      question: "Drag the letter that matches: '_ is d's down twin'",
+      options: ["q", "b"],
+      answer: "q",
+      interactionType: "drag-and-drop",
     },
   ],
-
-  challengeRound: [
-    {
-      scrambled: "beht",
-      answer: "beth",
-      hint: "Starts with b 👧",
-    },
-
-    {
-      scrambled: "gdo",
-      answer: "dog",
-      hint: "Starts with d 🐶",
-    },
-
-    {
-      scrambled: "drbi",
-      answer: "bird",
-      hint: "A flying animal 🐦",
-    },
-  ],
-
   motivationalTips: [
-    "🌟 Your brain learns through practice and patience.",
-    "🌟 Careful readers become strong readers.",
-    "🌟 Every time you notice the letter direction, you are improving.",
-    "🌟 You do not need to rush. Slow and steady wins.",
+    "🌟 Four letters, one shape — you're spotting the pattern now.",
+    "🌟 Every mix-up is your brain double-checking. That's smart, not slow.",
+    "🌟 You've already beaten b and d. p and q are just their cousins.",
   ],
-
-  completionMessage:
-    "Fantastic work! 🎉 You are getting much stronger at reading and spotting b and d inside words and sentences!",
+  completionMessage: "Incredible! You just leveled up from 3! ",
 };
 
 export default lesson;

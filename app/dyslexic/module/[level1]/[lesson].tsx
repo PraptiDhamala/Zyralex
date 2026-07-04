@@ -300,7 +300,6 @@ export default function LessonScreen() {
   useEffect(() => {
     sendCurrentWordsToTracker();
   }, [step]);
-
   const sendCurrentWordsToTracker = () => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
