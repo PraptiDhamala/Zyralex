@@ -1,126 +1,113 @@
 const lesson = {
-  id: "vowel_processing_level3",
-  title: "Vowel Team Explorer",
-  subtitle:
-    "oi, oy, ou, ow — the same sound, spelled two ways. Let's find the pattern! 🔍",
-  color: "#93C5FD",
-  mascot: "🦉",
+  id: "vowel_processing_l3",
+  title: "Vowel Teams: Level 3",
+  subtitle: "Let's meet the 'Bossy R' and shifting vowel teams! 👑",
+  color: "#F0FDF4", // Light green tone to signify advanced mastery
+  mascot: "🦁",
 
   explanation: [
     {
       type: "text",
       content:
-        "Some vowel teams make the same sound but are spelled differently.",
-    },
-    {
-      type: "tip",
-      content: "'oi' and 'oy' both make the same sound, like in coin and toy.",
-      animationType: "pulse-on-audio",
-      visualAnchor: "oi oy",
+        "Welcome to Level 3! Here, we meet letters that completely change how a vowel sounds.",
+      animationType: "fade-in-gentle",
+      visualAnchor: "ar oo",
     },
     {
       type: "story",
-      content: "We use 'oy' at the end of a word, and 'oi' in the middle.",
-      animationType: "bounce-in",
-      visualAnchor: "boy coin",
+      content:
+        "When the letter 'r' sits next to 'a', it becomes 'Bossy R' and makes the 'a' say its name like a pirate: 'Arr!' 🏴‍☠️",
+      animationType: "pulse-on-audio",
+      visualAnchor: "ar",
     },
     {
       type: "tip",
-      content: "'ou' and 'ow' both make the same sound, like in cloud and cow.",
-      animationType: "wiggle",
-      visualAnchor: "ou ow",
+      content: "The pair 'ar' creates the strong sound you hear in st-AR ⭐",
+      animationType: "stroke-by-stroke",
+      visualAnchor: "ar",
+    },
+    {
+      type: "tip",
+      content:
+        "The double 'oo' team can stretch out long like a ghost saying 'Ooo!' in m-OO-n 🌙",
+      animationType: "mirror-flip",
+      visualAnchor: "oo",
     },
     {
       type: "activity",
-      content: "Say each word slowly and listen for the matching sound.",
-      visualAnchor: "listen",
+      content:
+        "Growl the 'ar' sound and stretch the 'oo' sound to feel the difference! 🗣️",
+      animationType: "pulse-on-audio",
+      visualAnchor: "ar oo",
     },
   ],
 
   examples: [
     {
-      letter: "oi",
-      word: "coin",
-      emoji: "🪙",
-      sentence: "C-oi-n has the OI sound in the middle.",
-      color: "#0284C7",
+      letter: "ar",
+      word: "star",
+      emoji: "⭐",
+      sentence: "Look up at the shining st-AR.",
+      color: "#16A34A",
     },
     {
-      letter: "oy",
-      word: "toy",
-      emoji: "🧸",
-      sentence: "T-oy has the OY sound at the end.",
-      color: "#7C3AED",
+      letter: "ar",
+      word: "park",
+      emoji: "🛝",
+      sentence: "We love to play at the p-AR-k.",
+      color: "#16A34A",
     },
     {
-      letter: "ou",
-      word: "cloud",
-      emoji: "☁️",
-      sentence: "Cl-ou-d has the OU sound in the middle.",
+      letter: "oo",
+      word: "moon",
+      emoji: "🌙",
+      sentence: "The m-OO-n glows bright at night.",
       color: "#059669",
     },
     {
-      letter: "ow",
-      word: "cow",
-      emoji: "🐄",
-      sentence: "C-ow has the OW sound at the end.",
-      color: "#DC2626",
+      letter: "oo",
+      word: "spoon",
+      emoji: "🥄",
+      sentence: "Eat your soup with a sp-OO-n.",
+      color: "#059669",
     },
   ],
 
   guidedPractice: [
     {
+      question: "⭐ Select the missing letters to spell: St___",
+      options: ["ar", "ee"],
+      answer: "ar",
       interactionType: "tap-to-reveal",
-      question: "🪙 Which word has the OI sound?",
-      options: ["coin", "cat"],
-      answer: "coin",
     },
     {
+      question: "🌙 Drag the vowel team that spells m___n",
+      options: ["oo", "oa"],
+      answer: "oo",
+      interactionType: "drag-and-drop",
+    },
+    {
+      question: "🛝 Which word is controlled by the Bossy R?",
+      options: ["park", "feet"],
+      answer: "park",
       interactionType: "tap-to-reveal",
-      question: "🧸 Which word has the OY sound?",
-      options: ["toy", "top"],
-      answer: "toy",
     },
     {
+      question: "🥄 Drag the letters into the box to finish sp___n",
+      options: ["oo", "oi"],
+      answer: "oo",
       interactionType: "drag-and-drop",
-      question: "☁️ Which word has the OU sound?",
-      options: ["cloud", "clap"],
-      answer: "cloud",
     },
-    {
-      interactionType: "drag-and-drop",
-      question: "🐄 Which word has the OW sound?",
-      options: ["cow", "car"],
-      answer: "cow",
-    },
-    {
-      question:
-        "We usually spell this sound 'oy' when it's at the ___ of a word.",
-      options: ["end", "middle"],
-      answer: "end",
-    },
-    {
-      question:
-        "We usually spell this sound 'oi' when it's in the ___ of a word.",
-      options: ["middle", "end"],
-      answer: "middle",
-    },
-  ],
-
-  challengeRound: [
-    { scrambled: "cnoi", answer: "coin", hint: "🪙" },
-    { scrambled: "oty", answer: "toy", hint: "🧸" },
-    { scrambled: "wco", answer: "cow", hint: "🐄" },
   ],
 
   motivationalTips: [
-    "🌟 Same sound, different spelling — you're spotting the pattern.",
-    "🌟 Listening carefully is a superpower for reading.",
-    "🌟 You're building real reader instincts.",
+    "🌟 Wow, Level 3! You are reading big kid words now!",
+    "🌟 Bossy R doesn't scare you—you're the boss of these words!",
+    "🌟 Think of how far you've come since Level 1! Awesome job. 🙌",
   ],
 
   completionMessage:
-    "🎉 Fantastic! You can now match vowel team sounds to their spelling pattern!",
+    "Unbelievable! 🥇 You have officially completed Level 3 and mastered the most complex vowel rules! Expert reader unlocked! 🚀",
 };
 
 export default lesson;
