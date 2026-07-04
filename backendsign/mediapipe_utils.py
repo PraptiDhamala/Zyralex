@@ -4,9 +4,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-# ---------------------------
-# LOAD HAND LANDMARKER
-# ---------------------------
+
 
 base_options = python.BaseOptions(
     model_asset_path="hand_landmarker.task"
@@ -19,9 +17,7 @@ options = vision.HandLandmarkerOptions(
 
 detector = vision.HandLandmarker.create_from_options(options)
 
-# ---------------------------
-# GEOMETRY
-# ---------------------------
+
 
 def angle(a, b, c):
     a = np.array(a)
@@ -45,9 +41,7 @@ def angle(a, b, c):
 def dist(a, b):
     return float(np.linalg.norm(np.array(a) - np.array(b)))
 
-# ---------------------------
-# SINGLE HAND FEATURES
-# ---------------------------
+
 
 def hand_features(pts):
 
@@ -104,9 +98,7 @@ def hand_features(pts):
 
     return features
 
-# ---------------------------
-# FRAME -> FEATURE VECTOR
-# ---------------------------
+
 
 def extract_features_from_frame(frame):
 
@@ -140,12 +132,7 @@ def extract_features_from_frame(frame):
 
     return hands[0] + hands[1]
 
-# ---------------------------
-# VIDEO -> FEATURE SEQUENCE
-# ---------------------------
-# ---------------------------
-# IMAGE BYTES -> FEATURE VECTOR
-# ---------------------------
+
 
 def extract_features_from_bytes(image_bytes):
     """

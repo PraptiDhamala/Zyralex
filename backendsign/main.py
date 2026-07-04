@@ -7,10 +7,6 @@ from loader import load_dataset
 from mediapipe_utils import extract_features_from_bytes
 from dtw_engine import dtw_distance
 
-# -------------------------------------------------------
-# FASTAPI
-# -------------------------------------------------------
-
 app = FastAPI()
 
 app.add_middleware(
@@ -21,9 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -------------------------------------------------------
-# LOAD DATASET
-# -------------------------------------------------------
 
 print("Loading sign dataset...")
 
@@ -31,9 +24,6 @@ database = load_dataset()
 
 print(f"Loaded {len(database)} signs.")
 
-# -------------------------------------------------------
-# HELPERS
-# -------------------------------------------------------
 
 def normalize_name(name: str):
     return (
@@ -73,10 +63,6 @@ def generate_feedback(score: float):
 
     return "Try Again ❗"
 
-# -------------------------------------------------------
-# ROOT
-# -------------------------------------------------------
-
 @app.get("/")
 def root():
 
@@ -84,10 +70,6 @@ def root():
         "status": "running",
         "dataset_size": len(database)
     }
-
-# -------------------------------------------------------
-# PREDICT
-# -------------------------------------------------------
 
 @app.post("/predict")
 async def predict(
@@ -103,9 +85,7 @@ async def predict(
     print("\n----------------------------------------")
     print("Target sign:", target_sign)
 
-    # ------------------------------------
-    # CHECK SIGN
-    # ------------------------------------
+  
 
     if target_sign not in database:
 
@@ -117,9 +97,7 @@ async def predict(
             "completed": False
         }
 
-    # ------------------------------------
-    # BUILD USER SEQUENCE
-    # ------------------------------------
+
 
     user_sequence = []
 
@@ -142,9 +120,7 @@ async def predict(
             "completed": False
         }
 
-    # ------------------------------------
-    # LOAD REFERENCE
-    # ------------------------------------
+  
 
     reference = database[target_sign]
 
@@ -152,9 +128,6 @@ async def predict(
 
     print("Reference frames:", len(reference_sequence))
 
-    # ------------------------------------
-    # RUN DTW
-    # ------------------------------------
 
     distance = dtw_distance(
         user_sequence,
@@ -170,9 +143,6 @@ async def predict(
     print("DTW distance :", distance)
     print("Similarity   :", similarity)
 
-    # ------------------------------------
-    # RESPONSE
-    # ------------------------------------
 
     return {
 

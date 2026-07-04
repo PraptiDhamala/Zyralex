@@ -68,9 +68,6 @@ export default function CameraPracticeScreen() {
     );
   }
 
-  //--------------------------------------------------
-  // Capture 20 Images (no flash sound)
-  //--------------------------------------------------
   const captureBurst = async () => {
     if (!cameraRef.current) return;
 
@@ -100,9 +97,6 @@ export default function CameraPracticeScreen() {
     }
   };
 
-  //--------------------------------------------------
-  // Upload Images
-  //--------------------------------------------------
   const sendImages = async (images: string[]) => {
     try {
       const formData = new FormData();
@@ -211,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#000",
   },
-  top: { position: "absolute", right: 20, top: 50, alignItems: "center" },
+  top: { position: "absolute", right: 20, top: 50, alignItems: "center" ,marginTop:-20},
   video: { width: 150, height: 150, borderRadius: 20 },
   title: { color: "white", marginTop: 5, fontWeight: "bold", fontSize: 16 },
   bottom: { position: "absolute", bottom: 30, width: "100%", alignItems: "center" },
