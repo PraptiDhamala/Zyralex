@@ -28,7 +28,7 @@ import chunking from "../../../../data/level1/medium/chunking";
 import decoding from "../../../../data/level1/medium/decoding";
 import level2LetterReversal from "../../../../data/level2/easy/letter_reversal";
 import level2Phonics from "../../../../data/level2/easy/phonics";
-import level2VisualTracking from "../../../../data/level2/easy/visual_tracking";
+import level2VisualTracking from "../../../../data/level2/easy/vowel_processing";
 import level2chunking from "../../../../data/level2/medium/chunking";
 import level2decoding from "../../../../data/level2/medium/decoding";
 import level3LetterReversal from "../../../../data/level3/easy/letter_reversal";

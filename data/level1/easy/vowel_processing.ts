@@ -4,11 +4,14 @@ const lesson = {
   subtitle: "Let's learn how vowels work together like teammates! 🎵",
   color: "#E0F2FE",
   mascot: "🐬",
+
   explanation: [
     {
       type: "text",
       content:
         "Sometimes two vowels stand side-by-side and work together as a team.",
+      animationType: "fade-in-gentle", // Added missing property
+      visualAnchor: "vowels", // Added missing property
     },
     {
       type: "story",
@@ -32,9 +35,11 @@ const lesson = {
     {
       type: "activity",
       content: "Stretch the vowel sounds slowly while reading aloud 🔊",
+      animationType: "pulse-on-audio", // Added missing property
       visualAnchor: "ea",
     },
   ],
+
   examples: [
     {
       letter: "oa",
@@ -58,26 +63,34 @@ const lesson = {
       color: "#059669",
     },
   ],
+
   guidedPractice: [
     {
-      interactionType: "tap-to-reveal",
       question: "🧥 Select the missing vowel team: C___at",
       options: ["oa", "ou"],
       answer: "oa",
+      interactionType: "tap-to-reveal", // Moved to bottom to match first lesson
     },
     {
-      interactionType: "drag-and-drop",
       question: "📘 Which vowel team completes R___ad?",
       options: ["ea", "ai"],
       answer: "ea",
+      interactionType: "drag-and-drop", // Moved to bottom to match first lesson
     },
     {
-      interactionType: "tap-to-reveal",
       question: "👣 Which vowel team makes the long E sound?",
       options: ["ee", "oa"],
       answer: "ee",
+      interactionType: "tap-to-reveal", 
     },
   ],
+
+  motivationalTips: [
+    "🌟 Teamwork makes the dream work—even for letters!",
+    "🌟 Take your time, stretching sounds helps your brain remember.",
+    "🌟 You are becoming an amazing reader!",
+  ],
+
   completionMessage:
     "Fantastic work! 🎉 You are learning how vowel teams work together!",
 };
