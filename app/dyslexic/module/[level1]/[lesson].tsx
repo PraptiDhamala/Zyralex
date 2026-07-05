@@ -136,7 +136,7 @@ export default function LessonScreen() {
   const [score, setScore] = useState(0);
   const [mascotConfig, setMascotConfig] = useState<MascotConfig | null>(null);
 
-  const ws = useRef<WebSocket | null>(null);
+  const ws = useRef<any>(null);
   const distractionTimer = useRef<any>(null);
   const reconnectTimer = useRef<any>(null);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -353,25 +353,52 @@ export default function LessonScreen() {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
     let targetWords: string[] = [];
+    let isExampleStep = false;
+    let mainExampleWord = "";
+
     if (step < explanationLength) {
       targetWords = lessonData.explanation[step].content.split(" ");
     } else if (
       lessonData.examples &&
       step < explanationLength + examplesLength
     ) {
+      isExampleStep = true;
       const example = lessonData.examples[step - explanationLength];
-      targetWords = [example.word];
+      mainExampleWord = example.word
+        .toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
     } else if (currentPractice) {
       targetWords = currentPractice.question.split(" ");
     }
 
-    const mappedScreenWords = targetWords.map((word) => ({
-      word: word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""),
-      x1: 0,
-      y1: 0,
-      x2: screenWidth,
-      y2: screenHeight,
-    }));
+    let mappedScreenWords: Array<{
+      word: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    }> = [];
+
+    if (isExampleStep && mainExampleWord) {
+      mappedScreenWords = [
+        {
+          word: mainExampleWord,
+          x1: 0,
+          y1: 100,
+          x2: screenWidth,
+          y2: screenHeight - 200,
+        },
+      ];
+    } else if (targetWords.length > 0) {
+      const segmentWidth = screenWidth / Math.max(1, targetWords.length);
+      mappedScreenWords = targetWords.map((word, index) => ({
+        word: word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""),
+        x1: index * segmentWidth,
+        y1: 0,
+        x2: (index + 1) * segmentWidth,
+        y2: screenHeight,
+      }));
+    }
 
     if (mappedScreenWords.length > 0) {
       ws.current.send(JSON.stringify({ screen_words: mappedScreenWords }));

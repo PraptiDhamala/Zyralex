@@ -4,13 +4,16 @@ import {
   Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { useFocusEffect, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import React, { useCallback, useEffect, useState } from "react";
+import * as Speech from "expo-speech";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -22,7 +25,12 @@ import {
 import { HelloWave } from "../../components/hello-wave";
 import { COLORS } from "../../constants/colors";
 import { supabase } from "../../lib/supabase";
-
+import { fetchSyllables, scanFlashcard } from "../../utils/flashcard";
+import {
+  clearServerIpOverride,
+  resolveServerIp,
+} from "../../utils/serverConfig";
+import { getWordOfTheDay } from "../../utils/wordOffDay";
 export default function DyslexicHome() {
   const router = useRouter();
 
@@ -37,7 +45,11 @@ export default function DyslexicHome() {
   );
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  const sampleSyllables = ["be", "au", "ti", "ful"];
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [currentWord, setCurrentWord] = useState("");
+  const [syllables, setSyllables] = useState<string[]>([]);
 
   const [dbLoading, setDbLoading] = useState(true);
   const [score, setScore] = useState<number>(0);
@@ -48,12 +60,15 @@ export default function DyslexicHome() {
   );
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [completedLessonsCount, setCompletedLessonsCount] = useState<number>(0);
-
+  const [wordSource, setWordSource] = useState<"daily" | "scanned">("daily");
   useFocusEffect(
     useCallback(() => {
       fetchUserData();
     }, []),
   );
+  useEffect(() => {
+    clearServerIpOverride();
+  }, []);
   useEffect(() => {
     const checkAssessment = async () => {
       const {
@@ -124,31 +139,96 @@ export default function DyslexicHome() {
     }
   };
 
-  const handleFlashcardPress = () => {
+  const handleFlashcardPress = async () => {
     setFlashcardModalVisible(true);
-    setIsScanning(true);
     setActiveSyllableIndex(null);
+    setIsScanning(true);
 
-    setTimeout(() => {
+    try {
+      const ip = await resolveServerIp();
+      if (!ip) throw new Error("Server not configured");
+
+      const word = getWordOfTheDay();
+      const result = await fetchSyllables(ip, word);
+      setCurrentWord(result.word);
+      setSyllables(result.syllables);
+      setWordSource("daily");
+    } catch (err) {
+      console.error("Failed to load word of the day:", err);
+      setCurrentWord("beautiful");
+      setSyllables(["beau", "ti", "ful"]);
+      setWordSource("daily");
+    } finally {
       setIsScanning(false);
-    }, 2000);
+    }
+  };
+  const handleScanCard = async () => {
+    const { granted } = await requestCameraPermission();
+    if (!granted) return;
+    setShowCamera(true);
+  };
+
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+    setIsScanning(true);
+    setShowCamera(false);
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: false,
+      });
+      console.log("DEBUG photo:", photo);
+
+      const ip = await resolveServerIp();
+      console.log("DEBUG scan ip:", ip);
+      if (!ip || !photo?.uri) throw new Error("Camera or server unavailable");
+
+      const ocrResult = await scanFlashcard(ip, photo.uri);
+      console.log("DEBUG ocrResult:", ocrResult);
+      if (!ocrResult.word) {
+        Alert.alert(
+          "Couldn't read a word from that photo — try again with better lighting.",
+        );
+        return;
+      }
+
+      const syllableResult = await fetchSyllables(ip, ocrResult.word);
+      setCurrentWord(syllableResult.word);
+      setSyllables(syllableResult.syllables);
+      setWordSource("scanned");
+    } catch (err) {
+      console.error("Scan failed:", err);
+      Alert.alert("Couldn't scan that card. Please try again.");
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handlePlayPronunciation = () => {
-    if (isPlayingAudio) return;
+    if (isPlayingAudio || syllables.length === 0 || !currentWord) return;
     setIsPlayingAudio(true);
-    let currentIdx = 0;
+    const msPerChar = 90; // tuned rough estimate for rate 0.85
+    const totalDuration = currentWord.length * msPerChar;
+    const perSyllable = totalDuration / syllables.length;
 
-    const interval = setInterval(() => {
-      if (currentIdx < sampleSyllables.length) {
-        setActiveSyllableIndex(currentIdx);
-        currentIdx++;
+    let idx = 0;
+    const highlightStep = () => {
+      if (idx < syllables.length) {
+        setActiveSyllableIndex(idx);
+        idx++;
+        setTimeout(highlightStep, perSyllable);
       } else {
-        clearInterval(interval);
         setActiveSyllableIndex(null);
-        setIsPlayingAudio(false);
       }
-    }, 600);
+    };
+
+    Speech.speak(currentWord, {
+      language: "en",
+      rate: 0.85,
+      onDone: () => setIsPlayingAudio(false),
+      onError: () => setIsPlayingAudio(false),
+    });
+    highlightStep();
   };
 
   const pickDocument = async () => {
@@ -178,7 +258,7 @@ export default function DyslexicHome() {
         "https://grinch-cloak-grazing.ngrok-free.app/simplify",
         {
           method: "POST",
-          body: formData,
+          body: formData as any,
           headers: {
             Accept: "application/pdf",
             "ngrok-skip-browser-warning": "true",
@@ -189,7 +269,7 @@ export default function DyslexicHome() {
       if (!response.ok) {
         const errorText = await response.text();
         setLoading(false);
-        alert("Backend Error:\n" + errorText);
+        Alert.alert("Backend Error:\n" + errorText);
         return;
       }
 
@@ -204,17 +284,17 @@ export default function DyslexicHome() {
             encoding: FileSystem.EncodingType.Base64,
           });
           setLoading(false);
-          alert("Your simplified PDF is ready!");
+          Alert.alert("Your simplified PDF is ready!");
           await Sharing.shareAsync(fileUri);
         } catch (saveError) {
           setLoading(false);
-          alert("Failed to save PDF");
+          Alert.alert("Failed to save PDF");
         }
       };
       reader.readAsDataURL(blob);
     } catch (error) {
       setLoading(false);
-      alert("Error simplifying file");
+      Alert.alert("Error simplifying file");
     }
   };
 
@@ -248,7 +328,6 @@ export default function DyslexicHome() {
           </Text>
         </View>
 
-        {/* LEVEL CARD */}
         <View style={styles.mainCard}>
           <View style={styles.levelHeader}>
             <View style={styles.iconCircleBlue}>
@@ -299,7 +378,6 @@ export default function DyslexicHome() {
           </View>
         </View>
 
-        {/* AI TUTOR CARD */}
         <View style={styles.aiCard}>
           <View style={styles.aiHeader}>
             <View style={styles.aiIconTitle}>
@@ -344,7 +422,6 @@ export default function DyslexicHome() {
           </View>
         </View>
 
-        {/* STATS + ACTION BUTTONS */}
         <View style={styles.statsWrapper}>
           <View style={styles.statsGrid}>
             <View style={styles.newStatCard}>
@@ -421,21 +498,29 @@ export default function DyslexicHome() {
         onRequestClose={() => setFlashcardModalVisible(false)}
       >
         <View style={styles.flashcardContainerCanvas}>
-          <Text style={styles.labHeaderTitle}>FLASHCARD CAM LAB</Text>
+          <Text style={styles.labHeaderTitle}>
+            {currentWord
+              ? `${wordSource === "daily" ? "WORD OF THE DAY" : "SCANNED WORD"}: ${currentWord.toUpperCase()}`
+              : "FLASHCARD CAM LAB"}
+          </Text>
 
           <View style={styles.dyslexiaMainCardBody}>
             {isScanning ? (
               <View style={{ alignItems: "center" }}>
                 <ActivityIndicator size="large" color="#2563eb" />
                 <Text
-                  style={{ marginTop: 14, color: "#475569", fontWeight: "600" }}
+                  style={{
+                    marginTop: 14,
+                    color: "#475569",
+                    fontWeight: "600",
+                  }}
                 >
                   Scanning Flashcard Document...
                 </Text>
               </View>
             ) : (
               <View style={styles.syllableRenderingRow}>
-                {sampleSyllables.map((syllable, index) => {
+                {syllables.map((syllable, index) => {
                   const isFocused = activeSyllableIndex === index;
                   return (
                     <View
@@ -487,10 +572,12 @@ export default function DyslexicHome() {
 
               <Pressable
                 style={styles.recycleScanButton}
-                onPress={handleFlashcardPress}
+                onPress={handleScanCard}
               >
-                <Ionicons name="scan-outline" size={20} color="#3b82f6" />
-                <Text style={styles.recycleTextLabel}>Scan Another Card</Text>
+                <Ionicons name="camera-outline" size={20} color="#3b82f6" />
+                <Text style={styles.recycleTextLabel}>
+                  Scan a Physical Card
+                </Text>
               </Pressable>
 
               <Pressable
@@ -501,6 +588,29 @@ export default function DyslexicHome() {
               </Pressable>
             </View>
           )}
+        </View>
+      </Modal>
+
+      <Modal visible={showCamera} animationType="slide">
+        <View style={{ flex: 1 }}>
+          <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
+          <View style={{ padding: 20, backgroundColor: "#000" }}>
+            <Pressable
+              style={[styles.soundButtonTrigger, { marginBottom: 10 }]}
+              onPress={handleCapture}
+            >
+              <Ionicons name="camera" size={22} color="white" />
+              <Text style={styles.soundBtnLabelText}>Capture</Text>
+            </Pressable>
+            <Pressable
+              style={styles.dismissLabBtn}
+              onPress={() => setShowCamera(false)}
+            >
+              <Text style={[styles.dismissBtnLabel, { color: "white" }]}>
+                Cancel
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </Modal>
     </View>

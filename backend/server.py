@@ -27,7 +27,7 @@ app.add_middleware(
 )
 
 detector = FixationDetector(spatial_threshold=100, temporal_threshold=0.1)
-tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=1.0)
+tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=6.5)
 intervention = InterventionEngine()
 
 camera_connections: List[WebSocket] = []
@@ -110,7 +110,7 @@ async def camera_endpoint(websocket: WebSocket):
                             "fixation_duration": round(duration, 2),
                             "sel_message": fixation_match.get("sel_message", ""),
                             "adaptations": {
-                                "hyphenated": intervention.format_syllable_breakdown(target_word, style="hyphen"),
+                                "hyphenated": fixation_match.get("syllables", target_word),
                                 "html_colored": intervention.format_syllable_breakdown(target_word, style="color")
                             }
                         })
@@ -165,8 +165,10 @@ async def scan_flashcard(file: UploadFile = File(...)):
     image = Image.open(io.BytesIO(contents)).convert("L")
 
     raw_text = pytesseract.image_to_string(image)
-    match = re.search(r"[A-Za-z]+", raw_text)
-    word = match.group(0) if match else ""
+    matches = re.findall(r"[A-Za-z]+", raw_text)
+
+    candidates = [w for w in matches if len(w) >= 3]
+    word = max(candidates, key=len) if candidates else (matches[0] if matches else "")
 
     return {"raw_text": raw_text.strip(), "word": word}
 

@@ -10,14 +10,15 @@ class InterventionEngine:
 
     def get_syllables(self, word):
         clean_word = re.sub(r'[^\w]', '', word).lower()
-        
         if clean_word in self.custom_dictionary:
             return self.custom_dictionary[clean_word]
-            
-        syllables = re.findall(r'(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?)', clean_word)
         
-        return syllables if syllables else [word]
+        # 👇 ADD THIS ACCORDINGLY FOR SINGLE LETTERS 👇
+        if len(clean_word) <= 1:
+            return [clean_word]
 
+        syllables = re.findall(r'(?:[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?)', clean_word)
+        return syllables if syllables else [word]
     def format_syllable_breakdown(self, word, style="hyphen"):
         syllables = self.get_syllables(word)
         
