@@ -178,30 +178,41 @@ export default function LessonScreen() {
       if (lessonKey && activeLevel) {
         setResolvedLevel(activeLevel);
         setResolvedLessonKey(lessonKey as string);
-      } else {
-        const assessment = await getLatestAssessment(session.user.id);
-        if (!assessment) {
-          router.replace("/dyslexic/welcome");
-          return;
-        }
-        setResolvedLevel(assessment.level ?? "level1");
-        setResolvedLessonKey(assessment.weak_area ?? "letter_reversal");
+        return;
+      }
 
-        if (!hasGreetedRef.current) {
-          hasGreetedRef.current = true;
-          const topic = (assessment.weak_area ?? "letter_reversal").replace(
-            "_",
-            " ",
-          );
-          Speech.speak(
-            `Welcome back! Let's keep working on ${topic} together.`,
-            { language: "en", pitch: 1, rate: 0.85 },
-          );
-        }
+      const progress = await getCurrentProgress(session.user.id);
+      if (progress?.current_level && progress?.current_lesson) {
+        setResolvedLevel(progress.current_level);
+        setResolvedLessonKey(progress.current_lesson);
+        return;
+      }
+
+      const assessment = await getLatestAssessment(session.user.id);
+      if (!assessment) {
+        router.replace("/dyslexic/welcome");
+        return;
+      }
+
+      const startLevel = assessment.level ?? "level1";
+      const startLesson = assessment.weak_area ?? "letter_reversal";
+
+      setResolvedLevel(startLevel);
+      setResolvedLessonKey(startLesson);
+
+      await saveCurrentProgress(session.user.id, startLevel, startLesson);
+
+      if (!hasGreetedRef.current) {
+        hasGreetedRef.current = true;
+        const topic = startLesson.replace("_", " ");
+        Speech.speak(`Welcome back! Let's keep working on ${topic} together.`, {
+          language: "en",
+          pitch: 1,
+          rate: 0.85,
+        });
       }
     })();
   }, [session?.user?.id, activeLevel, lessonKey]);
-
   useEffect(() => {
     if (!resolvedLevel || !session?.user?.id) return;
 
@@ -209,12 +220,10 @@ export default function LessonScreen() {
       const progress = await getCurrentProgress(session.user.id);
       const completedLevels: string[] = progress?.completed_levels ?? [];
 
-      // level1 is always accessible. For level2+, previous must be completed.
       const levelIdx = LEVEL_ORDER.indexOf(resolvedLevel);
       if (levelIdx > 0) {
         const requiredPrevious = LEVEL_ORDER[levelIdx - 1];
         if (!completedLevels.includes(requiredPrevious)) {
-          // Block with Mascot
           setMascotConfig({
             mood: "encourage",
             message: `Slow down, friend! 🐼\n\nYou need to finish ${requiredPrevious.replace("level", "Level ")} before unlocking this one.\n\nLet's go back and keep working — you're so close!`,
@@ -225,7 +234,6 @@ export default function LessonScreen() {
     })();
   }, [resolvedLevel, session?.user?.id]);
 
-  // Resolve the server IP once on mount
   useEffect(() => {
     (async () => {
       const ip = await resolveServerIp();
