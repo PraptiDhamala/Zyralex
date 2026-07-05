@@ -1,146 +1,161 @@
-from fastapi import FastAPI
-import base64
-import numpy as np
-import cv2
-from collections import deque
+from typing import List
 
-from mediapipe_utils import extract_landmarks_from_frame
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+
 from loader import load_dataset
+from mediapipe_utils import extract_features_from_bytes
 from dtw_engine import dtw_distance
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+print("Loading sign dataset...")
+
 database = load_dataset()
 
-THRESHOLD = 25
-
-# -------------------------
-# PER-USER BUFFER (FIXED)
-# -------------------------
-user_buffer = deque(maxlen=30)
+print(f"Loaded {len(database)} signs.")
 
 
-# -------------------------
-# IMAGE DECODER
-# -------------------------
-def decode_image(base64_str):
-    img_data = base64.b64decode(base64_str)
-    np_img = np.frombuffer(img_data, np.uint8)
-    frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
-    return frame
+def normalize_name(name: str):
+    return (
+        name.lower()
+        .replace("_", " ")
+        .replace("-", " ")
+        .strip()
+    )
 
 
-# -------------------------
-# FEEDBACK ENGINE
-# -------------------------
-def generate_feedback(accuracy):
-    if accuracy > 85:
-        return "Perfect! ✨"
-    elif accuracy > 70:
-        return "Good! 👍"
-    elif accuracy > 50:
-        return "Almost there 👀"
-    else:
-        return "Try again ❗ adjust your hand position"
+def normalize_score(distance: float):
+    """
+    Convert DTW distance into similarity.
+    Smaller distance = larger score.
+    """
+
+    similarity = 100 / (1 + distance / 100)
+
+    similarity = max(0, min(100, similarity))
+
+    return similarity
 
 
-# -------------------------
-# NORMALIZE DTW SCORE
-# -------------------------
-def normalize_score(score, max_score=50):
-    accuracy = 100 * (1 - score / max_score)
-    return max(0, min(100, accuracy))
+def generate_feedback(score: float):
 
+    if score >= 90:
+        return "Excellent! "
 
-# -------------------------
-# REALTIME ENDPOINT
-# -------------------------
-@app.post("/realtime")
-async def realtime(data: dict):
+    elif score >= 80:
+        return "Very Good !"
 
-    image = data.get("image")
-    target_sign = data.get("target_sign")
+    elif score >= 65:
+        return "Good Attempt !"
 
-    if not image:
-        return {"error": "No image received"}
+    elif score >= 50:
+        return "Almost There "
 
-    frame = decode_image(image)
-    landmarks = extract_landmarks_from_frame(frame)
+    return "Try Again ❗"
 
-    print("IMAGE RECEIVED:", image is not None)
-    print("LANDMARKS FOUND:", landmarks is not None)
+@app.get("/")
+def root():
 
-    if landmarks is None:
-        return {
-            "score": 0,
-            "feedback": "No hand detected 👋",
-            "completed": False
-        }
+    return {
+        "status": "running",
+        "dataset_size": len(database)
+    }
 
-    user_buffer.append(landmarks)
+@app.post("/predict")
+async def predict(
 
-    print("BUFFER SIZE:", len(user_buffer))
+    images: List[UploadFile] = File(...),
 
-    if len(user_buffer) < 3:
-        return {
-            "score": 0,
-            "feedback": "Keep signing... 👋",
-            "completed": False
-        }
+    target_sign: str = Form(...)
 
-    print("ENTERING DTW BLOCK")
+):
 
-    # normalize label
-    target_sign = target_sign.replace(" ", "_").strip()
+    target_sign = normalize_name(target_sign)
 
-    print("TARGET SIGN:", target_sign)
+    print("\n----------------------------------------")
+    print("Target sign:", target_sign)
 
-    ref_sequence = database.get(target_sign)
+  
 
-    print("REF FOUND:", ref_sequence is not None)
+    if target_sign not in database:
 
-    if not ref_sequence:
-        print("AVAILABLE:", list(database.keys())[:20])
+        print("Sign not found.")
 
         return {
             "score": 0,
-            "feedback": f"Sign '{target_sign}' not found",
+            "feedback": "Sign not found.",
             "completed": False
         }
 
-    print("REF LENGTH:", len(ref_sequence))
-    print("USER LENGTH:", len(user_buffer))
 
-    try:
 
-        print("RUNNING DTW...")
+    user_sequence = []
 
-        score = dtw_distance(
-            list(user_buffer),
-            ref_sequence
-        )
+    for image in images:
 
-        print("DTW SCORE:", score)
+        image_bytes = await image.read()
 
-        accuracy = normalize_score(score)
+        features = extract_features_from_bytes(image_bytes)
 
-        feedback = generate_feedback(accuracy)
+        if features is not None:
+            user_sequence.append(features)
 
-        completed = accuracy > 80
+    print("Captured frames:", len(user_sequence))
 
-        return {
-            "score": float(accuracy),
-            "raw_score": float(score),
-            "feedback": feedback,
-            "completed": completed
-        }
-
-    except Exception as e:
-
-        print("DTW ERROR:", str(e))
+    if len(user_sequence) == 0:
 
         return {
             "score": 0,
-            "feedback": str(e),
+            "feedback": "No hands detected.",
             "completed": False
         }
+
+  
+
+    reference = database[target_sign]
+
+    reference_sequence = reference["sequence"]
+
+    print("Reference frames:", len(reference_sequence))
+
+
+    distance = dtw_distance(
+        user_sequence,
+        reference_sequence
+    )
+
+    similarity = normalize_score(distance)
+
+    feedback = generate_feedback(similarity)
+
+    completed = similarity >= 80
+
+    print("DTW distance :", distance)
+    print("Similarity   :", similarity)
+
+
+    return {
+
+        "target_sign": target_sign,
+
+        "score": round(float(similarity), 2),
+
+        "raw_distance": round(float(distance), 2),
+
+        "feedback": feedback,
+
+        "completed": completed,
+
+        "frames": len(user_sequence)
+
+    }

@@ -1,0 +1,22 @@
+export const beginnerReadAloud = [
+  { sentence: "The cat sat on the mat." },
+  { sentence: "A big dog can run fast." },
+  { sentence: "The hot sun is up." },
+  { sentence: "He has a red bat." },
+  { sentence: "Look at the map." },
+  { sentence: "A wet hat is on the bed." },
+  { sentence: "The little pig is pink." },
+  { sentence: "We catch a fish in the net." },
+  { sentence: "Get on the big yellow bus." },
+  { sentence: "The red fox ran away." },
+  { sentence: "I have a blue pen." },
+  { sentence: "The frog jumped off the log." },
+  { sentence: "Fill up the red cup." },
+  { sentence: "A little bug is on the leaf." },
+  { sentence: "The green frog can hop high." },
+  { sentence: "Drink a warm cup of milk." },
+  { sentence: "The little fish swims fast." },
+  { sentence: "The yellow duck says quack." },
+  { sentence: "The big ship sails out." },
+  { sentence: "We sleep in a small tent." }
+];

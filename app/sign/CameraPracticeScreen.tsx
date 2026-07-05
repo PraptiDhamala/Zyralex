@@ -1,167 +1,154 @@
-import { ResizeMode, Video } from 'expo-av';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import { ResizeMode, Video } from "expo-av";
 import {
+  CameraView,
+  useCameraPermissions,
+} from "expo-camera";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { LESSON_MAP } from '../../constants/lessonData';
+} from "react-native";
+
+import { LESSON_MAP } from "../../constants/lessonData";
 
 export default function CameraPracticeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-
-  const [index, setIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState("");
-
-  const [running, setRunning] = useState(false);
-
   const cameraRef = useRef<any>(null);
-  const runningRef = useRef(false);
-  const lastCallRef = useRef(0);
+  const router = useRouter();
 
   const { levelId, lessonId } = useLocalSearchParams<any>();
   const lessonKey = `${levelId}_${lessonId}`;
   const lesson = LESSON_MAP[lessonKey];
-  const router = useRouter();
+
+  const [index, setIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [score, setScore] = useState(0);
+  const [feedback, setFeedback] = useState("");
 
   const currentSign = lesson?.signs[index];
 
-  // -------------------------
-  // PERMISSION
-  // -------------------------
   useEffect(() => {
     requestPermission();
   }, []);
 
+  // progress simulation while waiting
+  useEffect(() => {
+    let interval: any;
+    if (loading) {
+      setProgress(0);
+      interval = setInterval(() => {
+        setProgress((prev) => Math.min(prev + 10, 90));
+      }, 400);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
   if (!permission?.granted) {
     return (
-      <Text style={{ marginTop: 100, textAlign: "center", color: "#fff" }}>
-        Requesting camera permission...
-      </Text>
+      <View style={styles.center}>
+        <Text style={{ color: "white" }}>
+          Waiting for camera permission...
+        </Text>
+      </View>
     );
   }
 
   if (!lesson) {
-    return <Text>Lesson not found</Text>;
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "white" }}>
+          Lesson not found.
+        </Text>
+      </View>
+    );
   }
 
-  // -------------------------
-  // START LOOP
-  // -------------------------
-  const start = () => {
-    runningRef.current = true;
-    setRunning(true);
-    loop();
-  };
-
-  const stop = () => {
-    runningRef.current = false;
-    setRunning(false);
-  };
-
-  // -------------------------
-  // REAL-TIME LOOP (NO SHUTTER FEEL)
-  // -------------------------
-  const loop = async () => {
-    if (!runningRef.current) return;
-
-    const now = Date.now();
-
-    // throttle (IMPORTANT)
-    if (now - lastCallRef.current < 500) {
-      setTimeout(loop, 100);
-      return;
-    }
-
-    lastCallRef.current = now;
+  const captureBurst = async () => {
+    if (!cameraRef.current) return;
 
     try {
-      if (!cameraRef.current) {
-        setTimeout(loop, 200);
-        return;
+      setLoading(true);
+      const images: string[] = [];
+
+      for (let i = 0; i < 10; i++) {
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.4,
+          skipProcessing: true,
+          base64: false,
+          exif: false,
+          // disable sound
+          mute: true,
+        });
+
+        images.push(photo.uri);
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
-      const photo = await cameraRef.current.takePictureAsync({
-        base64: true,
-        quality: 0.3,
-        skipProcessing: true,
-      });
-
-      if (photo?.base64) {
-        await sendFrame(photo.base64);
-      }
-
+      await sendImages(images);
     } catch (e) {
-      console.log("Capture error:", e);
+      console.log(e);
+    } finally {
+      setLoading(false);
     }
-
-    setTimeout(loop, 100);
   };
 
-  // -------------------------
-  // BACKEND CALL
-  // -------------------------
-  const sendFrame = async (base64Image: string) => {
+  const sendImages = async (images: string[]) => {
     try {
-      const res = await fetch("http://192.168.1.7:8000/realtime", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image: base64Image,
-          target_sign: currentSign?.label,
-        }),
+      const formData = new FormData();
+
+      images.forEach((uri, i) => {
+        formData.append("images", {
+          uri,
+          name: `frame_${i}.jpg`,
+          type: "image/jpeg",
+        } as any);
       });
 
-      const data = await res.json();
+      formData.append("target_sign", currentSign.label);
 
-      setScore(data.score ?? 0);
-      setFeedback(data.feedback ?? "");
+      const response = await fetch("http://192.168.1.7:8000/predict", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    } catch (err) {
-      console.log("Backend error:", err);
+      const result = await response.json();
+      console.log(result);
+
+      setScore(result.score || 0);
+      setFeedback(result.feedback || "");
+      setProgress(100); // complete when backend responds
+    } catch (e) {
+      console.log(e);
     }
   };
 
-  // -------------------------
-  // NAVIGATION
-  // -------------------------
+ 
   const next = () => {
-    stop();
-    setScore(0);
     setFeedback("");
-
-    if (index < lesson.signs.length - 1) {
-      setIndex(index + 1);
-    } else {
-      router.push("/sign/practicegrid");
-    }
+    setScore(0);
+    if (index < lesson.signs.length - 1) setIndex(index + 1);
+    else router.push("/sign/practicegrid");
   };
 
   const prev = () => {
-    stop();
+    setFeedback("");
+    setScore(0);
     setIndex(Math.max(0, index - 1));
   };
 
-  // -------------------------
-  // UI
-  // -------------------------
+
   return (
     <View style={styles.container}>
+      <CameraView ref={cameraRef} style={styles.camera} facing="front" />
 
-      {/* CAMERA */}
-      <CameraView
-        ref={cameraRef}
-        style={styles.camera}
-        facing="front"
-      />
-
-      {/* TOP SIGN */}
       <View style={styles.top}>
         <Video
           source={{ uri: currentSign.video }}
@@ -173,135 +160,64 @@ export default function CameraPracticeScreen() {
         <Text style={styles.title}>{currentSign.label}</Text>
       </View>
 
-      {/* BOTTOM UI */}
+      {loading && (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color="white" />
+          <Text style={{ color: "white", marginTop: 46 }}>
+            Processing gesture...
+          </Text>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          </View>
+        </View>
+      )}
+
       <View style={styles.bottom}>
-
-        <Text style={styles.score}>
-          {score.toFixed(2)}
-        </Text>
-
-        <Text style={[
-          styles.feedback,
-          { color: feedback.includes("Correct") ? "#4ade80" : "#f87171" }
-        ]}>
-          {feedback}
-        </Text>
-
+        <Text style={styles.score}>{score.toFixed(1)}%</Text>
+        <Text style={styles.feedback}>{feedback}</Text>
         <Text style={styles.progress}>
           {index + 1} / {lesson.signs.length}
         </Text>
 
         <View style={styles.row}>
-          <TouchableOpacity onPress={prev} style={styles.btn}>
+          <TouchableOpacity style={styles.btn} onPress={prev}>
             <Text style={styles.btnText}>Prev</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity onPress={next} style={styles.btn}>
+          <TouchableOpacity style={styles.btn} onPress={next}>
             <Text style={styles.btnText}>Next</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          onPress={running ? stop : start}
-          style={[
-            styles.mainBtn,
-            running && { backgroundColor: "#ef4444" }
-          ]}
-        >
-          <Text style={styles.mainBtnText}>
-            {running ? "Stop Practice" : "Start Practice"}
-          </Text>
+        <TouchableOpacity style={styles.capture} onPress={captureBurst}>
+          <Text style={styles.captureText}>Capture Gesture</Text>
         </TouchableOpacity>
-
       </View>
     </View>
   );
 }
 
-// -------------------------
-// STYLES
-// -------------------------
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1, backgroundColor: "#000" },
+  camera: { flex: 1 },
+  center: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#000",
   },
-
-  camera: {
-    flex: 1,
-  },
-
-  top: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    alignItems: "center",
-  },
-
-  video: {
-    width: 150,
-    height: 150,
-    borderRadius: 20,
-  },
-
-  title: {
-    color: "#fff",
-    marginTop: 5,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  bottom: {
-    position: "absolute",
-    bottom: 30,
-    width: "100%",
-    alignItems: "center",
-  },
-
-  score: {
-    fontSize: 42,
-    color: "#fff",
-    fontWeight: "700",
-  },
-
-  feedback: {
-    fontSize: 16,
-    marginTop: 5,
-  },
-
-  progress: {
-    color: "#aaa",
-    marginTop: 5,
-  },
-
-  row: {
-    flexDirection: "row",
-    gap: 20,
-    marginTop: 15,
-  },
-
-  btn: {
-    backgroundColor: "#1f2937",
-    padding: 10,
-    borderRadius: 10,
-    width: 80,
-    alignItems: "center",
-  },
-
-  btnText: {
-    color: "#fff",
-  },
-
-  mainBtn: {
-    marginTop: 15,
-    backgroundColor: "#22c55e",
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 12,
-  },
-
-  mainBtnText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
+  top: { position: "absolute", right: 20, top: 50, alignItems: "center" ,marginTop:-20},
+  video: { width: 150, height: 150, borderRadius: 20 },
+  title: { color: "white", marginTop: 5, fontWeight: "bold", fontSize: 16 },
+  bottom: { position: "absolute", bottom: 30, width: "100%", alignItems: "center" },
+  score: { color: "white", fontSize: 42, fontWeight: "bold" },
+  feedback: { color: "white", fontSize: 18, marginTop: 8 },
+  progress: { color: "#bbb", marginTop: 5 },
+  row: { flexDirection: "row", gap: 20, marginTop: 20 },
+  btn: { backgroundColor: "#333", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  btnText: { color: "white", fontWeight: "bold" },
+  capture: { marginTop: 20, backgroundColor: "#22c55e", paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
+  captureText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  loading: { position: "absolute", top: "45%", alignSelf: "center", alignItems: "center" },
+  progressBar: { width: 200, height: 10, backgroundColor: "#333", marginTop: 50, borderRadius: 5 },
+  progressFill: { height: 10, backgroundColor: "#22c55e", borderRadius: 5 },
 });
