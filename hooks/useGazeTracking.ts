@@ -9,8 +9,9 @@ export interface AttentionMetrics {
 }
 
 export const useGazeTracking = () => {
+  const [isCameraActive, setIsCameraActive] = useState(false);
   const [metrics, setMetrics] = useState<AttentionMetrics>({
-    isFacePresent: true,
+    isFacePresent: false,
     areEyesOpen: true,
     isLookingAtScreen: true,
     estimatedReadingDirection: 'Static',
@@ -19,11 +20,14 @@ export const useGazeTracking = () => {
 
   const sessionScores = useRef<number[]>([95, 90, 88]);
 
-  // Simulate focus shifts periodically so you can see the Attention Meter and warnings react live!
   useEffect(() => {
+    // Only simulate and track if the user has opened the camera explicitly
+    if (!isCameraActive) {
+      return;
+    }
+
     const interval = setInterval(() => {
       setMetrics((prev) => {
-        // 90% chance to stay focused, 10% chance to simulate a look-away distraction
         const temporaryDistraction = Math.random() > 0.90;
         
         const newScore = temporaryDistraction 
@@ -43,7 +47,7 @@ export const useGazeTracking = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isCameraActive]);
 
   const handleFaceDetected = useCallback((faces: any[]) => {
     // Gracefully handle empty call from mock preview frame
@@ -52,13 +56,13 @@ export const useGazeTracking = () => {
   const resetSession = useCallback(() => {
     sessionScores.current = [95];
     setMetrics({
-      isFacePresent: true,
+      isFacePresent: isCameraActive,
       areEyesOpen: true,
       isLookingAtScreen: true,
       estimatedReadingDirection: 'Static',
       attentionScore: 95,
     });
-  }, []);
+  }, [isCameraActive]);
 
   const getEvaluationReport = useCallback(() => {
     const scores = sessionScores.current;
@@ -68,8 +72,15 @@ export const useGazeTracking = () => {
     if (averageScore >= 85) feedback = 'Great job! You followed most phonics perfectly.';
     else if (averageScore >= 65) feedback = 'Good effort! Try to stay focused on each phonics block.';
 
-    return { finalScore: averageScore, feedback };
+  return { finalScore: averageScore, feedback };
   }, []);
 
-  return { metrics, handleFaceDetected, getEvaluationReport, resetSession };
+  return { 
+    metrics, 
+    handleFaceDetected, 
+    getEvaluationReport, 
+    resetSession,
+    isCameraActive,
+    setIsCameraActive
+  };
 };

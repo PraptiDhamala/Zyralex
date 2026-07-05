@@ -1,40 +1,55 @@
-import { LetterChallenge, WordChallenge, SyllableChallenge } from "../beginner/lessonPractice";
+// data/practice/intermediate/lessonPractice.ts
 
-export const INTERMEDIATE_LESSON_DATA = {
+import { SyllableChallenge, WordChallenge } from '../beginner/lessonPractice';
+import { LetterRecognitionQuestion } from '../types';
+
+// Unified interface to structure the lesson data cleanly
+export interface LessonDataStructure {
+  letterRecognition: LetterRecognitionQuestion[];
+  simpleWords: WordChallenge[];
+  syllableBasics: SyllableChallenge[];
+}
+
+export const INTERMEDIATE_LESSON_DATA: LessonDataStructure = {
   letterRecognition: [
-    { id: "ilr_1",  targetLetter: "b", options: ["d", "b", "p", "q"], audioPrompt: "Can you spot the letter B?" },
-    { id: "ilr_2",  targetLetter: "d", options: ["b", "q", "d", "p"], audioPrompt: "Find the letter D!" },
-    { id: "ilr_3",  targetLetter: "p", options: ["q", "p", "b", "d"], audioPrompt: "Where is the letter P?" },
-    { id: "ilr_4",  targetLetter: "q", options: ["p", "d", "b", "q"], audioPrompt: "Tap the letter Q!" },
-    { id: "ilr_5",  targetLetter: "g", options: ["y", "p", "g", "q"], audioPrompt: "Find the letter G!" },
-    { id: "ilr_6",  targetLetter: "n", options: ["u", "m", "h", "n"], audioPrompt: "Can you see the letter N?" },
-    { id: "ilr_7",  targetLetter: "u", options: ["n", "v", "u", "w"], audioPrompt: "Where is the letter U?" },
-    { id: "ilr_8",  targetLetter: "m", options: ["w", "n", "m", "u"], audioPrompt: "Tap the letter M!" },
-    { id: "ilr_9",  targetLetter: "w", options: ["m", "v", "u", "w"], audioPrompt: "Find the letter W!" },
-    { id: "ilr_10", targetLetter: "s", options: ["z", "s", "c", "x"], audioPrompt: "Look for the letter S!" },
-    { id: "ilr_11", targetLetter: "z", options: ["s", "x", "v", "z"], audioPrompt: "Tap the letter Z!" },
-    { id: "ilr_12", targetLetter: "t", options: ["f", "l", "t", "i"], audioPrompt: "Where is the letter T?" },
-    { id: "ilr_13", targetLetter: "f", options: ["t", "j", "f", "l"], audioPrompt: "Find the letter F!" },
-    { id: "ilr_14", targetLetter: "e", options: ["o", "c", "a", "e"], audioPrompt: "Look for the letter E!" },
-    { id: "ilr_15", targetLetter: "c", options: ["o", "e", "c", "G"], audioPrompt: "Can you spot the letter C?" },
-    { id: "ilr_16", targetLetter: "a", options: ["o", "e", "u", "a"], audioPrompt: "Tap the letter A!" },
-    { id: "ilr_17", targetLetter: "o", options: ["c", "a", "e", "o"], audioPrompt: "Where is the letter O?" },
-    { id: "ilr_18", targetLetter: "r", options: ["n", "i", "m", "r"], audioPrompt: "Find the letter R!" },
-    { id: "ilr_19", targetLetter: "h", options: ["n", "m", "li", "h"], audioPrompt: "Look for the letter H!" },
-    { id: "ilr_20", targetLetter: "k", options: ["x", "v", "y", "k"], audioPrompt: "Tap the letter K!" },
-    { id: "ilr_21", targetLetter: "y", options: ["v", "x", "j", "y"], audioPrompt: "Can you find the letter Y?" },
-    { id: "ilr_22", targetLetter: "j", options: ["i", "l", "g", "j"], audioPrompt: "Where is the letter J?" },
-    { id: "ilr_23", targetLetter: "v", options: ["u", "w", "x", "v"], audioPrompt: "Find the letter V!" },
-    { id: "ilr_24", targetLetter: "x", options: ["k", "z", "v", "x"], audioPrompt: "Tap the letter X!" },
-    { id: "ilr_25", targetLetter: "l", options: ["i", "1", "t", "l"], audioPrompt: "Look for the letter L!" },
-    { id: "ilr_26", targetLetter: "i", options: ["l", "1", "j", "i"], audioPrompt: "Can you find the letter I?" },
-    { id: "ilr_27", targetLetter: "b", options: ["p", "d", "q", "b"], audioPrompt: "Find the letter B again!" },
-    { id: "ilr_28", targetLetter: "d", options: ["b", "p", "q", "d"], audioPrompt: "Find the letter D again!" },
-    { id: "ilr_29", targetLetter: "p", options: ["b", "d", "q", "p"], audioPrompt: "Find the letter P again!" },
-    { id: "ilr_30", targetLetter: "q", options: ["d", "p", "b", "q"], audioPrompt: "Last challenge! Find the letter Q!" }
-  ] as LetterChallenge[],
+    { id: "ilr_1", type: "similarLetter", instruction: "Find lowercase b", voicePrompt: "Can you find lowercase b?", target: "b", choices: ["d", "p", "b", "q"], correctAnswer: "b", rewardMessage: "Excellent flip detection!" },
+    { id: "ilr_2", type: "similarLetter", instruction: "Find uppercase E", voicePrompt: "Can you find uppercase E?", target: "E", choices: ["F", "B", "E", "P", "R", "L"], correctAnswer: "E", rewardMessage: "Stellar line detection!" },
+    { id: "ilr_3", type: "similarLetter", instruction: "Find lowercase m", voicePrompt: "Can you find lowercase m?", target: "m", choices: ["m", "n", "w", "u", "h", "r"], correctAnswer: "m", rewardMessage: "Perfect peak scanning!" },
+    { id: "ilr_4", type: "similarLetter", instruction: "Find lowercase d", voicePrompt: "Where is lowercase d?", target: "d", choices: ["b", "q", "p", "d", "h", "o"], correctAnswer: "d", rewardMessage: "Smart scanning!" },
+    { id: "ilr_5", type: "similarLetter", instruction: "Find lowercase p", voicePrompt: "Can you catch lowercase p?", target: "p", choices: ["q", "g", "b", "d", "p", "y"], correctAnswer: "p", rewardMessage: "Spectacular!" },
+    { id: "ilr_6", type: "similarLetter", instruction: "Find lowercase q", voicePrompt: "Tap the lowercase q!", target: "q", choices: ["p", "b", "d", "g", "q", "o"], correctAnswer: "q", rewardMessage: "Sensational!" },
+    { id: "ilr_7", type: "similarLetter", instruction: "Find lowercase n", voicePrompt: "Look for lowercase n!", target: "n", choices: ["u", "m", "h", "r", "n", "v"], correctAnswer: "n", rewardMessage: "Way to differentiate!" },
+    { id: "ilr_8", type: "similarLetter", instruction: "Find lowercase u", voicePrompt: "Touch lowercase u!", target: "u", choices: ["n", "v", "w", "u", "m", "o"], correctAnswer: "u", rewardMessage: "Wonderful upside check!" },
+    { id: "ilr_9", type: "similarLetter", instruction: "Find lowercase w", voicePrompt: "Where is lowercase w?", target: "w", choices: ["m", "v", "u", "w", "x", "n"], correctAnswer: "w", rewardMessage: "Awesome reading!" },
+    { id: "ilr_10", type: "similarLetter", instruction: "Find lowercase t", voicePrompt: "Tap lowercase t!", target: "t", choices: ["f", "l", "i", "t", "j", "r"], correctAnswer: "t", rewardMessage: "Great tracking!" },
+    { id: "ilr_11", type: "similarLetter", instruction: "Find lowercase f", voicePrompt: "Spot lowercase f!", target: "f", choices: ["t", "j", "l", "f", "i", "k"], correctAnswer: "f", rewardMessage: "Top tier focus!" },
+    { id: "ilr_12", type: "similarLetter", instruction: "Find uppercase F", voicePrompt: "Find uppercase F!", target: "F", choices: ["E", "L", "T", "F", "H", "I"], correctAnswer: "F", rewardMessage: "Super job!" },
+    { id: "ilr_13", type: "similarLetter", instruction: "Find uppercase C", voicePrompt: "Can you see uppercase C?", target: "C", choices: ["G", "O", "Q", "C", "D", "U"], correctAnswer: "C", rewardMessage: "Brilliant eye!" },
+    { id: "ilr_14", type: "similarLetter", instruction: "Find uppercase G", voicePrompt: "Touch uppercase G!", target: "G", choices: ["C", "O", "Q", "D", "G", "S"], correctAnswer: "G", rewardMessage: "Incredible!" },
+    { id: "ilr_15", type: "similarLetter", instruction: "Find uppercase O", voicePrompt: "Tap uppercase O!", target: "O", choices: ["Q", "C", "G", "D", "O", "U"], correctAnswer: "O", rewardMessage: "Perfect alignment!" },
+    { id: "ilr_16", type: "similarLetter", instruction: "Find uppercase Q", voicePrompt: "Where is uppercase Q?", target: "Q", choices: ["O", "G", "C", "Q", "D", "O"], correctAnswer: "Q", rewardMessage: "Spot on!" },
+    { id: "ilr_17", type: "similarLetter", instruction: "Find lowercase s", voicePrompt: "Look for lowercase s!", target: "s", choices: ["z", "c", "e", "s", "x", "a"], correctAnswer: "s", rewardMessage: "Magnificent curve tracking!" },
+    { id: "ilr_18", type: "similarLetter", instruction: "Find lowercase z", voicePrompt: "Tap lowercase z!", target: "z", choices: ["s", "x", "e", "z", "c", "v"], correctAnswer: "z", rewardMessage: "Awesome!" },
+    { id: "ilr_19", type: "similarLetter", instruction: "Find lowercase a", voicePrompt: "Find lowercase a!", target: "a", choices: ["o", "e", "c", "g", "a", "d"], correctAnswer: "a", rewardMessage: "Stunning skill!" },
+    { id: "ilr_20", type: "similarLetter", instruction: "Find lowercase e", voicePrompt: "Can you catch lowercase e?", target: "e", choices: ["o", "c", "a", "e", "d", "g"], correctAnswer: "e", rewardMessage: "Terrific spot!" },
+    { id: "ilr_21", type: "similarLetter", instruction: "Find uppercase M", voicePrompt: "Where is uppercase M?", target: "M", choices: ["W", "N", "V", "M", "H", "U"], correctAnswer: "M", rewardMessage: "Great flip adjustment!" },
+    { id: "ilr_22", type: "similarLetter", instruction: "Find uppercase W", voicePrompt: "Tap uppercase W!", target: "W", choices: ["M", "V", "N", "W", "U", "A"], correctAnswer: "W", rewardMessage: "Fantastic!" },
+    { id: "ilr_23", type: "similarLetter", instruction: "Find lowercase h", voicePrompt: "Look for lowercase h!", target: "h", choices: ["n", "m", "r", "b", "h", "l"], correctAnswer: "h", rewardMessage: "Stem checked correctly!" },
+    { id: "ilr_24", type: "similarLetter", instruction: "Find lowercase r", voicePrompt: "Find lowercase r!", target: "r", choices: ["n", "m", "i", "h", "r", "c"], correctAnswer: "r", rewardMessage: "Splendid track!" },
+    { id: "ilr_25", type: "similarLetter", instruction: "Find lowercase l", voicePrompt: "Where is lowercase l?", target: "l", choices: ["i", "1", "t", "j", "l", "o"], correctAnswer: "l", rewardMessage: "Perfect vector matching!" },
+    { id: "ilr_26", type: "similarLetter", instruction: "Find lowercase i", voicePrompt: "Tap lowercase i!", target: "i", choices: ["l", "1", "j", "t", "i", "I"], correctAnswer: "i", rewardMessage: "Caught the dot!" },
+    { id: "ilr_27", type: "similarLetter", instruction: "Find lowercase j", voicePrompt: "Look for lowercase j!", target: "j", choices: ["i", "l", "g", "y", "j", "f"], correctAnswer: "j", rewardMessage: "Beautiful tracking!" },
+    { id: "ilr_28", type: "similarLetter", instruction: "Find lowercase v", voicePrompt: "Touch lowercase v!", target: "v", choices: ["u", "w", "x", "y", "v", "r"], correctAnswer: "v", rewardMessage: "Super clean focus!" },
+    { id: "ilr_29", type: "similarLetter", instruction: "Find lowercase k", voicePrompt: "Where is lowercase k?", target: "k", choices: ["x", "h", "l", "k", "t", "f"], correctAnswer: "k", rewardMessage: "Exceptional!" },
+    { id: "ilr_30", type: "similarLetter", instruction: "Find lowercase x", voicePrompt: "Tap lowercase x!", target: "x", choices: ["k", "z", "v", "y", "x", "w"], correctAnswer: "x", rewardMessage: "Bullseye!" },
+    { id: "ilr_31", type: "similarLetter", instruction: "Find lowercase b again", voicePrompt: "Can you track lowercase b?", target: "b", choices: ["d", "p", "q", "h", "b", "g"], correctAnswer: "b", rewardMessage: "Unstoppable processing!" },
+    { id: "ilr_32", type: "similarLetter", instruction: "Find lowercase d again", voicePrompt: "Spot the lowercase d!", target: "d", choices: ["b", "p", "q", "g", "d", "o"], correctAnswer: "d", rewardMessage: "Nailed it!" },
+    { id: "ilr_33", type: "similarLetter", instruction: "Find lowercase p again", voicePrompt: "Find lowercase p!", target: "p", choices: ["q", "b", "d", "j", "p", "g"], correctAnswer: "p", rewardMessage: "Fabulous!" },
+    { id: "ilr_34", type: "similarLetter", instruction: "Find lowercase q again", voicePrompt: "Where is lowercase q?", target: "q", choices: ["p", "d", "b", "g", "q", "y"], correctAnswer: "q", rewardMessage: "Pure brilliance!" },
+    { id: "ilr_35", type: "similarLetter", instruction: "Last one! Find lowercase m", voicePrompt: "Last challenge! Touch lowercase m!", target: "m", choices: ["n", "w", "u", "h", "m", "r"], correctAnswer: "m", rewardMessage: "Intermediate Tier Complete! Outstanding tracking!" }
+  ],
 
-  wordConstruction: [
+  simpleWords: [
     { id: "isw_1",  word: "BIRD",  scrambled: ["R", "B", "I", "D"],  meaningClue: "🐦 Flaps its wings and chirps!", audioPrompt: "Spell the word: BIRD." },
     { id: "isw_2",  word: "FROG",  scrambled: ["O", "G", "F", "R"],  meaningClue: "🐸 Green and leaps around ponds!", audioPrompt: "Assemble the letters for: FROG." },
     { id: "isw_3",  word: "LAMP",  scrambled: ["M", "L", "A", "P"],  meaningClue: "💡 Shines light on your desk!", audioPrompt: "Let's build the word: LAMP." },
@@ -65,9 +80,9 @@ export const INTERMEDIATE_LESSON_DATA = {
     { id: "isw_28", word: "TRAIN", scrambled: ["N", "T", "R", "A", "I"], meaningClue: "🚂 Chugs along iron tracks continuously!", audioPrompt: "Can you match pieces for: TRAIN?" },
     { id: "isw_29", word: "HOUSE", scrambled: ["E", "H", "O", "U", "S"], meaningClue: "🏠 Where families live together safely!", audioPrompt: "Let's build the word: HOUSE." },
     { id: "isw_30", word: "ZEBRA", scrambled: ["A", "Z", "E", "B", "R"], meaningClue: "🦓 Striped horse roaming open fields!", audioPrompt: "Last one! Let's build: ZEBRA." }
-  ] as WordChallenge[],
+  ],
 
-  syllableMatching: [
+  syllableBasics: [
     { id: "isyl_1",  word: "GARDEN",    syllablesCount: 2, breakdown: "GAR - DEN",    meaningClue: "🏡 Patch where colorful flowers blossom!", audioPrompt: "Listen carefully: GAR-DEN. Count the beats!" },
     { id: "isyl_2",  word: "WINTER",    syllablesCount: 2, breakdown: "WIN - TER",    meaningClue: "❄️ Cold season with white falling snow!", audioPrompt: "How many syllables in WIN-TER?" },
     { id: "isyl_3",  word: "RABBIT",    syllablesCount: 2, breakdown: "RAB - BIT",    meaningClue: "🐇 Fuzzy ears and hops through bushes!", audioPrompt: "Clap along to the beats: RAB-BIT." },
@@ -98,5 +113,5 @@ export const INTERMEDIATE_LESSON_DATA = {
     { id: "isyl_28", word: "UMBRELLA",  syllablesCount: 3, breakdown: "UM - BREL - LA", meaningClue: "☔ Shield that deflects raindrops reliably!", audioPrompt: "Count the sections: UM-BREL-LA." },
     { id: "isyl_29", word: "COMPANION", syllablesCount: 3, breakdown: "COM - PAN - ION",meaningClue: "🤝 Trusty partner walking right alongside you!", audioPrompt: "How many beats in COM-PAN-ION?" },
     { id: "isyl_30", word: "EXPLOSION", syllablesCount: 3, breakdown: "EX - PLO - SION",meaningClue: "💥 Loud spectacular outburst of force energy!", audioPrompt: "Last one! Count parts in: EX-PLO-SION!" }
-  ] as SyllableChallenge[]
+  ]
 };

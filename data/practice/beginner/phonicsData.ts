@@ -1,5 +1,5 @@
 export const beginnerPhonics = [
-  { word: "cat", phonemes: ["c", "a", "t"], sounds: ["/k/", "/æ/", "/t/"] },
+  
   { word: "dog", phonemes: ["d", "o", "g"], sounds: ["/d/", "/ɒ/", "/ɡ/"] },
   { word: "sun", phonemes: ["s", "u", "n"], sounds: ["/s/", "/ʌ/", "/n/"] },
   { word: "bat", phonemes: ["b", "a", "t"], sounds: ["/b/", "/æ/", "/t/"] },

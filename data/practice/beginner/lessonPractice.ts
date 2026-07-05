@@ -1,3 +1,8 @@
+// data/practice/beginner/lessonPractice.ts
+
+// 1. Import your newly created interface along with existing ones
+import { LetterRecognitionQuestion } from '../types';
+
 export interface LetterChallenge {
   id: string;
   targetLetter: string;
@@ -23,31 +28,41 @@ export interface SyllableChallenge {
 }
 
 export const BEGINNER_LESSON_DATA = {
-  // Keep letterRecognition as is
+  // FIXED: Changed type assertion from LetterChallenge[] to LetterRecognitionQuestion[]
   letterRecognition: [
-    { id: "lr_1",  targetLetter: "a", options: ["a", "o", "e", "u"], audioPrompt: "Can you find the letter A?" },
-    { id: "lr_2",  targetLetter: "b", options: ["d", "b", "p", "q"], audioPrompt: "Find the letter B. Watch out for its belly!" },
-    { id: "lr_3",  targetLetter: "c", options: ["o", "e", "c", "s"], audioPrompt: "Look for the curly letter C!" },
-    { id: "lr_4",  targetLetter: "d", options: ["b", "p", "q", "d"], audioPrompt: "Where is the letter D?" },
-    { id: "lr_5",  targetLetter: "e", options: ["c", "o", "e", "a"], audioPrompt: "Tap the letter E!" },
-    { id: "lr_6",  targetLetter: "f", options: ["t", "f", "j", "l"], audioPrompt: "Can you spot the letter F?" },
-    { id: "lr_7",  targetLetter: "g", options: ["q", "p", "g", "y"], audioPrompt: "Find the hanging letter G!" },
-    { id: "lr_8",  targetLetter: "h", options: ["n", "m", "u", "h"], audioPrompt: "Where is the tall letter H?" },
-    { id: "lr_9",  targetLetter: "i", options: ["l", "j", "t", "i"], audioPrompt: "Find the little letter I with the dot!" },
-    { id: "lr_10", targetLetter: "j", options: ["i", "l", "f", "j"], audioPrompt: "Look for the fishing hook letter J!" },
-    { id: "lr_11", targetLetter: "k", options: ["x", "k", "v", "z"], audioPrompt: "Can you find the letter K?" },
-    { id: "lr_12", targetLetter: "l", options: ["i", "t", "l", "1"], audioPrompt: "Tap the straight line letter L!" },
-    { id: "lr_13", targetLetter: "m", options: ["n", "w", "u", "m"], audioPrompt: "Find the double-hump letter M!" },
-    { id: "lr_14", targetLetter: "n", options: ["m", "h", "u", "n"], audioPrompt: "Where is the letter N?" },
-    { id: "lr_15", targetLetter: "o", options: ["c", "e", "a", "o"], audioPrompt: "Look for the round donut letter O!" },
-    { id: "lr_16", targetLetter: "p", options: ["q", "b", "d", "p"], audioPrompt: "Find the letter P!" },
-    { id: "lr_17", targetLetter: "r", options: ["n", "i", "m", "r"], audioPrompt: "Can you see the little branch letter R?" },
-    { id: "lr_18", targetLetter: "s", options: ["z", "c", "e", "s"], audioPrompt: "Find the zigzag snake letter S!" },
-    { id: "lr_19", targetLetter: "t", options: ["f", "l", "i", "t"], audioPrompt: "Tap the cross-top letter T!" },
-    { id: "lr_20", targetLetter: "z", options: ["s", "n", "m", "z"], audioPrompt: "Awesome! Last one, find the letter Z!" }
-  ] as LetterChallenge[],
+    { id: "blr_1", type: "singleLetter", instruction: "Find the letter A", voicePrompt: "Can you find the letter A?", target: "A", choices: ["A", "M", "T", "C"], correctAnswer: "A", rewardMessage: "Awesome starting step!" },
+    { id: "blr_2", type: "singleLetter", instruction: "Find the letter P", voicePrompt: "Can you touch the letter P?", target: "P", choices: ["H", "P", "L", "O"], correctAnswer: "P", rewardMessage: "Super pick!" },
+    { id: "blr_3", type: "singleLetter", instruction: "Find the letter S", voicePrompt: "Where is the letter S?", target: "S", choices: ["X", "K", "S", "W"], correctAnswer: "S", rewardMessage: "Sensational match!" },
+    { id: "blr_4", type: "singleLetter", instruction: "Find the letter M", voicePrompt: "Tap the letter M!", target: "M", choices: ["O", "Z", "I", "M"], correctAnswer: "M", rewardMessage: "Wonderful job!" },
+    { id: "blr_5", type: "singleLetter", instruction: "Find the letter T", voicePrompt: "Spot the letter T!", target: "T", choices: ["T", "C", "F", "Y"], correctAnswer: "T", rewardMessage: "Terrific!" },
+    { id: "blr_6", type: "singleLetter", instruction: "Find the letter K", voicePrompt: "Touch the letter K!", target: "K", choices: ["U", "X", "K", "E"], correctAnswer: "K", rewardMessage: "Keep it up!" },
+    { id: "blr_7", type: "singleLetter", instruction: "Find the letter O", voicePrompt: "Can you see the letter O?", target: "O", choices: ["Z", "O", "N", "I"], correctAnswer: "O", rewardMessage: "Perfect round!" },
+    { id: "blr_8", type: "singleLetter", instruction: "Find the letter H", voicePrompt: "Where is the letter H?", target: "H", choices: ["H", "X", "C", "V"], correctAnswer: "H", rewardMessage: "Great finding!" },
+    { id: "blr_9", type: "singleLetter", instruction: "Find the letter X", voicePrompt: "Tap the letter X!", target: "X", choices: ["J", "L", "M", "X"], correctAnswer: "X", rewardMessage: "Excellent!" },
+    { id: "blr_10", type: "singleLetter", instruction: "Find the letter Z", voicePrompt: "Look for the letter Z!", target: "Z", choices: ["C", "Z", "V", "U"], correctAnswer: "Z", rewardMessage: "Spectacular!" },
+    { id: "blr_11", type: "singleLetter", instruction: "Find the letter L", voicePrompt: "Find the letter L!", target: "L", choices: ["O", "S", "L", "W"], correctAnswer: "L", rewardMessage: "Way to go!" },
+    { id: "blr_12", type: "singleLetter", instruction: "Find the letter C", voicePrompt: "Can you catch the letter C?", target: "C", choices: ["C", "N", "X", "Y"], correctAnswer: "C", rewardMessage: "Magnificent!" },
+    { id: "blr_13", type: "singleLetter", instruction: "Find the letter R", voicePrompt: "Touch the letter R!", target: "R", choices: ["U", "I", "T", "R"], correctAnswer: "R", rewardMessage: "Splendid!" },
+    { id: "blr_14", type: "singleLetter", instruction: "Find the letter G", voicePrompt: "Where is the letter G?", target: "G", choices: ["G", "Z", "X", "M"], correctAnswer: "G", rewardMessage: "Good job!" },
+    { id: "blr_15", type: "singleLetter", instruction: "Find the letter Y", voicePrompt: "Tap the letter Y!", target: "Y", choices: ["H", "O", "Y", "C"], correctAnswer: "Y", rewardMessage: "Bullseye!" },
+    { id: "blr_16", type: "singleLetter", instruction: "Find the letter B", voicePrompt: "Look for the letter B!", target: "B", choices: ["X", "B", "I", "V"], correctAnswer: "B", rewardMessage: "You got it!" },
+    { id: "blr_17", type: "singleLetter", instruction: "Find the letter F", voicePrompt: "Can you spot the letter F?", target: "F", choices: ["F", "U", "C", "Z"], correctAnswer: "F", rewardMessage: "Fantastic work!" },
+    { id: "blr_18", type: "singleLetter", instruction: "Find the letter N", voicePrompt: "Where is the letter N?", target: "N", choices: ["X", "O", "N", "S"], correctAnswer: "N", rewardMessage: "Nice choice!" },
+    { id: "blr_19", type: "singleLetter", instruction: "Find the letter J", voicePrompt: "Tap the letter J!", target: "J", choices: ["M", "T", "V", "J"], correctAnswer: "J", rewardMessage: "Joyful success!" },
+    { id: "blr_20", type: "singleLetter", instruction: "Find the letter V", voicePrompt: "Touch the letter V!", target: "V", choices: ["V", "O", "L", "C"], correctAnswer: "V", rewardMessage: "Incredible tracking!" },
+    { id: "blr_21", type: "singleLetter", instruction: "Find the letter W", voicePrompt: "Look for the letter W!", target: "W", choices: ["S", "W", "X", "I"], correctAnswer: "W", rewardMessage: "Wonderful!" },
+    { id: "blr_22", type: "singleLetter", instruction: "Find the letter I", voicePrompt: "Can you find the letter I?", target: "I", choices: ["O", "C", "I", "U"], correctAnswer: "I", rewardMessage: "Bingo!" },
+    { id: "blr_23", type: "singleLetter", instruction: "Find the letter E", voicePrompt: "Where is the letter E?", target: "E", choices: ["Z", "M", "S", "E"], correctAnswer: "E", rewardMessage: "Great attention!" },
+    { id: "blr_24", type: "singleLetter", instruction: "Find the letter U", voicePrompt: "Tap the letter U!", target: "U", choices: ["U", "X", "O", "T"], correctAnswer: "U", rewardMessage: "Superb!" },
+    { id: "blr_25", type: "singleLetter", instruction: "Find the letter D", voicePrompt: "Look carefully for the letter D!", target: "D", choices: ["K", "S", "D", "V"], correctAnswer: "D", rewardMessage: "Splendid find!" },
+    { id: "blr_26", type: "singleLetter", instruction: "Find the letter Q", voicePrompt: "Touch the letter Q!", target: "Q", choices: ["X", "M", "O", "Q"], correctAnswer: "Q", rewardMessage: "Brilliant matching!" },
+    { id: "blr_27", type: "singleLetter", instruction: "Find the letter A again", voicePrompt: "Can you spot the letter A?", target: "A", choices: ["Z", "A", "C", "S"], correctAnswer: "A", rewardMessage: "Superb repetition!" },
+    { id: "blr_28", type: "singleLetter", instruction: "Find the letter B again", voicePrompt: "Where is the letter B?", target: "B", choices: ["O", "X", "B", "U"], correctAnswer: "B", rewardMessage: "Nailed it!" },
+    { id: "blr_29", type: "singleLetter", instruction: "Find the letter M again", voicePrompt: "Tap the letter M!", target: "M", choices: ["M", "W", "O", "C"], correctAnswer: "M", rewardMessage: "Spot on!" },
+    { id: "blr_30", type: "singleLetter", instruction: "Find the letter S again", voicePrompt: "Last beginner challenge! Find the letter S!", target: "S", choices: ["I", "K", "Z", "S"], correctAnswer: "S", rewardMessage: "Beginner Level Complete! Amazing job!" }
+  ] as LetterRecognitionQuestion[],
 
-  // 1. CHANGED FROM wordConstruction TO simpleWords TO MATCH THE GAME COMPONENT
+  // Simple words processing configuration
   simpleWords: [
     { id: "sw_1",  word: "CAT",  scrambled: ["A", "C", "T"],      meaningClue: "🐱 A furry pet that meows!", audioPrompt: "Let's build the word: CAT. Spell it out block by block!" },
     { id: "sw_2",  word: "DOG",  scrambled: ["G", "D", "O"],      meaningClue: "🐶 A loyal pet that barks!", audioPrompt: "Can you spell DOG?" },
@@ -71,7 +86,7 @@ export const BEGINNER_LESSON_DATA = {
     { id: "sw_20", word: "BALL", scrambled: ["L", "B", "A", "L"], meaningClue: "⚽ Round and fun to bounce!", audioPrompt: "Awesome last one! Let's spell the word: BALL!" }
   ] as WordChallenge[],
 
-  // 2. CHANGED FROM syllableMatching TO syllableBasics TO MATCH THE GAME COMPONENT
+  // Syllabic segmentation tracking maps
   syllableBasics: [
     { id: "syl_1",  word: "TREE",     syllablesCount: 1, breakdown: "TREE",        meaningClue: "🌳 Tall, green, and grows in nature!", audioPrompt: "Listen closely: TREE. How many beats does it have?" },
     { id: "syl_2",  word: "FISH",     syllablesCount: 1, breakdown: "FISH",        meaningClue: "🐟 Swims around happily in water!", audioPrompt: "How many syllables in FISH?" },

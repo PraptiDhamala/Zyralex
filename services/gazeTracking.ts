@@ -13,7 +13,7 @@ let lastYaw = 0;
  * Generates natural focus metrics and reading directions based on look-away triggers.
  */
 export const analyzeGazeAndAttention = (
-  face: any, // Changed to any to cleanly bypass empty type validation definitions in Expo Go mode
+  face: any, 
   previousMetrics: AttentionMetrics | null
 ): AttentionMetrics => {
   if (!face) {
@@ -26,7 +26,6 @@ export const analyzeGazeAndAttention = (
     };
   }
 
-  // Use provided simulated data values securely
   const { yawAngle = 0, pitchAngle = 0, leftEyeOpenProbability = 1, rightEyeOpenProbability = 1 } = face;
   
   const areEyesOpen = leftEyeOpenProbability > 0.4 && rightEyeOpenProbability > 0.4;

@@ -6,7 +6,7 @@ export const intermediatePhonics = [
   { word: "window", phonemes: ["win", "dow"], sounds: ["/ˈwɪn/", "/doʊ/"] },
   { word: "basket", phonemes: ["bas", "ket"], sounds: ["/ˈbæs/", "/kɪt/"] },
   { word: "butter", phonemes: ["but", "ter"], sounds: ["/ˈbʌ/", "/tər/"] },
-  { word: "doctor", phonemes: ["doc", "tor"], sounds: ["/ˈdɒk/", "/tər/"] },
+  { worind: "doctor", phonemes: ["doc", "tor"], sounds: ["/ˈdɒk/", "/tər/"] },
   { word: "monkey", phonemes: ["mon", "key"], sounds: ["/ˈmʌŋ/", "/ki/"] },
   { word: "pencil", phonemes: ["pen", "cil"], sounds: ["/ˈpɛn/", "/səl/"] },
   { word: "candle", phonemes: ["can", "dle"], sounds: ["/ˈkæn/", "/dəl/"] },
