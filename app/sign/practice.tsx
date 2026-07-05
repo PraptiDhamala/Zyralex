@@ -34,7 +34,7 @@ useFocusEffect(
 );
 
   if (!currentLesson) {
-    return <Text>No lesson selected yet</Text>;
+    return <Text>No lesson selected yet!Please select one</Text>;
   }
 
   const { levelId, lessonId } = currentLesson;
