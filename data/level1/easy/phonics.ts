@@ -146,7 +146,7 @@ const lesson = {
       content:
         "CH is a bright, loud train engine. SH is a quiet, peaceful ocean whisper.",
       animationType: "pulse-on-audio",
-      visualAnchor: "CH 🚂 vs SH 🤫",
+      visualAnchor: "CH  vs SH ",
     },
     {
       type: "story",

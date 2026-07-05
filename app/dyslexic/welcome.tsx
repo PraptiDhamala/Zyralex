@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
     if (authLoading) return;
 
     if (!session?.user?.id) {
-      router.replace("/signin" as any); // adjust to your real sign-in route
+      router.replace("/signin" as any); 
       return;
     }
 
@@ -28,7 +28,6 @@ export default function WelcomeScreen() {
       const assessment = await getLatestAssessment(session.user.id);
 
       if (assessment) {
-        // Already took the diagnostic — skip straight to their lesson.
         router.replace({
           pathname: "/dyslexic/module/[level1]/[lesson]",
           params: {

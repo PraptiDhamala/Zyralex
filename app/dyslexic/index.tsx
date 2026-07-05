@@ -119,17 +119,37 @@ export default function DyslexicHome() {
         setReviewMessage("Take your assessment to begin.");
       }
 
-      const { data: progressData } = await supabase
-        .from("user_progress")
-        .select("completed")
-        .eq("user_id", user.id);
+      const { data: completions } = await supabase
+        .from("lesson_completions")
+        .select("level_key, lesson_key, score")
+        .eq("user_id", user.id)
+        .eq("completed", true);
 
-      if (progressData) {
-        const totalLessons = 5;
-        const completed = progressData.filter((p) => p.completed).length;
-        setCompletedLessonsCount(completed);
+      if (completions) {
+        const currentLevelLessonCounts: Record<string, number> = {
+          level1: 5,
+          level2: 5,
+          level3: 5,
+          level4: 1,
+          level5: 1,
+        };
+
+        const { data: progressRow } = await supabase
+          .from("user_progress")
+          .select("current_level")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        const currentLevel = progressRow?.current_level ?? "level1";
+        const totalForLevel = currentLevelLessonCounts[currentLevel] ?? 5;
+
+        const completedInLevel = completions.filter(
+          (c) => c.level_key === currentLevel,
+        ).length;
+
+        setCompletedLessonsCount(completedInLevel);
         setProgressPercent(
-          Math.min(100, Math.floor((completed / totalLessons) * 100)),
+          Math.min(100, Math.round((completedInLevel / totalForLevel) * 100)),
         );
       }
     } catch (err) {

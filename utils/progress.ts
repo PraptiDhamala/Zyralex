@@ -21,7 +21,47 @@ export async function getLessonRow(levelKey: string, lessonKey: string) {
   if (error) throw error;
   return data;
 }
+export async function getCurrentProgress(userId: string) {
+  const { data } = await supabase
+    .from("user_progress")
+    .select("current_level, current_lesson, completed_levels")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data; // null if first time
+}
 
+export async function saveCurrentProgress(
+  userId: string,
+  currentLevel: string,
+  currentLesson: string,
+) {
+  await supabase.from("user_progress").upsert(
+    {
+      user_id: userId,
+      current_level: currentLevel,
+      current_lesson: currentLesson,
+    },
+    { onConflict: "user_id" },
+  );
+}
+export async function markLevelCompleted(userId: string, level: string) {
+  // Read existing completed_levels first
+  const { data } = await supabase
+    .from("user_progress")
+    .select("completed_levels")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const existing: string[] = data?.completed_levels ?? [];
+  if (existing.includes(level)) return; // already marked
+
+  await supabase
+    .from("user_progress")
+    .upsert(
+      { user_id: userId, completed_levels: [...existing, level] },
+      { onConflict: "user_id" },
+    );
+}
 export async function getLevelProgress(userId: string, levelKey: string) {
   const { data, error } = await supabase
     .from("user_progress")
@@ -37,22 +77,20 @@ export async function getLevelProgress(userId: string, levelKey: string) {
 
 export async function upsertLessonProgress(params: {
   userId: string;
-  lessonId: string;
+  levelKey: string;
+  lessonKey: string;
   completed: boolean;
   score: number;
-  duration: number;
 }) {
-  const { userId, lessonId, completed, score, duration } = params;
-  const { error } = await supabase.from("user_progress").upsert(
+  const { error } = await supabase.from("lesson_completions").upsert(
     {
-      user_id: userId,
-      lesson_id: lessonId,
-      completed,
-      score,
-      duration,
-      unlocked: true,
+      user_id: params.userId,
+      level_key: params.levelKey,
+      lesson_key: params.lessonKey,
+      completed: params.completed,
+      score: params.score,
     },
-    { onConflict: "user_id,lesson_id" },
+    { onConflict: "user_id,level_key,lesson_key" },
   );
   if (error) throw error;
 }

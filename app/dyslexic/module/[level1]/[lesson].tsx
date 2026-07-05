@@ -40,8 +40,10 @@ import level4MixedMastery from "../../../../data/level4/Level4_mixed_mastery";
 import level5Test from "../../../../data/level5/test";
 import { useAuth } from "../../../../hooks/AuthProvider"; // ← adjust path to wherever your session lives
 import {
+  getCurrentProgress,
   getLatestAssessment,
-  getLessonRow,
+  markLevelCompleted,
+  saveCurrentProgress,
   upsertLessonProgress,
 } from "../../../../utils/progress";
 import {
@@ -85,7 +87,7 @@ const LEVEL_ORDER = ["level1", "level2", "level3", "level4", "level5"];
 function getNextRoute(currentLevel: string, lessonKey: string): Href | null {
   const levelIdx = LEVEL_ORDER.indexOf(currentLevel);
   const nextLevel = LEVEL_ORDER[levelIdx + 1];
-  if (!nextLevel) return null; // finished level5 → nothing left
+  if (!nextLevel) return null;
 
   const nextLevelLessons = curriculumMap[nextLevel];
   if (!nextLevelLessons) return null;
@@ -116,6 +118,7 @@ export default function LessonScreen() {
     word: string;
     hyphenated: string;
   } | null>(null);
+  const [completionReady, setCompletionReady] = useState(false);
 
   const { session } = useAuth();
   const { lesson, level1 } = useLocalSearchParams();
@@ -127,8 +130,6 @@ export default function LessonScreen() {
   const [resolvedLessonKey, setResolvedLessonKey] = useState<string | null>(
     null,
   );
-  const [lessonRowId, setLessonRowId] = useState<string | null>(null);
-
   const lessonData =
     curriculumMap[resolvedLevel ?? ""]?.[resolvedLessonKey ?? ""] ??
     letterReversal;
@@ -202,11 +203,27 @@ export default function LessonScreen() {
   }, [session?.user?.id, activeLevel, lessonKey]);
 
   useEffect(() => {
-    if (!resolvedLevel || !resolvedLessonKey) return;
-    getLessonRow(resolvedLevel, resolvedLessonKey).then((row) =>
-      setLessonRowId(row.id),
-    );
-  }, [resolvedLevel, resolvedLessonKey]);
+    if (!resolvedLevel || !session?.user?.id) return;
+
+    (async () => {
+      const progress = await getCurrentProgress(session.user.id);
+      const completedLevels: string[] = progress?.completed_levels ?? [];
+
+      // level1 is always accessible. For level2+, previous must be completed.
+      const levelIdx = LEVEL_ORDER.indexOf(resolvedLevel);
+      if (levelIdx > 0) {
+        const requiredPrevious = LEVEL_ORDER[levelIdx - 1];
+        if (!completedLevels.includes(requiredPrevious)) {
+          // Block with Mascot
+          setMascotConfig({
+            mood: "encourage",
+            message: `Slow down, friend! 🐼\n\nYou need to finish ${requiredPrevious.replace("level", "Level ")} before unlocking this one.\n\nLet's go back and keep working — you're so close!`,
+            displayMode: "modal",
+          });
+        }
+      }
+    })();
+  }, [resolvedLevel, session?.user?.id]);
 
   // Resolve the server IP once on mount
   useEffect(() => {
@@ -412,6 +429,14 @@ export default function LessonScreen() {
   const handleNext = () => {
     if (step + 1 >= totalSteps) {
       setFinished(true);
+      setCompletionReady(true);
+      confettiRef.current?.start();
+      setMascotConfig({
+        mood: "cheer",
+        message: `🎉 You finished the lesson!\n\nScore: ${score} / ${lessonData.guidedPractice?.length ?? 0}\n\nYou're on a roll — want to jump into the next lesson, or take a well-earned break and come back later?`,
+        displayMode: "modal",
+      });
+      Speech.speak("Amazing work! Lesson complete!", { rate: 0.85 });
     } else {
       setStep(step + 1);
     }
@@ -657,14 +682,38 @@ export default function LessonScreen() {
                 { marginTop: 24, backgroundColor: "#2563EB" },
               ]}
               onPress={async () => {
-                if (session?.user?.id && lessonRowId) {
-                  await upsertLessonProgress({
-                    userId: session.user.id,
-                    lessonId: lessonRowId,
-                    completed: true,
-                    score,
-                    duration: 0,
-                  });
+                try {
+                  if (session?.user?.id) {
+                    await upsertLessonProgress({
+                      userId: session.user.id,
+                      levelKey: resolvedLevel as string,
+                      lessonKey: resolvedLessonKey as string,
+                      completed: true,
+                      score,
+                    });
+
+                    const nextRoute = getNextRoute(
+                      resolvedLevel as string,
+                      resolvedLessonKey as string,
+                    );
+
+                    if (nextRoute) {
+                      const params = (nextRoute as any).params;
+                      if (params.level1 !== resolvedLevel) {
+                        await markLevelCompleted(
+                          session.user.id,
+                          resolvedLevel as string,
+                        );
+                      }
+                      await saveCurrentProgress(
+                        session.user.id,
+                        params.level1,
+                        params.lesson,
+                      );
+                    }
+                  }
+                } catch (err) {
+                  console.warn("Progress save failed, navigating anyway:", err);
                 }
 
                 setStep(0);
@@ -708,49 +757,120 @@ export default function LessonScreen() {
           <Mascot
             mood={mascotConfig.mood}
             message={mascotConfig.message}
-            showNext={!pendingWordHelp}
+            showNext={!pendingWordHelp && !completionReady}
             nextLabel="Got it!"
             onDismiss={() => {
+              const isLockMessage =
+                mascotConfig?.message?.includes("before unlocking");
+              setMascotConfig(null);
+              setPendingWordHelp(null);
+
+              if (isLockMessage) {
+                getCurrentProgress(session!.user!.id).then((progress) => {
+                  router.replace({
+                    pathname: "/dyslexic/module/[level1]/[lesson]",
+                    params: {
+                      level1: progress?.current_level ?? "level1",
+                      lesson: progress?.current_lesson ?? "letter_reversal",
+                    },
+                  } as any);
+                });
+                return;
+              }
+
               if (
-                mascotConfig?.mood === "correct" ||
-                mascotConfig?.mood === "wrong"
+                !completionReady &&
+                (mascotConfig?.mood === "correct" ||
+                  mascotConfig?.mood === "wrong")
               ) {
                 handleNext();
               }
-              setMascotConfig(null);
-              setPendingWordHelp(null);
             }}
           />
 
-          {pendingWordHelp && (
+          {completionReady && !pendingWordHelp && (
             <View style={styles.wordHelpButtons}>
               <TouchableOpacity
                 style={styles.yesButton}
-                onPress={() => {
-                  setMascotConfig({
-                    mood: "cheer",
-                    message: `"${pendingWordHelp.word}" breaks down as:\n\n${pendingWordHelp.hyphenated}`,
-                    displayMode: "modal",
-                  });
-                  Speech.speak(
-                    `Let's break it down: ${pendingWordHelp.hyphenated}`,
-                    { rate: 0.75 },
+                onPress={async () => {
+                  setMascotConfig(null);
+                  setCompletionReady(false);
+
+                  try {
+                    if (session?.user?.id) {
+                      await upsertLessonProgress({
+                        userId: session.user.id,
+                        levelKey: resolvedLevel as string,
+                        lessonKey: resolvedLessonKey as string,
+                        completed: true,
+                        score,
+                      });
+                      const nextRoute = getNextRoute(
+                        resolvedLevel as string,
+                        resolvedLessonKey as string,
+                      );
+                      if (nextRoute) {
+                        const params = (nextRoute as any).params;
+                        if (params.level1 !== resolvedLevel) {
+                          await markLevelCompleted(
+                            session.user.id,
+                            resolvedLevel as string,
+                          );
+                        }
+                        await saveCurrentProgress(
+                          session.user.id,
+                          params.level1,
+                          params.lesson,
+                        );
+                      }
+                    }
+                  } catch (err) {
+                    console.warn("Progress save failed:", err);
+                  }
+
+                  setStep(0);
+                  setFinished(false);
+                  setScore(0);
+
+                  const nextRoute = getNextRoute(
+                    resolvedLevel as string,
+                    resolvedLessonKey as string,
                   );
-                  setPendingWordHelp(null);
+                  if (nextRoute) {
+                    router.replace(nextRoute);
+                  } else {
+                    router.replace("/dyslexic");
+                  }
                 }}
               >
-                <Text style={styles.yesText}>Yes, help me! 🧩</Text>
+                <Text style={styles.yesText}>Next Lesson →</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.noButton}
-                onPress={() => {
+                onPress={async () => {
                   setMascotConfig(null);
-                  setPendingWordHelp(null);
-                  Speech.speak("You've got this! Keep going!");
+                  setCompletionReady(false);
+                  try {
+                    if (session?.user?.id) {
+                      await upsertLessonProgress({
+                        userId: session.user.id,
+                        levelKey: resolvedLevel as string,
+                        lessonKey: resolvedLessonKey as string,
+                        completed: true,
+                        score,
+                      });
+                    }
+                  } catch (err) {
+                    console.warn("Progress save failed:", err);
+                  }
+                  Speech.speak("Great work today! See you next time.", {
+                    rate: 0.85,
+                  });
+                  router.replace("/dyslexic");
                 }}
               >
-                <Text style={styles.noText}>I'm okay, keep going!</Text>
+                <Text style={styles.noText}>Rest for now</Text>
               </TouchableOpacity>
             </View>
           )}
