@@ -45,32 +45,33 @@ export const CameraPreview: React.FC<CameraPreviewProps> = ({ onFacesDetected })
 
 const styles = StyleSheet.create({
   container: { 
-    width: 100, 
-    height: 130, 
-    borderRadius: 16, 
+    // CHANGED: Force the container to take the full space of the green parent box
+    width: '100%', 
+    height: '100%', 
+    position: 'absolute', // Ensures it stays in the background of the green box
+    top: 0,
+    left: 0,
     overflow: 'hidden', 
-    borderWidth: 2, 
-    borderColor: '#4A90E2', 
     backgroundColor: '#000' 
   },
   camera: { 
     flex: 1 
   },
   fallback: { 
-    width: 100, 
-    height: 130, 
-    justifyContent: 'center', 
+    // CHANGED: Make the fallback screens fill the space as well
+    width: '100%', 
+    height: '100%', 
+    justifyContent: 'center',
     alignItems: 'center', 
     backgroundColor: '#E0E0E0', 
-    borderRadius: 16, 
     padding: 4 
   },
   text: {
-    fontSize: 11,
+    fontSize: 14,
     color: '#666'
   },
   permissionText: { 
-    fontSize: 10, 
+    fontSize: 14, 
     textAlign: 'center', 
     color: '#D0021B',
     fontWeight: '600'
