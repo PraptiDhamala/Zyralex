@@ -48,6 +48,7 @@ backendsign/venv/
 backendsign/__pycache__/
 backendsign/*.pyc
 backendsign/*.pkl
+datasetssign/
 
 __pycache__/
 *.pyc

@@ -18,6 +18,7 @@
       },
       "package": "com.anonymous.MyLearningApp",
       "permissions": [
+        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
@@ -47,6 +48,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bc8a7374-b16d-4eaa-9996-ce26c11b8abe"
+      }
     }
   }
 }

@@ -2,30 +2,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { DRUM_ASSETS, REALISTIC_SUBJECTS } from '../constants/imageMap';
-import { SYLLABLE_DATA } from '../data/lessonPractice';
 import { speakWord } from '../services/speech';
 
 const { width, height } = Dimensions.get('window');
 
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
 interface Props {
+  level: DifficultyLevel;
+  data: any;
   onComplete: () => void;
   onClose: () => void;
 }
 
-export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
+export default function SyllableBasicsGame({ level, data, onComplete, onClose }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isGameFinished, setIsGameFinished] = useState(false);
 
-  const currentData = SYLLABLE_DATA[currentIndex];
-  const totalQuestions = SYLLABLE_DATA.length;
+  // Parse structural fields supporting variable names syllableBasics or syllables
+  const gameDataList = data?.syllableBasics || data?.syllables || [];
+  const totalQuestions = gameDataList.length;
+  const currentData = gameDataList[currentIndex] || { word: '', syllablesCount: 0, breakdown: '', meaningClue: '', audioPrompt: '' };
 
   const contentScale = useRef(new Animated.Value(0.9)).current;
   const slideCelebration = useRef(new Animated.Value(-height)).current;
 
   useEffect(() => {
-    if (isGameFinished) return;
+    if (isGameFinished || totalQuestions === 0) return;
     setSelectedAnswer(null);
     setIsCorrect(false);
 
@@ -37,8 +42,10 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
       useNativeDriver: true,
     }).start();
 
-    speakWord(currentData.audioPrompt);
-  }, [currentIndex, isGameFinished]);
+    if (currentData?.audioPrompt) {
+      speakWord(currentData.audioPrompt);
+    }
+  }, [currentIndex, isGameFinished, totalQuestions]);
 
   useEffect(() => {
     if (isGameFinished) {
@@ -73,15 +80,27 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
     }
   };
 
+  if (totalQuestions === 0) {
+    return (
+      <View style={s.safeContainer}>
+        <ScrollView contentContainerStyle={s.scrollContent}>
+          <Text style={s.clueText}>No audio beat channels active for this level selection.</Text>
+          <TouchableOpacity style={s.finalBtn} onPress={onClose}>
+            <Text style={s.finalBtnText}>Go Back</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    );
+  }
+
   const cleanClueText = currentData?.meaningClue 
-    ? currentData.meaningClue.substring(currentData.meaningClue.indexOf(" ") + 1)
+    ? (currentData.meaningClue.includes(" ") ? currentData.meaningClue.substring(currentData.meaningClue.indexOf(" ") + 1) : currentData.meaningClue)
     : "";
 
   const lookupKey = currentData?.word?.toUpperCase();
-  const mainSubjectImage = REALISTIC_SUBJECTS[lookupKey];
+  const mainSubjectImage = REALISTIC_SUBJECTS[lookupKey] || null;
 
   return (
-    // Safe outer view wrapper ensures the ScrollView occupies the true screen height bounds
     <View style={s.safeContainer}>
       <ScrollView 
         style={s.scrollContainer} 
@@ -92,7 +111,6 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
       >
         {!isGameFinished && (
           <Animated.View style={[s.innerWrapper, { transform: [{ scale: contentScale }] }]}>
-            {/* Header Progress Area */}
             <View style={s.headerRow}>
               <Text style={s.progressBadge}>Rhythm: {currentIndex + 1}/{totalQuestions}</Text>
               <TouchableOpacity style={s.closeBtn} onPress={onClose}>
@@ -100,13 +118,14 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
               </TouchableOpacity>
             </View>
 
-            {/* Core Card Section */}
             <View style={s.questionCard}>
-              <Image 
-                source={mainSubjectImage} 
-                style={s.heroRender} 
-                resizeMode="contain" 
-              />
+              {mainSubjectImage && (
+                <Image 
+                  source={mainSubjectImage} 
+                  style={s.heroRender} 
+                  resizeMode="contain" 
+                />
+              )}
               
               <Text style={s.mainWord}>{isCorrect ? currentData.breakdown : currentData.word}</Text>
               <Text style={s.clueText}>{cleanClueText}</Text>
@@ -114,7 +133,6 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
 
             <Text style={s.instructionText}>Tap the drums to count the beats!</Text>
 
-            {/* Interactive Input Rows */}
             <View style={s.drumContainer}>
               {[1, 2, 3].map((num) => {
                 const isCurrentSelection = selectedAnswer === num;
@@ -143,7 +161,6 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
               })}
             </View>
 
-            {/* Navigation Action Control Footer */}
             <View style={s.actionRow}>
               {isCorrect && (
                 <TouchableOpacity style={s.nextBtn} onPress={handleNext}>
@@ -154,7 +171,6 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
           </Animated.View>
         )}
 
-        {/* Celebration Window */}
         {isGameFinished && (
           <Animated.View style={[s.celebrationSheet, { transform: [{ translateY: slideCelebration }] }]}>
             <Text style={s.trophy}>🏆 🌟 🎶</Text>
@@ -180,30 +196,19 @@ export default function SyllableBasicsGame({ onComplete, onClose }: Props) {
 }
 
 const s = StyleSheet.create({
-  // The magic bullet fix: Forces full screen layout context constraint
   safeContainer: { flex: 1, backgroundColor: '#FAF5FF' },
   scrollContainer: { flex: 1 },
-  scrollContent: { 
-    paddingHorizontal: 20, 
-    paddingTop: 60, 
-    paddingBottom: 60, 
-    alignItems: 'center',
-    flexGrow: 1 // 👈 CRITICAL: Tells content wrap to expand dynamically past viewport bounds
-  },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 60, alignItems: 'center', flexGrow: 1 },
   innerWrapper: { width: '100%', alignItems: 'center', gap: 16 },
-  
   headerRow: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   progressBadge: { fontSize: 13, fontWeight: '700', color: '#7C3AED', backgroundColor: '#F3E8FF', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, overflow: 'hidden' },
   closeBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E9D5FF' },
   closeText: { fontSize: 16, color: '#A78BFA', fontWeight: 'bold' },
-  
   questionCard: { backgroundColor: '#fff', width: '100%', paddingVertical: 20, paddingHorizontal: 24, borderRadius: 24, alignItems: 'center', borderWidth: 1, borderColor: '#E9D5FF', shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
   heroRender: { width: 160, height: 160, marginBottom: 12, borderRadius: 16 },
   mainWord: { fontSize: 38, fontWeight: '900', color: '#4C1D95', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 },
-
   clueText: { fontSize: 16, fontWeight: '600', color: '#6D28D9', textAlign: 'center', paddingHorizontal: 10, marginTop: 8 },
   instructionText: { fontSize: 15, fontWeight: '700', color: '#6B7280', marginVertical: 4 },
-  
   drumContainer: { flexDirection: 'row', gap: 10, justifyContent: 'center', width: '100%' },
   drumPad: { flex: 1, backgroundColor: '#fff', borderWidth: 3, borderColor: '#D8B4FE', borderRadius: 20, paddingVertical: 18, alignItems: 'center', shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
   drumSelected: { borderColor: '#A78BFA', backgroundColor: '#F3E8FF' },
@@ -213,11 +218,9 @@ const s = StyleSheet.create({
   circleBadge: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#7C3AED', alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
   drumNumberText: { color: '#fff', fontSize: 18, fontWeight: '800' },
   beatLabel: { fontSize: 12, fontWeight: '700', color: '#4B5563' },
-
   actionRow: { width: '100%', minHeight: 60, justifyContent: 'center', marginTop: 8 },
   nextBtn: { backgroundColor: '#A78BFA', width: '100%', paddingVertical: 15, borderRadius: 16, alignItems: 'center', shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   nextBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-
   celebrationSheet: { width: '100%', borderRadius: 24, borderWidth: 1, borderColor: '#E9D5FF', padding: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', marginTop: 'auto', marginBottom: 'auto' },
   trophy: { fontSize: 52, marginBottom: 12 },
   title: { fontSize: 26, fontWeight: '800', color: '#4C1D95', marginBottom: 6 },

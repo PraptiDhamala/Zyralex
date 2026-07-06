@@ -1,3 +1,6 @@
+import {
+  Ionicons
+} from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -9,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { AITutorCard } from '../../components/AITutorCard';
 import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
 import { LESSON_LEVELS } from '../../constants/lessonData';
@@ -22,7 +24,7 @@ function ActionButton({
   onPress,
 }: 
 {
-  icon: string;
+  icon: string |React.ReactNode;   
   label: string;
   onPress: () => void;
 }) {
@@ -46,18 +48,23 @@ function StatCard({
   value,
   label,
 }: {
-  icon: string;
+  icon: string | React.ReactNode;   
   value: string | number;
   label: string;
 }) {
   return (
     <View style={styles.statCard}>
-      <Text style={styles.statIcon}>{icon}</Text>
+      {typeof icon === "string" ? (
+        <Text style={styles.statIcon}>{icon}</Text>
+      ) : (
+        icon
+      )}
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
+
 
 //ContinueLessonItem Component
 function ContinueLessonItem({
@@ -66,7 +73,7 @@ function ContinueLessonItem({
   description,
   onPress,
 }: {
-  icon: string;
+  icon: string |React.ReactNode;
   title: string;
   description: string;
   onPress: () => void;
@@ -105,7 +112,7 @@ function LevelProgressCardView({
       <View style={styles.levelHeader}>
         <View style={styles.levelTitleSection}>
           <View style={styles.levelBadge}>
-            <Text style={styles.levelIcon}>⭐</Text>
+            <Ionicons name="rocket" size={25} color="#eee2f9" />
           </View>
           <View>
             <Text style={styles.levelTitle}>Level 1</Text>
@@ -142,7 +149,7 @@ function LevelProgressCardView({
               ]}
             >
               <Text style={styles.indicatorText}>
-                {index === 0 ? '✓' : ''}
+                {index === 0 ? <Ionicons name="checkmark-circle" size={25} color="#f0f7f9e6" /> :<Ionicons name="lock-closed" size={18} color="#90bc9a" /> }
               </Text>
             </View>
           ))}
@@ -192,19 +199,22 @@ export default function HomeScreen() {
         {/* Level Progress Card */}
         <LevelProgressCard />
 
-        {/* AI Tutor Card */}
+        {/* AI Tutor Card
         <AITutorCard />
+         */}
 
         {/* Stats Cards */}
         <View style={styles.statsSection}>
-          <StatCard icon="🔥" value={USER_STATS.dayStreak} label="Day Streak" />
+          <StatCard 
+          icon= {<Ionicons name="flame" size={24} color="#f19238c0" />}
+          value={USER_STATS.dayStreak} label="Day Streak" />
           <StatCard
-            icon="🏆"
+            icon= {<Ionicons name="trophy" size={25} color="#fcd743" />}
             value={`${USER_STATS.bestScore}%`}
             label="Best Score"
           />
           <StatCard
-            icon="📈"
+           icon= {<Ionicons name="trending-up" size={25} color="#0a77d6c0" />}
             value={`+${USER_STATS.improvement}%`}
             label="Improvement"
           />
@@ -213,17 +223,17 @@ export default function HomeScreen() {
         {/* Action Buttons */}
         <View style={styles.actionButtonsSection}>
           <ActionButton
-            icon="📖"
+            icon= {<Ionicons name="book" size={24} color="#90bc9a" />}
             label="Learn"
             onPress={() => router.push('/sign/learn')}
           />
           <ActionButton
-            icon="🎯"
+            icon= {<Ionicons name="create" size={24} color="#90bc9a" />}
             label="Practice"
             onPress={() => router.push('/sign/practice')}
           />
           <ActionButton
-            icon="🎮"
+           icon= {<Ionicons name="game-controller" size={24} color="#90bc9a" />}
             label="Games"
             onPress={() => router.push('/sign/games')}
           />
@@ -234,7 +244,7 @@ export default function HomeScreen() {
           <View style={styles.continueSection}>
             <Text style={styles.sectionTitle}>Continue Learning</Text>
             <ContinueLessonItem
-              icon="⭐"
+              icon= {<Ionicons name="school" size={30} color="#1b1b19fc" />}
               title={nextLesson.title}
               description={nextLesson.description}
               onPress={() => router.push('/sign/learn')}

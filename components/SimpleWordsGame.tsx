@@ -1,24 +1,29 @@
 // components/SimpleWordsGame.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SIMPLE_WORDS_DATA } from '../data/lessonPractice';
 import { speakWord } from '../services/speech';
 
 const { width, height } = Dimensions.get('window');
 
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
 interface Props {
+  level: DifficultyLevel;
+  data: any;
   onComplete: () => void;
   onClose: () => void;
 }
 
-export default function SimpleWordsGame({ onComplete, onClose }: Props) {
+export default function SimpleWordsGame({ level, data, onComplete, onClose }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedLetters, setSelectedLetters] = useState<string[]>([]);
   const [isWordComplete, setIsWordComplete] = useState(false);
   const [isGameFinished, setIsGameFinished] = useState(false);
 
-  const currentData = SIMPLE_WORDS_DATA[currentIndex];
-  const totalWords = SIMPLE_WORDS_DATA.length;
+  // Support matrix layouts called simpleWords or words
+  const gameDataList = data?.simpleWords || data?.words || [];
+  const totalWords = gameDataList.length;
+  const currentData = gameDataList[currentIndex] || { word: '', scrambled: [], meaningClue: '', audioPrompt: '' };
 
   // Animation Anchors
   const letterScale = useRef(new Animated.Value(0)).current;
@@ -29,13 +34,13 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
   const [usedIndices, setUsedIndices] = useState<number[]>([]);
 
   useEffect(() => {
-    if (isGameFinished) return;
+    if (isGameFinished || totalWords === 0) return;
 
     // Reset layout states per challenge loop
     setSelectedLetters([]);
     setUsedIndices([]);
     setIsWordComplete(false);
-    setScrambledPool([...currentData.scrambled]);
+    setScrambledPool(currentData.scrambled ? [...currentData.scrambled] : []);
 
     letterScale.setValue(0);
     Animated.spring(letterScale, {
@@ -45,8 +50,10 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
       useNativeDriver: true,
     }).start();
 
-    speakWord(currentData.audioPrompt);
-  }, [currentIndex, isGameFinished]);
+    if (currentData?.audioPrompt) {
+      speakWord(currentData.audioPrompt);
+    }
+  }, [currentIndex, isGameFinished, totalWords]);
 
   useEffect(() => {
     if (isGameFinished) {
@@ -70,15 +77,13 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
     setUsedIndices(nextUsed);
     speakWord(letter.toLowerCase());
 
-    // Check if total matches target length
-    if (nextSelection.length === currentData.word.length) {
+    if (nextSelection.length === (currentData.word?.length || 0)) {
       const spelledWord = nextSelection.join("");
       
       if (spelledWord === currentData.word) {
         setIsWordComplete(true);
         speakWord(`Sparkly perfect! That spells ${currentData.word}!`);
       } else {
-        // Soft error fallback reset
         setTimeout(() => {
           speakWord("Let's shake those blocks and try that word one more time!");
           setSelectedLetters([]);
@@ -96,11 +101,26 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
     }
   };
 
+  if (totalWords === 0) {
+    return (
+      <View style={s.container}>
+        <Text style={s.clueText}>No word architecture modules active for this level.</Text>
+        <TouchableOpacity style={s.finalBtn} onPress={onClose}>
+          <Text style={s.finalBtnText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const clueEmoji = currentData.meaningClue?.split(" ")[0] || "📝";
+  const clueText = currentData.meaningClue?.includes(" ") 
+    ? currentData.meaningClue.substring(currentData.meaningClue.indexOf(" ") + 1)
+    : currentData.meaningClue;
+
   return (
     <View style={s.container}>
       {!isGameFinished && (
         <>
-          {/* Header Layout Status */}
           <View style={s.headerRow}>
             <Text style={s.progressBadge}>Words Built: {currentIndex}/{totalWords}</Text>
             <TouchableOpacity style={s.closeBtn} onPress={onClose}>
@@ -108,15 +128,13 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
             </TouchableOpacity>
           </View>
 
-          {/* Clue Area Card */}
           <View style={s.clueBox}>
-            <Text style={s.clueEmoji}>{currentData.meaningClue.split(" ")[0]}</Text>
-            <Text style={s.clueText}>{currentData.meaningClue.substring(currentData.meaningClue.indexOf(" ") + 1)}</Text>
+            <Text style={s.clueEmoji}>{clueEmoji}</Text>
+            <Text style={s.clueText}>{clueText}</Text>
           </View>
 
-          {/* Puzzle Placement Trays */}
           <View style={s.trayRow}>
-            {Array.from({ length: currentData.word.length }).map((_, i) => (
+            {Array.from({ length: currentData.word?.length || 0 }).map((_, i) => (
               <View key={i} style={[s.slot, isWordComplete && s.slotSuccess]}>
                 <Text style={s.slotText}>
                   {selectedLetters[i] || ""}
@@ -125,7 +143,6 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
             ))}
           </View>
 
-          {/* Scrambled Interaction Blocks Map */}
           <View style={s.blocksContainer}>
             {scrambledPool.map((letter, index) => {
               const isUsed = usedIndices.includes(index);
@@ -144,7 +161,6 @@ export default function SimpleWordsGame({ onComplete, onClose }: Props) {
             })}
           </View>
 
-          {/* Flow Continue Button Trigger */}
           <View style={{ width: '100%', minHeight: 60 }}>
             {isWordComplete && (
               <TouchableOpacity style={s.continueBtn} onPress={handleNextWord}>
@@ -203,24 +219,11 @@ const s = StyleSheet.create({
   blockTextDisabled: { color: '#93C5FD' },
   continueBtn: { backgroundColor: '#4ADE80', width: '100%', paddingVertical: 15, borderRadius: 16, alignItems: 'center', shadowColor: '#4ADE80', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 3 },
   continueBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  
-  // Celebration Engine Layouts
   celebrationSheet: { flex: 1, backgroundColor: '#fff', width: '100%', borderRadius: 24, borderWidth: 1, borderColor: '#BFDBFE', padding: 24, alignItems: 'center', justifyContent: 'center' },
   trophy: { fontSize: 48, marginBottom: 12 },
   title: { fontSize: 26, fontWeight: '800', color: '#1E3A5F', marginBottom: 6 },
   sub: { fontSize: 13, color: '#6B9EC8', textAlign: 'center', marginBottom: 20, paddingHorizontal: 12 },
-bonusCard: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    gap: 12, 
-    backgroundColor: '#FEF3C7', 
-    borderWidth: 1, // <-- Changed from borderHorizontalWidth: 0
-    borderColor: '#FDE68A', 
-    padding: 14, 
-    borderRadius: 16, 
-    width: '100%', 
-    marginBottom: 20 
-  },
+  bonusCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FEF3C7', borderWidth: 1, borderColor: '#FDE68A', padding: 14, borderRadius: 16, width: '100%', marginBottom: 20 },
   starIcon: { fontSize: 30 },
   bonusTitle: { fontSize: 14, fontWeight: '700', color: '#92400E' },
   bonusMeta: { fontSize: 11, color: '#B45309', marginTop: 2 },

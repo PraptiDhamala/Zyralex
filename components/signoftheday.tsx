@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
-    marginLeft:20,
+    marginLeft:30,
     gap:30,
   },
   signContainer: {
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     
   },
   signVideo: {
-  width: 199,
+  width: 198,
    height: 150,
     borderRadius: 16,
    marginTop: 10 ,
@@ -141,7 +141,7 @@ borderColor: "white",
     height: 200,
   },
   mascotText: {
-    fontSize: 20,
+    fontSize: 18,
     color: COLORS.primary,
     fontWeight: "600",
     marginTop: 4,

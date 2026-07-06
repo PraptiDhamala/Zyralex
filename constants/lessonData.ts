@@ -73,10 +73,10 @@ export const LESSON_LEVELS: Level[] = [
       signs: [
         { signId: 'g', label: 'G', image: aslImage('g'), video: aslVideo('g'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'h', label: 'H', image: aslImage('h'), video: aslVideo('h'), hint: 'Index and middle finger point sideways together.',gestureKey:'index_middle_sideways' },
-        { signId: 'i', label: 'I', image: aslImage('i'), video: aslVideo('i'), hint: 'Pinky finger up, others in a fist.',gestureKey:'pinky_up_fist_res' },
+        { signId: 'i', label: 'I', image: aslImage('i'), video: aslVideo('i'), hint: 'Pinky finger up, others in a fist.',gestureKey:'pinky_up_fist_rest' },
         { signId: 'j', label: 'J', image: aslImage('j'), video: aslVideo('j'), hint: 'Like I, but trace a J in the air with your pinky.',gestureKey:'pinky_trace_j'},
         { signId: 'k', label: 'K', image: aslImage('k'), video: aslVideo('k'), hint: 'Index up, middle angled out, thumb between them.',gestureKey:'index_up_middle_out_thumb_between' },
-        { signId: 'l', label: 'L', image: aslImage('l'), video: aslVideo('l'), hint: 'Index up, thumb out — like an L shape.',gestureKey:'index_up_thumb_out_lshape' },
+        { signId: 'l', label: 'L', image: aslImage('l'), video: aslVideo('l'), hint: 'Index up, thumb out, like an L shape.',gestureKey:'index_up_thumb_out_lshape' },
       ],
     },
     {
@@ -90,7 +90,7 @@ export const LESSON_LEVELS: Level[] = [
       signs: [
         { signId: 'm', label: 'M', image: aslImage('m'), video: aslVideo('m'), hint: 'Three fingers folded over the thumb.',gestureKey:'three_fingers_over_thumb' },
         { signId: 'n', label: 'N', image: aslImage('n'), video: aslVideo('n'), hint: 'Two fingers folded over the thumb.',gestureKey:'two_fingers_over_thumb' },
-        { signId: 'o', label: 'O', image: aslImage('o'), video: aslVideo('o'), hint: 'All fingers curve to meet the thumb — like an O.' ,gestureKey:'curved_hand_o_shape'},
+        { signId: 'o', label: 'O', image: aslImage('o'), video: aslVideo('o'), hint: 'All fingers curve to meet the thumb, like an O.' ,gestureKey:'curved_hand_o_shape'},
         { signId: 'p', label: 'P', image: aslImage('p'), video: aslVideo('p'), hint: 'Like K but pointing downward.',gestureKey:'k_shape_downward' },
         { signId: 'q', label: 'Q', image: aslImage('q'), video: aslVideo('q'), hint: 'Like G but pointing downward.',gestureKey:'g_shape_downward' },
         { signId: 'r', label: 'R', image: aslImage('r'), video: aslVideo('r'), hint: 'Cross your index and middle fingers.' ,gestureKey:'index_middle_crossed'},
@@ -109,7 +109,7 @@ export const LESSON_LEVELS: Level[] = [
         { signId: 't', label: 'T', image: aslImage('t'), video: aslVideo('t'), hint: 'Thumb between index and middle finger.',gestureKey:'thumb_between_index_middle' },
         { signId: 'u', label: 'U', image: aslImage('u'), video: aslVideo('u'), hint: 'Index and middle finger up together.',gestureKey:'index_middle_up_together' },
         { signId: 'v', label: 'V', image: aslImage('v'), video: aslVideo('v'), hint: 'Index and middle finger up, spread apart — peace sign.' ,gestureKey:'index_middle_up_apart'},
-        { signId: 'w', label: 'W', image: aslImage('w'), video: aslVideo('w'), hint: 'Three fingers up, spread — like a W.',gestureKey:'three_fingers_up_spread' },
+        { signId: 'w', label: 'W', image: aslImage('w'), video: aslVideo('w'), hint: 'Three fingers up, spread, like a W.',gestureKey:'three_fingers_up_spread' },
         { signId: 'x', label: 'X', image: aslImage('x'), video: aslVideo('x'), hint: 'Index finger hooked like a hook.',gestureKey:'index_hooked' },
         { signId: 'y', label: 'Y', image: aslImage('y'), video: aslVideo('y'), hint: 'Thumb and pinky out, others in a fist.',gestureKey:'thumb_pinky_out_fist_rest' },
         { signId: 'z', label: 'Z', image: aslImage('z'), video: aslVideo('z'), hint: 'Trace a Z in the air with your index finger.',gestureKey:'index_trace_z' },
@@ -132,7 +132,7 @@ export const LESSON_LEVELS: Level[] = [
         { signId: '6', label: '6', image: aslImage('6'), video: aslVideo('6'), hint: 'Pinky and thumb touch, other fingers up.',gestureKey:'pinky_thumb_touch' },
         { signId: '7', label: '7', image: aslImage('7'), video: aslVideo('7'), hint: 'Ring finger and thumb touch.',gestureKey:'ring_thumb_touch' },
         { signId: '8', label: '8', image: aslImage('8'), video: aslVideo('8'), hint: 'Middle finger and thumb touch.',gestureKey:'middle_thumb_touch' },
-        { signId: '9', label: '9', image: aslImage('9'), video: aslVideo('9'), hint: 'Index finger and thumb touch — like an O.',gestureKey:'index_thumb_touch_o_shape' },
+        { signId: '9', label: '9', image: aslImage('9'), video: aslVideo('9'), hint: 'Index finger and thumb touch, like an O.',gestureKey:'index_thumb_touch_o_shape' },
         { signId: '10', label: '10', image: aslImage('10'), video: aslVideo('10'), hint: 'Thumb up, shake slightly side to side.',gestureKey:'thumb_up_shake' },
       ],
     },
@@ -146,8 +146,8 @@ export const LESSON_LEVELS: Level[] = [
     level: 2,
     completed:0,
     total:4,
-    lessons:  [
-    {
+    lessons:[
+      {
       lessonId: 'lesson-1',
       title: 'Greeting phrases',
       description: 'Learn basic greeting phrases used daily',
@@ -156,7 +156,7 @@ export const LESSON_LEVELS: Level[] = [
       xp: 20,
       completed: false,
       signs: [
-        { signId: 'Hello', label: 'Hello', image: aslImage('Hello'), video: aslVideo('Hello'), hint: 'Place your flat hand near your temple and move it outward (salute motion)', gestureKey: 'flat_hand_salute_out' },
+        { signId: 'Hello', label: 'Hello', image: aslImage('Hello'), video: aslVideo('Hello'), hint: 'Place your flat hand on your temple, move it outward', gestureKey: 'flat_hand_salute_out' },
         { signId: 'Good', label: 'Good', image: aslImage('Good'), video: aslVideo('Good'), hint: 'Place the fingertips of your flat hand on your chin, then move it forward and down, ending with your palm facing up.', gestureKey: 'flat_hand_chin_forward_down' },
         { signId: 'Morning', label: 'Morning', image: aslImage('Morning'), video: aslVideo('Morning'), hint: 'Hold your non-dominant arm flat and use your dominant forearm to rise up from it like the sun rising on the horizon.', gestureKey: 'forearm_rises_up' },
         { signId: 'Good Morning', label: 'Good Morning', image: aslImage('Good_Morning'), video: aslVideo('Good_Morning'), hint: 'Sign Good (fingertips from chin forward), then sign Morning (forearm rises like the sun). Do them in sequence.', gestureKey: 'good_then_morning' },

@@ -10,7 +10,6 @@ import {
   Text,
   View
 } from 'react-native';
-import { DifficultySelector } from '../../components/DifficultySelector';
 import { PracticeSessionCard } from '../../components/PracticeSessionCard';
 import { COLORS } from '../../constants/colors';
 type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
@@ -35,7 +34,7 @@ useFocusEffect(
 );
 
   if (!currentLesson) {
-    return <Text>No lesson selected yet</Text>;
+    return <Text>No lesson selected yet!Please select one</Text>;
   }
 
   const { levelId, lessonId } = currentLesson;
@@ -72,11 +71,7 @@ useFocusEffect(
           <Text style={styles.sectionTitle}>Practice Sessions</Text>
         </View>
 
-        {/* Difficulty Selector (applies to Lesson mode) */}
-        <DifficultySelector
-          selectedDifficulty={selectedDifficulty}
-          onSelectDifficulty={setSelectedDifficulty}
-        />
+       
         <SignOfTheDayPanel />
 
         {/* Practice Modes */}

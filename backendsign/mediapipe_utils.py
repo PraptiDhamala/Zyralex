@@ -1,74 +1,150 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
 
-mp_holistic = mp.solutions.holistic.Holistic(
-    static_image_mode=True,
-    model_complexity=1,
-    smooth_landmarks=True
+
+
+base_options = python.BaseOptions(
+    model_asset_path="hand_landmarker.task"
 )
 
-# -----------------------------
-# NORMALIZATION (VERY IMPORTANT)
-# -----------------------------
-def normalize_landmarks(landmarks):
-    arr = np.array(landmarks).reshape(-1, 3)
+options = vision.HandLandmarkerOptions(
+    base_options=base_options,
+    num_hands=2
+)
 
-    # remove global position (use wrist as origin if available)
-    origin = arr[0]
-    arr = arr - origin
-
-    # scale normalization
-    norm = np.linalg.norm(arr, axis=1).max() + 1e-6
-    arr = arr / norm
-
-    return arr.flatten().tolist()
+detector = vision.HandLandmarker.create_from_options(options)
 
 
-# -----------------------------
-# IMAGE → FRAME
-# -----------------------------
-def extract_landmarks(image_bytes):
 
-    np_img = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+def angle(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
 
-    if img is None:
+    ba = a - b
+    bc = c - b
+
+    cosine = np.dot(ba, bc) / (
+        np.linalg.norm(ba) *
+        np.linalg.norm(bc) +
+        1e-8
+    )
+
+    cosine = np.clip(cosine, -1.0, 1.0)
+
+    return float(np.degrees(np.arccos(cosine)))
+
+
+def dist(a, b):
+    return float(np.linalg.norm(np.array(a) - np.array(b)))
+
+
+
+def hand_features(pts):
+
+    pts = np.array(pts)
+
+    # Normalize around wrist
+    wrist = pts[0]
+    pts = pts - wrist
+
+    scale = np.max(np.linalg.norm(pts, axis=1))
+
+    if scale > 0:
+        pts = pts / scale
+
+    features = []
+
+    fingers = [
+        (1, 2, 3, 4),
+        (5, 6, 7, 8),
+        (9, 10, 11, 12),
+        (13, 14, 15, 16),
+        (17, 18, 19, 20)
+    ]
+
+    # Finger joint angles
+    for f in fingers:
+        features.append(angle(pts[f[0]], pts[f[1]], pts[f[2]]))
+        features.append(angle(pts[f[1]], pts[f[2]], pts[f[3]]))
+
+    # Fingertip distances
+    tips = [4, 8, 12, 16, 20]
+
+    for i in range(len(tips)):
+        for j in range(i + 1, len(tips)):
+            features.append(
+                dist(
+                    pts[tips[i]],
+                    pts[tips[j]]
+                )
+            )
+
+    # Palm orientation
+    v1 = pts[5] - pts[0]
+    v2 = pts[17] - pts[0]
+
+    normal = np.cross(v1, v2)
+
+    norm = np.linalg.norm(normal)
+
+    if norm > 0:
+        normal = normal / norm
+
+    features.extend(normal.tolist())
+
+    return features
+
+
+
+def extract_features_from_frame(frame):
+
+    # OpenCV BGR -> RGB
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    mp_image = mp.Image(
+        image_format=mp.ImageFormat.SRGB,
+        data=frame
+    )
+
+    result = detector.detect(mp_image)
+
+    if not result.hand_landmarks:
         return None
 
-    return extract_landmarks_from_frame(img)
+    hands = []
+
+    for hand in result.hand_landmarks:
+
+        pts = np.array([
+            [lm.x, lm.y, lm.z]
+            for lm in hand
+        ])
+
+        hands.append(hand_features(pts))
+
+    # Ensure fixed-length feature vector
+    if len(hands) == 1:
+        return hands[0] + hands[0]
+
+    return hands[0] + hands[1]
 
 
-# -----------------------------
-# FRAME → LANDMARKS
-# -----------------------------
-def extract_landmarks_from_frame(frame):
+
+def extract_features_from_bytes(image_bytes):
+    """
+    Converts uploaded image bytes into a feature vector.
+    Returns None if no hand is detected.
+    """
+
+    np_image = np.frombuffer(image_bytes, np.uint8)
+
+    frame = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
 
     if frame is None:
         return None
 
-    img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = mp_holistic.process(img_rgb)
-
-    landmarks = []
-
-    # LEFT HAND
-    if results.left_hand_landmarks:
-        for lm in results.left_hand_landmarks.landmark:
-            landmarks.extend([lm.x, lm.y, lm.z])
-    else:
-        landmarks.extend([0] * 21 * 3)
-
-    # RIGHT HAND
-    if results.right_hand_landmarks:
-        for lm in results.right_hand_landmarks.landmark:
-            landmarks.extend([lm.x, lm.y, lm.z])
-    else:
-        landmarks.extend([0] * 21 * 3)
-
-    # -----------------------------
-    # IMPORTANT FIX: NORMALIZE HERE
-    # -----------------------------
-    landmarks = normalize_landmarks(landmarks)
-
-    return landmarks
+    return extract_features_from_frame(frame)
