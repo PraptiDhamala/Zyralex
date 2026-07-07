@@ -1,99 +1,93 @@
 const comprehension = {
   id: "comprehension",
 
-  title: "Reading Comprehension",
+  title: "Reading Detective",
 
   subtitle:
-    "Read short passages carefully and answer questions to improve understanding.",
+    "Become a reading detective! Read, find clues, and solve mini mysteries.",
 
   difficulty: "hard",
 
+  mascot: "🕵️",
+
   explanation: [
     {
-      type: "info",
+      type: "story",
       content:
-        "Comprehension means understanding what you read, not just saying the words.",
+        "A detective doesn't just read words—they look for clues! Today YOU are the detective.",
     },
 
     {
       type: "tip",
-      content:
-        "Good readers think about WHO, WHAT, WHERE, and WHY while reading.",
+      content: "Ask yourself:\n👤 Who?\n📍 Where?\n💭 Why?\n🎯 What happened?",
     },
 
     {
-      type: "info",
-      content:
-        "You can look for important clues in sentences to help answer questions.",
+      type: "encourage",
+      content: "Take your time. Great detectives never rush!",
     },
   ],
 
   examples: [
     {
-      letter: "🐶",
+      emoji: "🐶",
       word: "The dog ran to the park.",
-      emoji: "📖",
+      clue: "📍 Where did it go?",
     },
 
     {
-      letter: "🍎",
+      emoji: "🍎",
       word: "Mia ate an apple because she was hungry.",
-      emoji: "🧠",
+      clue: "💭 Why?",
     },
   ],
 
   guidedPractice: [
     {
-      question:
-        "Sam wore a raincoat because it was raining outside.\n\nWhy did Sam wear a raincoat?",
+      mission: "🔍 Find the reason!",
 
-      options: [
-        "Because it was cold",
-        "Because it was raining",
-        "Because he was tired",
-      ],
+      story: "Sam wore a raincoat because it was raining.",
 
-      answer: "Because it was raining",
+      question: "Why did Sam wear the raincoat?",
+
+      options: ["🥶 It was cold", "🌧️ It was raining", "😴 He was sleepy"],
+
+      answer: "🌧️ It was raining",
+
+      success: "Excellent detective work! ⭐",
+
+      hint: "Look for the word 'because'.",
     },
 
     {
-      question:
-        "Lily put her books in her bag before school.\n\nWhat did Lily put in her bag?",
+      mission: "📍 Find the place!",
 
-      options: ["Shoes", "Books", "Lunch"],
+      story: "The cat hid under the table during the storm.",
 
-      answer: "Books",
+      question: "Where did the cat hide?",
+
+      options: ["🛏️ Under the bed", "🪑 Under the table", "🌳 In the garden"],
+
+      answer: "🪑 Under the table",
+
+      success: "You found the clue! 🎉",
     },
 
     {
-      question:
-        "Tom was thirsty after playing football.\n\nWhy was Tom thirsty?",
+      mission: "👤 Find the object!",
 
-      options: ["He was sleeping", "He was playing football", "He was reading"],
+      story: "Lily packed her books before school.",
 
-      answer: "He was playing football",
-    },
+      question: "What did Lily pack?",
 
-    {
-      question:
-        "The cat hid under the table during the storm.\n\nWhere did the cat hide?",
+      options: ["👟 Shoes", "📚 Books", "🍎 Lunch"],
 
-      options: ["Under the bed", "Under the table", "In the garden"],
+      answer: "📚 Books",
 
-      answer: "Under the table",
-    },
-
-    {
-      question: "Anna studied every day for her test.\n\nWhy did Anna study?",
-
-      options: ["For her test", "To watch TV", "To play outside"],
-
-      answer: "For her test",
+      success: "Great memory! ⭐",
     },
   ],
 
   completionMessage:
-    "Excellent work! You are improving your reading comprehension skills.",
+    "🏆 Detective Complete!\nYou solved every reading mystery!",
 };
-
-export default comprehension;

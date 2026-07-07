@@ -1,106 +1,89 @@
 const fluency = {
-  id: "fluency",
+  title: "Reading Race",
 
-  title: "Reading Fluency",
+  subtitle: "Help the rocket reach space by reading smoothly!",
 
-  subtitle: "Practice reading smoothly, accurately, and with confidence.",
+  mascot: "🚀",
 
   difficulty: "hard",
 
   explanation: [
     {
-      type: "info",
-      content:
-        "Fluency means reading words smoothly and without stopping too much.",
+      type: "story",
+      content: "Every smooth sentence gives your rocket more fuel!",
     },
 
     {
       type: "tip",
-      content:
-        "Good readers group words together instead of reading one word at a time.",
+      content: "Read in chunks, not one word at a time.",
     },
 
     {
-      type: "info",
-      content:
-        "Reading the same sentence multiple times can improve speed and confidence.",
+      type: "tip",
+      content: "Follow the ⭐ stars with your finger while reading.",
     },
   ],
 
   examples: [
     {
-      letter: "📖",
-      word: "The bird flew across the sky.",
-      emoji: "🕊️",
+      emoji: "🚀",
+      word: "The bird flew | across the sky.",
+
+      audio: "bird_flew",
+
+      highlight: ["The bird flew", "across the sky"],
     },
 
     {
-      letter: "🚲",
-      word: "Mina rides her bike to school every day.",
-      emoji: "✨",
+      emoji: "🚲",
+      word: "Mina rides | her bike | every day.",
+
+      audio: "bike",
     },
   ],
 
   guidedPractice: [
     {
-      question: "Choose the sentence that sounds smooth and complete.",
+      mission: "🚀 Fuel the Rocket",
 
-      options: ["The dog ran fast.", "Dog the fast ran.", "Fast ran dog the."],
+      sentence: "The rabbit hopped across the garden.",
 
-      answer: "The dog ran fast.",
+      repeat: 2,
+
+      reward: "⭐⭐",
     },
 
     {
-      question: "Which sentence is easiest to read clearly?",
+      mission: "🌈 Rainbow Reading",
 
-      options: [
-        "Sam plays football after school.",
-        "Football school after Sam plays.",
-        "After plays school football Sam.",
-      ],
+      sentence: "The little bird sang happily.",
 
-      answer: "Sam plays football after school.",
+      repeat: 3,
+
+      reward: "🌈",
     },
 
     {
-      question: "Choose the sentence with the correct word order.",
+      mission: "⚡ Speed Boost",
 
-      options: [
-        "The sun shines brightly today.",
-        "Brightly shines sun today the.",
-        "Today the brightly sun shines.",
-      ],
+      sentence: "The children laughed together.",
 
-      answer: "The sun shines brightly today.",
+      repeat: 2,
+
+      reward: "⚡",
     },
 
     {
-      question: "Which sentence sounds natural when read aloud?",
+      mission: "🏁 Finish Line",
 
-      options: [
-        "Lucy baked cookies for her friends.",
-        "Cookies Lucy her baked friends for.",
-        "Friends for baked Lucy cookies.",
-      ],
+      sentence: "We found a treasure chest.",
 
-      answer: "Lucy baked cookies for her friends.",
-    },
+      repeat: 3,
 
-    {
-      question: "Choose the smoothest sentence.",
-
-      options: [
-        "The children laughed at the funny joke.",
-        "Funny joke the laughed children at.",
-        "Children the joke funny laughed.",
-      ],
-
-      answer: "The children laughed at the funny joke.",
+      reward: "🏆",
     },
   ],
 
   completionMessage:
-    "Wonderful job! Your reading fluency is getting stronger every day.",
+    "🚀 Blast Off!\nYour reading is becoming smoother every day!",
 };
-
-export default fluency;

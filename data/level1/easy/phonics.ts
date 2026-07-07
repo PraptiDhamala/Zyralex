@@ -30,7 +30,7 @@ const lesson = {
         emoji: "🤫",
         word: "Ship",
         description: "SH sounds like a soft, magical whisper... SHHH!",
-        animationType: "mirror-flip",
+        animationType: "stroke-by-stroke",
         visualAnchor: "SH 🤫",
         cardColor: "#E0F2FE",
       },
@@ -146,12 +146,12 @@ const lesson = {
       content:
         "CH is a bright, loud train engine. SH is a quiet, peaceful ocean whisper.",
       animationType: "pulse-on-audio",
-      visualAnchor: "CH 🚂 vs SH 🤫",
+      visualAnchor: "CH  vs SH ",
     },
     {
       type: "story",
       content: "Can your detective ears pick up the difference between them?",
-      animationType: "mirror-flip",
+      animationType: "stroke-by-stroke",
       visualAnchor: "🔍 SOUND TEST",
     },
   ],

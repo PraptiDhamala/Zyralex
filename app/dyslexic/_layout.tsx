@@ -57,49 +57,86 @@ export default function DyslexicLayout() {
     <Tabs
       screenOptions={{
         header: () => <CustomHeader handleReset={handleReset} />,
+        tabBarActiveTintColor: "#2563EB",
+        tabBarInactiveTintColor: "#6b7280",
+        tabBarStyle: {
+          backgroundColor: "#ffffff",
+          borderTopWidth: 1,
+          borderTopColor: "#e5e7eb",
+          paddingBottom: 4,
+          height: 60,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" color={color} size={20} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
+              color={color}
+              size={22}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
-        name="learn"
+        name="welcome"
         options={{
-          title: "Assesment",
+          title: "Welcome",
           href: null,
           tabBarStyle: { display: "none" },
-        }}
-      />
-      <Tabs.Screen
-        name="practice"
-        options={{
-          title: "Practice",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="create" color={color} size={20} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="games"
-        options={{
-          title: "Games",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="game-controller" color={color} size={20} />
-          ),
         }}
       />
       <Tabs.Screen
         name="module/[level1]/[lesson]"
         options={{
           title: "Learn",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="book" color={color} size={20} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "book" : "book-outline"}
+              color={color}
+              size={22}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="learn"
+        options={{
+          title: "Assessment",
+          href: null,
+          tabBarStyle: { display: "none" },
+        }}
+      />
+
+      <Tabs.Screen
+        name="practice"
+        options={{
+          title: "Practice",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "create" : "create-outline"}
+              color={color}
+              size={22}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="games"
+        options={{
+          title: "Games",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "game-controller" : "game-controller-outline"}
+              color={color}
+              size={22}
+            />
           ),
         }}
       />

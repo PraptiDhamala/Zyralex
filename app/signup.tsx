@@ -32,7 +32,7 @@ export default function SignUp() {
         email,
         password,
         options: {
-          data: { name }, // 👈 saves name into auth.users metadata
+          data: { name }, 
         },
       });
 
@@ -45,9 +45,6 @@ export default function SignUp() {
         Alert.alert("Error", "User not created");
         return;
       }
-
-      // ✅ No need to insert into profiles manually
-      // The database trigger handles it automatically
 
       Alert.alert("Success", "Account created!");
       router.replace("/onboarding");
