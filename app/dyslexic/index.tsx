@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -183,10 +184,11 @@ export default function DyslexicHome() {
     }
   };
   const handleScanCard = async () => {
-    const { granted } = await requestCameraPermission();
-    if (!granted) return;
-    setShowCamera(true);
-  };
+  const { granted } = await requestCameraPermission();
+  console.log("DEBUG camera granted:", granted);
+  if (!granted) return;
+  setShowCamera(true);
+};
 
   const handleCapture = async () => {
     if (!cameraRef.current) return;
@@ -613,7 +615,11 @@ export default function DyslexicHome() {
 
       <Modal visible={showCamera} animationType="slide">
         <View style={{ flex: 1 }}>
-          <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
+          <CameraView
+            ref={cameraRef}
+            style={{ flex: 1 }}
+            facing={Platform.OS === "web" ? "front" : "back"}
+          />
           <View style={{ padding: 20, backgroundColor: "#000" }}>
             <Pressable
               style={[styles.soundButtonTrigger, { marginBottom: 10 }]}
