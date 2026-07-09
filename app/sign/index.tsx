@@ -1,3 +1,4 @@
+import { useSignModule } from "@/hooks/useSignModule";
 import {
   Ionicons
 } from "@expo/vector-icons";
@@ -14,8 +15,6 @@ import {
 } from 'react-native';
 import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS } from '../../constants/lessonData';
-import { USER_STATS } from '../../constants/mockData';
 
 //ActionButton Component
 function ActionButton({
@@ -162,19 +161,12 @@ function LevelProgressCardView({
 // Main HomeScreen
 export default function HomeScreen() {
   const router = useRouter();
-
+  const { levels, stats } = useSignModule();
   const getNextLesson = () => {
-    if (!LESSON_LEVELS || !Array.isArray(LESSON_LEVELS)) {
-      return null;
-    }
-
-    for (const level of LESSON_LEVELS) {
-      // To ensure level and level.lessons exist before running internal loops
-      if (level && Array.isArray(level.lessons)) {
-        for (const lesson of level.lessons) {
-          if (lesson && !lesson.completed) {
-            return lesson;
-          }
+    for (const level of levels) {
+      for (const lesson of level.lessons) {
+        if (lesson && !lesson.completed) {
+          return lesson;
         }
       }
     }
@@ -207,15 +199,15 @@ export default function HomeScreen() {
         <View style={styles.statsSection}>
           <StatCard 
           icon= {<Ionicons name="flame" size={24} color="#f19238c0" />}
-          value={USER_STATS.dayStreak} label="Day Streak" />
+          value={stats.dayStreak} label="Day Streak" />
           <StatCard
             icon= {<Ionicons name="trophy" size={25} color="#fcd743" />}
-            value={`${USER_STATS.bestScore}%`}
+            value={`${stats.bestScore}%`}
             label="Best Score"
           />
           <StatCard
            icon= {<Ionicons name="trending-up" size={25} color="#0a77d6c0" />}
-            value={`+${USER_STATS.improvement}%`}
+            value={`+${stats.improvement}%`}
             label="Improvement"
           />
         </View>

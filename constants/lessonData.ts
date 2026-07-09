@@ -12,9 +12,7 @@ export type Lesson = {
   title: string;
   description: string;
   descriptionpractice:string;
-  duration: string;
-  xp: number;
-  completed: boolean;
+  xp: number;//total xp
   signs: SignItem[];
 };
 
@@ -22,7 +20,6 @@ export type Level = {
   levelId: string;
   title: string;
   level: number;
-  completed: number;
   total: number;
   lessons: Lesson[];
 };
@@ -42,7 +39,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-1',
     title: 'Alphabets and Numbers',
     level: 1,
-    completed:0,
     total:5,
     lessons: [
     {
@@ -50,9 +46,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Letters A – F',
       description: 'Learn the first 6 letters of ASL',
       descriptionpractice: 'Practice the first 6 letters of ASL',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'a', label: 'A', image: aslImage('a'), video: aslVideo('a'), hint: 'Make a fist with your thumb resting on the side.', gestureKey: 'fist_thumb_side'  },
         { signId: 'b', label: 'B', image: aslImage('b'), video: aslVideo('b'), hint: 'Hold four fingers straight up, thumb tucked across palm.',gestureKey: ' four_fingers_up_thumb_across' },
@@ -67,9 +61,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Letters G – L',
       description: 'Learn the next 6 letters of ASL',
       descriptionpractice:'Practice the next 6 letters of ASL',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'g', label: 'G', image: aslImage('g'), video: aslVideo('g'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'h', label: 'H', image: aslImage('h'), video: aslVideo('h'), hint: 'Index and middle finger point sideways together.',gestureKey:'index_middle_sideways' },
@@ -84,9 +76,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Letters M – R',
       description: 'Learn letters M through R',
       descriptionpractice: 'Learn letters M through R',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'm', label: 'M', image: aslImage('m'), video: aslVideo('m'), hint: 'Three fingers folded over the thumb.',gestureKey:'three_fingers_over_thumb' },
         { signId: 'n', label: 'N', image: aslImage('n'), video: aslVideo('n'), hint: 'Two fingers folded over the thumb.',gestureKey:'two_fingers_over_thumb' },
@@ -101,9 +91,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Letters S – Z',
       description: 'Complete the alphabet!',
       descriptionpractice: ' Practice  the complete  alphabets!',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 's', label: 'S', image: aslImage('s'), video: aslVideo('s'), hint: 'Fist with thumb across the front of fingers.',gestureKey:'fist_thumb_front' },
         { signId: 't', label: 'T', image: aslImage('t'), video: aslVideo('t'), hint: 'Thumb between index and middle finger.',gestureKey:'thumb_between_index_middle' },
@@ -120,9 +108,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Numbers 1 – 10',
       description: 'Count from 1 to 10 in ASL',
       descriptionpractice: ' Practice from 1 to 10 in ASL!',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: '1', label: '1', image: aslImage('1'), video: aslVideo('1'), hint: 'Index finger points up.',gestureKey:'index_up' },
         { signId: '2', label: '2', image: aslImage('2'), video: aslVideo('2'), hint: 'Index and middle fingers up.',gestureKey:'index_middle_up' },
@@ -144,7 +130,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-2',
     title: 'Greetings and Introduction',
     level: 2,
-    completed:0,
     total:4,
     lessons:[
       {
@@ -152,9 +137,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Greeting phrases',
       description: 'Learn basic greeting phrases used daily',
       descriptionpractice:'Practice basic greeting phrases used daily',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Hello', label: 'Hello', image: aslImage('Hello'), video: aslVideo('Hello'), hint: 'Place your flat hand on your temple, move it outward', gestureKey: 'flat_hand_salute_out' },
         { signId: 'Good', label: 'Good', image: aslImage('Good'), video: aslVideo('Good'), hint: 'Place the fingertips of your flat hand on your chin, then move it forward and down, ending with your palm facing up.', gestureKey: 'flat_hand_chin_forward_down' },
@@ -173,9 +156,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Polite Expressions',
       description: 'Learn some polite expressions',
       descriptionpractice: 'Practice some polite expressions',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Please', label: 'Please', image: aslImage('Please'), video: aslVideo('Please'), hint: 'Place your flat open hand on your chest and rub it in a circular motion — like you are rubbing your heart.', gestureKey: 'flat_hand_chest_circle' },
         { signId: 'Thank you', label: 'Thank you', image: aslImage('Thank_you'), video: aslVideo('Thank_you'), hint: 'Touch the fingertips of your flat hand to your chin, then move it forward toward the person — like blowing a respectful kiss.', gestureKey: 'flat_hand_chin_to_forward' },
@@ -194,9 +175,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Who are you?',
       description: 'Learn basic pronouns and phrases',
       descriptionpractice: 'Practice basic pronouns and phrases',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'I', label: 'I', image: aslImage('I_'), video: aslVideo('I_'), hint: 'Point your index finger directly at your own chest — simple and direct self-reference.', gestureKey: 'index_point_self' },
         { signId: 'You', label: 'You', image: aslImage('You'), video: aslVideo('You'), hint: 'Point your index finger directly at the person you are talking to.', gestureKey: 'index_point_other' },
@@ -218,9 +197,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'About yourself',
       description: 'Learn some words',
       descriptionpractice:'Practice some words about yourself',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Deaf', label: 'Deaf', image: aslImage('Deaf'), video: aslVideo('Deaf'), hint: 'Touch your index finger to your cheek near your ear, then bring it down to touch near the corner of your mouth.', gestureKey: 'index_ear_to_mouth' },
         { signId: 'Hearing', label: 'Hearing', image: aslImage('Hearing'), video: aslVideo('Hearing'), hint: 'Point your index finger forward and make a small circular motion in front of your mouth, representing spoken sound.', gestureKey: 'index_circle_mouth' },
@@ -242,7 +219,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-3',
     title: 'People Around Us',
     level: 3,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -250,9 +226,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Immediate Family',
       description: 'Family Members',
       descriptionpractice:'Practice Family Member Signs',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Mother', label: 'Mother', image: aslImage('Mother'), video: aslVideo('Mother'), hint: 'Make a fist with your thumb resting on the side.', gestureKey: 'fist_thumb_side'  },
         { signId: 'Father', label: 'Father', image: aslImage('Father'), video: aslVideo('Father'), hint: 'Hold four fingers straight up, thumb tucked across palm.',gestureKey: ' four_fingers_up_thumb_across' },
@@ -274,9 +248,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Extended Family',
       description: 'Learn some relations',
       descriptionpractice: 'Practice some relations',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Aunt', label: 'Aunt', image: aslImage('Aunt'), video: aslVideo('Aunt'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Uncle', label: 'Uncle', image: aslImage('Uncle'), video: aslVideo('Uncle'), hint: 'Index and middle finger point sideways together.',gestureKey:'index_middle_sideways' },
@@ -294,9 +266,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Relationships',
       description: 'Learn words for other relationships',
       descriptionpractice: 'Practice words for other relationships',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Friend', label: 'Friend', image: aslImage('Friend'), video: aslVideo('Friend'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Bestfriend', label: 'Bestfriend', image: aslImage('Bestfriend'), video: aslVideo('Bestfriend'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -314,9 +284,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Describing People',
       description: 'Learn words used for describing people',
       descriptionpractice:'Practice words used for describing people',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Old', label: 'Old', image: aslImage('Old'), video: aslVideo('Old'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Young', label: 'Young', image: aslImage('Young'), video: aslVideo('Young'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -339,7 +307,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-4',
     title: 'World around Us',
     level: 4,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -347,9 +314,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Colours',
       description: 'Learn basic colours\' names',
       descriptionpractice:'Practice some basic colour names',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Red', label: 'Red', image: aslImage('Red'), video: aslVideo('Red'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Blue', label: 'Blue', image: aslImage('Blue'), video: aslVideo('Blue'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -373,9 +338,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Days and Months',
       description: 'Learn names of days and months',
       descriptionpractice:'Practice names of days and months',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Monday', label: 'Monday', image: aslImage('Monday'), video: aslVideo('Monday'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Tuesday', label: 'Tuesday', image: aslImage('Tuesday'), video: aslVideo('Tuesday'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -403,9 +366,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Time expressions',
       description: 'Learn basic time phrases',
       descriptionpractice:'Practice some basic time phrases',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Today', label: 'Today', image: aslImage('Today'), video: aslVideo('Today'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Tomorrow', label: 'Tomorrow', image: aslImage('Tomorrow'), video: aslVideo('Tomorrow'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -434,9 +395,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'About yourself',
       description: 'Learn some words',
       descriptionpractice:'Practice some words',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Big', label: 'Big', image: aslImage('Big'), video: aslVideo('Big'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Small', label: 'Small', image: aslImage('Small'), video: aslVideo('Small'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -468,7 +427,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-5',
     title: 'Day in the Life',
     level: 5,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -476,9 +434,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Morning Routine',
       description: 'Learn basic morning routine',
       descriptionpractice:'Practice some basic morning routine signs',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Wake up', label: 'Wake up', image: aslImage('Wake_up'), video: aslVideo('Wake_up'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Sleep', label: 'Sleep', image: aslImage('Sleep'), video: aslVideo('Sleep'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -500,9 +456,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Action Verbs',
       description: 'Learn action verbs',
       descriptionpractice:'Practice some action verbs',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Go', label: 'Go', image: aslImage('Go'), video: aslVideo('Go'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Come', label: 'Come', image: aslImage('Come'), video: aslVideo('Come'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -528,9 +482,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Around the house',
       description: 'Learn spots around the house',
       descriptionpractice:'Practice spots around the house',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'House', label: 'House', image: aslImage('House'), video: aslVideo('House'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Room', label: 'Room', image: aslImage('Room'), video: aslVideo('Room'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -554,9 +506,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Chores and Task',
       description: 'Learn words related to chores',
       descriptionpractice:'Practice words related to chores',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Cook', label: 'Cook', image: aslImage('Cook'), video: aslVideo('Cook'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
         { signId: 'Clean', label: 'Clean', image: aslImage('Clean'), video: aslVideo('Clean'), hint: 'Index finger and thumb point sideways.',gestureKey:'index_thumb_sideways' },
@@ -583,7 +533,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-6',
     title: 'Food and Hunger',
     level: 6,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -591,9 +540,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Fruits and Vegetables',
       description: 'Learn names of some fruits and vegetables',
       descriptionpractice:'Practice names of some fruits and vegetables',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Apple', label: 'Apple', image: aslImage('Apple'), video: aslVideo('Apple'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Banana', label: 'Banana', image: aslImage('Banana'), video: aslVideo('Banana'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -616,9 +563,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Meals and Dishes',
       description: 'Learn names of some dishes',
       descriptionpractice:'Practice names of some dishes',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Pizza', label: 'Pizza', image: aslImage('Pizza'), video: aslVideo('Pizza'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Sandwich', label: 'Sandwich', image: aslImage('Sandwich'), video: aslVideo('Sandwich'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -642,9 +587,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Drinks',
       description: 'Learn names of some drinks',
       descriptionpractice:'Practice names of some drinks',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Water', label: 'Water', image: aslImage('Water'), video: aslVideo('Water'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Coffee2', label: 'Coffee', image: aslImage('Coffee2'), video: aslVideo('Coffee2'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -664,9 +607,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'At the restaurant',
       description: 'Learn words used at restaurants',
       descriptionpractice:'Practice words used at restaurants',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
        { signId: 'Hungry', label: 'Hungry', image: aslImage('Hungry'), video: aslVideo('Hungry'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Thirsty', label: 'Thirsty', image: aslImage('Thirsty'), video: aslVideo('Thirsty'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -692,7 +633,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-7',
     title: 'Getting Around',
     level: 7,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -700,9 +640,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Places in Town',
       description: 'Learn the names of some places in town',
       descriptionpractice:'Practice names of some places in town',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'School', label: 'School', image: aslImage('School'), video: aslVideo('School'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Hospital', label: 'Hospital', image: aslImage('Hospital'), video: aslVideo('Hospital'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -722,9 +660,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Transportation',
       description: 'Learn words related to transportation',
       descriptionpractice:'Practice words related to transportation',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Car', label: 'Car', image: aslImage('Car'), video: aslVideo('Car'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Bus', label: 'Bus', image: aslImage('Bus'), video: aslVideo('Bus'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -746,9 +682,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Directions',
       description: 'Learn words related to directions',
       descriptionpractice:'Practice words related to directions',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Left', label: 'Left', image: aslImage('Left'), video: aslVideo('Left'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Right', label: 'Right', image: aslImage('Right'), video: aslVideo('Right'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -772,9 +706,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Travel phrases',
       description: 'Learn words used during travelling',
       descriptionpractice:'Practice words used during travelling',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Ticket', label: 'Ticket', image: aslImage('Ticket'), video: aslVideo('Ticket'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Passport', label: 'Passport', image: aslImage('Passport'), video: aslVideo('Passport'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -798,7 +730,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-8',
     title: 'Feelings and Health',
     level: 8,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -806,9 +737,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Emotions',
       description: 'Learn the names of some emotions',
       descriptionpractice:'Practice names of some emotions',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Happy', label: 'Happy', image: aslImage('Happy'), video: aslVideo('Happy'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Sad', label: 'Sad', image: aslImage('Sad'), video: aslVideo('Sad'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -834,9 +763,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Body Parts',
       description: 'Learn names of body parts',
       descriptionpractice:'Practice names of body parts',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Head', label: 'Head', image: aslImage('Head'), video: aslVideo('Head'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Hair', label: 'Hair', image: aslImage('Hair'), video: aslVideo('Hair'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -862,9 +789,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Health and Illness',
       description: 'Learn words related to health and illness',
       descriptionpractice:'Practice words related to health and illness',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Sick', label: 'Sick', image: aslImage('Sick'), video: aslVideo('Sick'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Pain', label: 'Pain', image: aslImage('Pain'), video: aslVideo('Pain'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -890,9 +815,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Mental Wellness',
       description: 'Learn words related to mental wellness',
       descriptionpractice:'Practice words related to mental wellness',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Stress', label: 'Stress', image: aslImage('Stress'), video: aslVideo('Stress'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Anxiety', label: 'Anxiety', image: aslImage('Anxiety'), video: aslVideo('Anxiety'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -918,7 +841,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-9',
     title: 'Work and School',
     level: 9,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -926,9 +848,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'School and Learning',
       description: 'Learn words related to school and learning',
       descriptionpractice:'Practice words related to school and learning',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Class', label: 'Class', image: aslImage('Class'), video: aslVideo('Class'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Homework', label: 'Homework', image: aslImage('Homework'), video: aslVideo('Homework'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -951,9 +871,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Career and Jobs',
       description: 'Learn words related to career and jobs',
       descriptionpractice:'Practice words related to career and jobs',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Job', label: 'Job', image: aslImage('Job'), video: aslVideo('Job'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Boss', label: 'Boss', image: aslImage('Boss'), video: aslVideo('Boss'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -977,9 +895,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Money and Shopping',
       description: 'Learn words related to money and shopping',
       descriptionpractice:'Practice words related to money and shopping',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Money', label: 'Money', image: aslImage('Money'), video: aslVideo('Money'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Cheap', label: 'Cheap', image: aslImage('Cheap'), video: aslVideo('Cheap'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -1002,9 +918,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Technology',
       description: 'Learn words related to technology',
       descriptionpractice:'Practice words related to technology',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
         { signId: 'Computer2', label: 'Computer2', image: aslImage('Computer2'), video: aslVideo('Computer2'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
         { signId: 'Internet', label: 'Internet', image: aslImage('Internet'), video: aslVideo('Internet'), hint: 'Index finger and thumb touch, other three fingers up.',gestureKey:'index_thumb_circle_three_up' },
@@ -1027,7 +941,6 @@ export const LESSON_LEVELS: Level[] = [
     levelId: 'level-10',
     title: 'Culture and Community',
     level: 10,
-    completed:0,
     total:4,
     lessons:  [
     {
@@ -1035,9 +948,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Deaf Culture and Community',
       description: 'Learn words related to deaf culture and community',
       descriptionpractice:'Practice words related to deaf culture and community',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
           { signId: 'Deaf2', label: 'Deaf', image: aslImage('Deaf2'), video: aslVideo('Deaf2'), hint: 'Index finger touches near the ear then near the mouth.', gestureKey: 'deaf_ear_mouth' },
           { signId: 'Hearing2', label: 'Hearing', image: aslImage('Hearing2'), video: aslVideo('Hearing2'), hint: 'Index finger rolls forward in front of the mouth.', gestureKey: 'hearing_mouth_roll' },
@@ -1060,9 +971,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Expressing Opinions',
       description: 'Learn words related to expressing opinions',
       descriptionpractice:'Practice words related to expressing opinions',
-      duration: '7 min',
-      xp: 20,
-      completed: false,
+      xp: 0,
       signs: [
           { signId: 'Think', label: 'Think', image: aslImage('Think'), video: aslVideo('Think'), hint: 'Touch the tip of your index finger to your forehead.', gestureKey: 'index_to_forehead' },
           { signId: 'Believe', label: 'Believe', image: aslImage('Believe'), video: aslVideo('Believe'), hint: 'Touch forehead with index finger, then clasp hands together.', gestureKey: 'think_to_clasp' },
@@ -1086,9 +995,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Social Situations',
       description: 'Learn words related to social situations',
       descriptionpractice:'Practice words related to social situations',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
           { signId: 'Party', label: 'Party', image: aslImage('Party'), video: aslVideo('Party'), hint: 'Swing both "Y" handshapes back and forth side-to-side.', gestureKey: 'y_hands_swing' },
           { signId: 'Game', label: 'Game', image: aslImage('Game'), video: aslVideo('Game'), hint: 'Bring two "A" thumbs-up fists together so the knuckles knock.', gestureKey: 'thumbs_up_knuckles_knock' },
@@ -1111,9 +1018,7 @@ export const LESSON_LEVELS: Level[] = [
       title: 'Real Talk Phrases',
       description: 'Learn words used in conversations',
       descriptionpractice:'Practice words used in conversations',
-      duration: '7 min',
-      xp: 25,
-      completed: false,
+      xp: 0,
       signs: [
           { signId: 'Really', label: 'Really', image: aslImage('Really'), video: aslVideo('Really'), hint: 'Move a vertical index finger straight out forward from your chin.', gestureKey: 'index_forward_from_chin' },
           { signId: 'Wow', label: 'Wow', image: aslImage('Wow'), video: aslVideo('Wow'), hint: 'Shake an open "5" hand shape slightly back and forth near the cheek.', gestureKey: 'open_five_shake_face' },
@@ -1126,17 +1031,4 @@ export const LESSON_LEVELS: Level[] = [
     },
     ],
     },
-
-
-
 ];
-
-// Map lessonId → LessonData 
-export const LESSON_MAP: Record<string, Lesson> = {};
-
-LESSON_LEVELS.forEach((level) => {
-  level.lessons.forEach((lesson) => {
-    // Key format: "level-1_lesson-1" since all levels have lesson-1
-    LESSON_MAP[`${level.levelId}_${lesson.lessonId}`] = lesson;
-  });
-});

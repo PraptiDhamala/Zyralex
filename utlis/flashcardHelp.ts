@@ -1,5 +1,5 @@
-import { Lesson } from "../constants/lessonData";
 import { FlashCARD } from "../models/flashcard";
+import { Lesson } from "../types/lesson";
 
 export const createFlashCards = (lesson: Lesson): FlashCARD[] => {
   const recognition = lesson.signs.map((sign): FlashCARD => ({

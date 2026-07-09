@@ -1,3 +1,4 @@
+import { Lesson } from '@/types/lesson';
 import React from 'react';
 import {
   GestureResponderEvent,
@@ -7,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import { COLORS } from '../constants/colors';
-import { Lesson } from '../constants/lessonData';
 
 interface LessonCardProps {
   lesson: Lesson;

@@ -1,13 +1,16 @@
+import { useSignModule } from '@/hooks/useSignModule';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FlashCollapsible } from '../../components/Flashcollaspible';
 import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS } from '../../constants/lessonData';
 
 export default function FlashPracticeScreen() {
   const { lessonId, levelId } = useLocalSearchParams<{ lessonId?: string; levelId?: string }>();
-
+  const{ levels, loading, error } = useSignModule();
+  if (loading) return <ActivityIndicator style={{ marginTop:40 }} />;
+  if (error) return <Text style={{ margin:16 }}> {error} </Text>
+  
   return (
     <ScrollView style={{ flex: 1 ,backgroundColor: COLORS.white,}}>
      <View style={styles.sectionHeader}>
@@ -15,7 +18,7 @@ export default function FlashPracticeScreen() {
       </View>
      
     <View style={styles.lessonsContainer}>
-      {LESSON_LEVELS.map((lvl) => (
+      {levels.map((lvl) => (
         <FlashCollapsible key={lvl.levelId} level={lvl} />
       ))}
     </View>

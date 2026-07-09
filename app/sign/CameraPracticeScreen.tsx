@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-import { LESSON_MAP } from "../../constants/lessonData";
+import { useSignModule } from '@/hooks/useSignModule';
 
 export default function CameraPracticeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -21,11 +21,12 @@ export default function CameraPracticeScreen() {
   const router = useRouter();
 
   const { levelId, lessonId } = useLocalSearchParams<any>();
-  const lessonKey = `${levelId}_${lessonId}`;
-  const lesson = LESSON_MAP[lessonKey];
+  const { lessonMap, loading } = useSignModule();
+  const lesson = lessonMap[`${levelId}_${lessonId}`];
+  if (loading) return <ActivityIndicator />;
 
   const [index, setIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [ isCapturing, setIsCapturing ] = useState(false);
   const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -72,7 +73,7 @@ export default function CameraPracticeScreen() {
     if (!cameraRef.current) return;
 
     try {
-      setLoading(true);
+      setIsCapturing(true);
       const images: string[] = [];
 
       for (let i = 0; i < 10; i++) {
@@ -93,7 +94,7 @@ export default function CameraPracticeScreen() {
     } catch (e) {
       console.log(e);
     } finally {
-      setLoading(false);
+      setIsCapturing(false);
     }
   };
 
@@ -113,13 +114,13 @@ export default function CameraPracticeScreen() {
 
       const response = await fetch("http://192.168.1.7:8000/predict", {
         method: "POST",
-        body: formData,
+        body: formData as any,
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const result = await response.json();
+      const result: any = await response.json();
       console.log(result);
 
       setScore(result.score || 0);
@@ -150,6 +151,7 @@ export default function CameraPracticeScreen() {
       <CameraView ref={cameraRef} style={styles.camera} facing="front" />
 
       <View style={styles.top}>
+        {currentSign?.video ? (
         <Video
           source={{ uri: currentSign.video }}
           style={styles.video}
@@ -157,7 +159,10 @@ export default function CameraPracticeScreen() {
           shouldPlay
           isLooping
         />
-        <Text style={styles.title}>{currentSign.label}</Text>
+         ) : (
+        <Text style={{ color: 'white' }}>Video missing</Text>
+        )}
+        <Text style={styles.title}>{currentSign?.label}</Text>
       </View>
 
       {loading && (

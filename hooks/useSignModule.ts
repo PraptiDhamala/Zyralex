@@ -1,12 +1,15 @@
-// hooks/useLessonLevels.ts
-import type { Lesson, Level } from '@/constants/lessonData';
-import { buildLessonMap, fetchSignLessonLevels } from '@/lib/queries/signLessons';
+// hooks/useSignModule.ts
+import { fetchSignModule, type UserStats } from '@/lib/queries/signModule';
 import { supabase } from '@/lib/supabase';
+import type { Lesson, Level } from '@/types/lesson';
 import { useCallback, useEffect, useState } from 'react';
 
-export function useLessonLevels() {
+const EMPTY_STATS: UserStats = { dayStreak: 0, bestScore: 0, improvement: 0 };
+
+export function useSignModule() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [lessonMap, setLessonMap] = useState<Record<string, Lesson>>({});
+  const [stats, setStats] = useState<UserStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,12 +21,12 @@ export function useLessonLevels() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      const data = await fetchSignLessonLevels(user?.id);
-      //Fetch lessons and levels according to the user
-      setLevels(data);
-      setLessonMap(buildLessonMap(data));
+      const result = await fetchSignModule(user?.id);
+      setLevels(result.levels);
+      setLessonMap(result.lessonMap);
+      setStats(result.stats);
     } catch (e: any) {
-      setError(e.message ?? 'Failed to load lessons');
+      setError(e.message ?? 'Failed to load sign module data');
     } finally {
       setLoading(false);
     }
@@ -33,5 +36,5 @@ export function useLessonLevels() {
     load();
   }, [load]);
 
-  return { levels, lessonMap, loading, error, refetch: load };
+  return { levels, lessonMap, stats, loading, error, refetch: load };
 }

@@ -1,5 +1,6 @@
 // components/lesson/ResultsScreen.tsx
 
+import { Lesson } from '@/types/lesson';
 import React from 'react';
 import {
   ScrollView,
@@ -9,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
-import { Lesson } from '../../constants/lessonData';
 
 interface Props {
   lessonTitle: string;
@@ -27,6 +27,7 @@ export const ResultsScreen: React.FC<Props> = ({
 }) => {
   const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
+  const earnedXp = Math.round((pct / 100) * xp);
 
   return (
     <ScrollView
@@ -57,7 +58,7 @@ export const ResultsScreen: React.FC<Props> = ({
         </View>
         <View style={styles.divider} />
         <View style={styles.scoreItem}>
-          <Text style={styles.scoreValue}>+{xp}</Text>
+          <Text style={styles.scoreValue}>+{earnedXp}</Text>
           <Text style={styles.scoreLabel}>XP earned</Text>
         </View>
       </View>

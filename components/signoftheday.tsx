@@ -1,12 +1,15 @@
+import { useSignModule } from "@/hooks/useSignModule";
+import { SignItem } from '@/types/lesson';
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import LottieView from "lottie-react-native";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../constants/colors";
-import { LESSON_LEVELS, SignItem } from "../constants/lessonData";
+
 function getAllSigns(): SignItem[] {
-  return LESSON_LEVELS.flatMap(level =>
+  const{ levels, loading, error } = useSignModule();
+  return levels.flatMap(level =>
     level.lessons.flatMap(lesson => lesson.signs)
   );
 }
@@ -31,8 +34,6 @@ export const SignOfTheDayPanel = () => {
       end={{ x: 1, y: 1 }}
       style={styles.panel}
     >
-
-    
     
       <Text style={styles.title}>Sign of the Day</Text>
       <Text style={styles.subtitle}>Learn one new sign every day!</Text>
@@ -40,15 +41,19 @@ export const SignOfTheDayPanel = () => {
       {/* Sign + Mascot Row */}
       <View style={styles.row}>
         <View style={styles.signContainer}>
+        {signOfTheDay?.video ? (
           <Video
-            source={{ uri: signOfTheDay.video }}
-            style={styles.signVideo}
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay
-            isLooping
+          source={{ uri: signOfTheDay.video }}
+          style={styles.signVideo}
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          isLooping
           />
-          <Text style={styles.signLabel}>{signOfTheDay.label}</Text>
+          ) : (
+          <Text style={{ color: 'white' }}>Video missing</Text>
+          )}
         </View>
+        
 
         <View style={styles.mascotContainer}>
            <LottieView
