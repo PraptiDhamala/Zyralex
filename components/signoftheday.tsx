@@ -1,5 +1,5 @@
 import { useSignModule } from "@/hooks/useSignModule";
-import { SignItem } from '@/types/lesson';
+import { Level, SignItem } from '@/types/lesson';
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import LottieView from "lottie-react-native";
@@ -7,17 +7,15 @@ import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../constants/colors";
 
-function getAllSigns(): SignItem[] {
-  const{ levels, loading, error } = useSignModule();
+function getAllSigns(levels: Level[]): SignItem[] {
   return levels.flatMap(level =>
     level.lessons.flatMap(lesson => lesson.signs)
   );
 }
 
-function getSignOfTheDay(): SignItem {
-  const signs = getAllSigns();
+function getSignOfTheDay(levels: Level[]): SignItem | null {
+  const signs = getAllSigns(levels);
   if (signs.length === 0) return null as any;
-
   const today = new Date();
   const daySeed = today.getFullYear() * 1000 + today.getMonth() * 50 + today.getDate();
   const index = daySeed % signs.length;
@@ -25,7 +23,8 @@ function getSignOfTheDay(): SignItem {
 }
 
 export const SignOfTheDayPanel = () => {
-  const signOfTheDay = useMemo(() => getSignOfTheDay(), []);
+  const{ levels, loading, error } = useSignModule();
+  const signOfTheDay = useMemo(() => getSignOfTheDay(levels), [levels]);
   if (!signOfTheDay) return null;
 
   return (

@@ -22,16 +22,12 @@ export default function CameraPracticeScreen() {
 
   const { levelId, lessonId } = useLocalSearchParams<any>();
   const { lessonMap, loading } = useSignModule();
-  const lesson = lessonMap[`${levelId}_${lessonId}`];
-  if (loading) return <ActivityIndicator />;
 
   const [index, setIndex] = useState(0);
   const [ isCapturing, setIsCapturing ] = useState(false);
   const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
-
-  const currentSign = lesson?.signs[index];
 
   useEffect(() => {
     requestPermission();
@@ -48,6 +44,18 @@ export default function CameraPracticeScreen() {
     }
     return () => clearInterval(interval);
   }, [loading]);
+
+   const lesson = lessonMap[`${levelId}_${lessonId}`];
+  const currentSign = lesson?.signs[index];
+ 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="white" />
+      </View>
+    );
+  }
+
 
   if (!permission?.granted) {
     return (
@@ -110,7 +118,10 @@ export default function CameraPracticeScreen() {
         } as any);
       });
 
-      formData.append("target_sign", currentSign.label);
+      formData.append("target_sign", currentSign?.label ?? "");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const response = await fetch("http://192.168.1.7:8000/predict", {
         method: "POST",
@@ -118,7 +129,9 @@ export default function CameraPracticeScreen() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const result: any = await response.json();
       console.log(result);
@@ -128,6 +141,7 @@ export default function CameraPracticeScreen() {
       setProgress(100); // complete when backend responds
     } catch (e) {
       console.log(e);
+      setFeedback("Couldn't reach the practice server — check your connection.");
     }
   };
 
@@ -165,7 +179,7 @@ export default function CameraPracticeScreen() {
         <Text style={styles.title}>{currentSign?.label}</Text>
       </View>
 
-      {loading && (
+      {isCapturing && (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color="white" />
           <Text style={{ color: "white", marginTop: 46 }}>
