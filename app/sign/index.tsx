@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   // Action Buttons 
   actionButtonsSection: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 8,
   },
