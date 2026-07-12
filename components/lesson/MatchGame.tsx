@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { SignItem } from '@/types/lesson';
+import React, { useState } from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { SignItem } from '../../constants/lessonData';
 import { COLORS } from '../../constants/colors';
 
 interface Props {

@@ -1,13 +1,25 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useSignModule } from '@/hooks/useSignModule';
+import { useNavigation } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CameraCollapsible } from '../../components/Cameracollaspible';
 import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS } from '../../constants/lessonData';
+
 
 export default function CameraPracticeScreen() {
-  const { lessonId, levelId } = useLocalSearchParams<{ lessonId?: string; levelId?: string }>();
+  const{ levels, loading, error, refetch } = useSignModule();
 
+   const navigation = useNavigation();
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refetch();
+    });
+    return unsubscribe;
+  }, [navigation, refetch]);
+  
+  if (loading) return <ActivityIndicator style={{ marginTop:40 }} />;
+  if (error) return <Text style={{ margin:16 }}> {error} </Text>
+    
   return (
      <ScrollView style={{ flex: 1 ,backgroundColor: COLORS.white,}}>
       <View style={styles.sectionHeader}>
@@ -15,7 +27,7 @@ export default function CameraPracticeScreen() {
               </View>
 
     <View style={styles.lessonsContainer}>
-      {LESSON_LEVELS.map((lvl) => (
+      {levels.map((lvl) => (
         <CameraCollapsible key={lvl.levelId} level={lvl} />
       ))}
     </View>  

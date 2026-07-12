@@ -43,7 +43,7 @@ const lesson = {
     },
     {
       type: "activity",
-      content: "Trace the letters slowly with your finger 👇",
+      content: "Trace the letters slowly with your finger",
       animationType: "follow-the-dot",
       visualAnchor: "b",
     },
@@ -120,7 +120,7 @@ const lesson = {
   ],
 
   completionMessage:
-    "Amazing work! You are getting better at recognizing b and d! 🚀",
+    "Amazing work! You are getting better at recognizing b and d! ",
 };
 
 export default lesson;

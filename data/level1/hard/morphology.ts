@@ -1,104 +1,130 @@
 const morphology = {
   id: "morphology",
 
-  title: "Word Building & Morphology",
+  title: "Word Factory",
 
-  subtitle: "Learn how prefixes, suffixes, and root words change meaning.",
+  subtitle: "Build new words like a word engineer!",
+
+  mascot: "🏭",
 
   difficulty: "hard",
 
   explanation: [
     {
-      type: "info",
+      type: "story",
       content:
-        "Morphology means understanding how words are built from smaller parts.",
+        "Words are like LEGO blocks. Put the pieces together to build new meanings!",
     },
 
     {
       type: "tip",
-      content:
-        "Prefixes are added to the beginning of words. Suffixes are added to the end.",
+      content: "Prefixes go FIRST.\nSuffixes go LAST.",
     },
 
     {
-      type: "info",
-      content:
-        "Knowing word parts helps readers understand new words more easily.",
+      type: "tip",
+      content: "Every word piece changes the meaning.",
     },
   ],
 
   examples: [
     {
-      letter: "un-",
-      word: "unhappy = not happy",
-      emoji: "😕",
+      emoji: "🧱",
+
+      root: "happy",
+
+      prefix: "un",
+
+      result: "unhappy",
     },
 
     {
-      letter: "-ing",
-      word: "jumping = jump + ing",
+      emoji: "🔄",
+
+      root: "write",
+
+      prefix: "re",
+
+      result: "rewrite",
+    },
+
+    {
       emoji: "🏃",
-    },
 
-    {
-      letter: "re-",
-      word: "rewrite = write again",
-      emoji: "✏️",
+      root: "jump",
+
+      suffix: "ing",
+
+      result: "jumping",
     },
   ],
 
   guidedPractice: [
     {
-      question: "What does the prefix 'un-' usually mean?",
+      mission: "🧩 Build the word",
 
-      options: ["Again", "Not", "Very"],
+      root: "happy",
 
-      answer: "Not",
+      piece: "un-",
+
+      question: "What word do we make?",
+
+      options: ["unhappy", "happyun", "happy"],
+
+      answer: "unhappy",
+
+      success: "Awesome builder! ⭐",
     },
 
     {
-      question: "Which word means 'write again'?",
+      mission: "✏️ Build again",
 
-      options: ["Preview", "Rewrite", "Careful"],
+      root: "write",
 
-      answer: "Rewrite",
+      piece: "re-",
+
+      question: "Choose the new word.",
+
+      options: ["rewrite", "writer", "writing"],
+
+      answer: "rewrite",
+
+      success: "Perfect! 🎉",
     },
 
     {
-      question: "What does the suffix '-ing' often show?",
+      mission: "🏃 Action Time",
 
-      options: ["An action happening now", "Something very small", "A place"],
+      root: "jump",
 
-      answer: "An action happening now",
+      piece: "-ing",
+
+      question: "Which word shows the action?",
+
+      options: ["jumping", "jumped", "jumps"],
+
+      answer: "jumping",
+
+      success: "Great building! ⭐",
     },
 
     {
-      question: "Which word has a prefix?",
+      mission: "🎁 Add a suffix",
 
-      options: ["Replay", "Cat", "Book"],
+      root: "help",
 
-      answer: "Replay",
-    },
+      piece: "-ful",
 
-    {
-      question: "Which part is the suffix in the word 'helpful'?",
+      question: "What's the new word?",
 
-      options: ["help", "ful", "he"],
+      options: ["helpful", "helping", "helper"],
 
-      answer: "ful",
-    },
+      answer: "helpful",
 
-    {
-      question: "What does the prefix 're-' usually mean?",
-
-      options: ["Again", "Before", "Small"],
-
-      answer: "Again",
+      success: "Excellent!",
     },
   ],
 
   completionMessage:
-    "Excellent work! You are learning how words are formed and connected.",
+    "🏭 Word Factory Complete!\nYou built lots of amazing new words!",
 };
-
-export default morphology;

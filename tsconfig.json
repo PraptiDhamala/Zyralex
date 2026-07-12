@@ -1,8 +1,13 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "target": "es2017",
+    "lib": ["es2017"],
+    "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
     "paths": {
       "@/*": ["./*"]
@@ -12,6 +17,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "lib/lessonsLoader.ts"  ]
+    "expo-env.d.ts",
+    "lib/lessonsLoader.ts"
+  ]
 }

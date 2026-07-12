@@ -7,6 +7,14 @@ from typing import List
 from fixation_detector import FixationDetector
 from word_tracker import WordTracker
 from intervention import InterventionEngine
+import base64
+import io
+import re
+
+import pytesseract
+from fastapi import UploadFile, File
+from PIL import Image
+from pydantic import BaseModel
 
 app = FastAPI(title="ZyraLex Dual-Stream Hub")
 
@@ -19,7 +27,7 @@ app.add_middleware(
 )
 
 detector = FixationDetector(spatial_threshold=100, temporal_threshold=0.1)
-tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=1.0)
+tracker = WordTracker(distraction_threshold=3.0, fixation_threshold=6.5)
 intervention = InterventionEngine()
 
 camera_connections: List[WebSocket] = []
@@ -102,7 +110,7 @@ async def camera_endpoint(websocket: WebSocket):
                             "fixation_duration": round(duration, 2),
                             "sel_message": fixation_match.get("sel_message", ""),
                             "adaptations": {
-                                "hyphenated": intervention.format_syllable_breakdown(target_word, style="hyphen"),
+                                "hyphenated": fixation_match.get("syllables", target_word),
                                 "html_colored": intervention.format_syllable_breakdown(target_word, style="color")
                             }
                         })
@@ -133,6 +141,37 @@ async def receive_mood(data: dict):
         "received": True,
         "adapted_tone": mood
     }
+
+
+class SyllableRequest(BaseModel):
+    word: str
+
+
+@app.post("/api/syllables")
+async def get_syllables(req: SyllableRequest):
+    word = re.sub(r"[^a-zA-Z]", "", req.word).lower()
+    if not word:
+        return {"word": req.word, "syllables": [], "error": "empty word"}
+
+    hyphenated = intervention.format_syllable_breakdown(word, style="hyphen")
+    syllables = hyphenated.split("-")
+
+    return {"word": word, "syllables": syllables}
+
+
+@app.post("/api/ocr")
+async def scan_flashcard(file: UploadFile = File(...)):
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents)).convert("L")
+
+    raw_text = pytesseract.image_to_string(image)
+    matches = re.findall(r"[A-Za-z]+", raw_text)
+
+    candidates = [w for w in matches if len(w) >= 3]
+    word = max(candidates, key=len) if candidates else (matches[0] if matches else "")
+
+    return {"raw_text": raw_text.strip(), "word": word}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

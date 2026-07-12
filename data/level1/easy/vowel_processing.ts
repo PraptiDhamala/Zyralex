@@ -1,98 +1,90 @@
 const lesson = {
   id: "vowel_processing",
-  title: "Vowel Teams & Pairs",
-  subtitle: "Let's learn how vowels work together like teammates! 🎵",
-  color: "#E0F2FE",
-  mascot: "🐬",
-
+  title: "Vowel Safari: Short Vowels",
+  subtitle: "Let's track down short vowel sounds hidden inside words! 🔍",
+  color: "#FEF3C7", // Warm safari yellow
+  mascot: "🦁",
   explanation: [
     {
       type: "text",
       content:
-        "Sometimes two vowels stand side-by-side and work together as a team.",
-      animationType: "fade-in-gentle", // Added missing property
-      visualAnchor: "vowels", // Added missing property
+        "Vowels (A, E, I, O, U) are the secret engines of every single word. They give words their voice!",
+      animationType: "fade-in-gentle",
+      visualAnchor: "A E I O U",
     },
     {
       type: "story",
       content:
-        "A fun trick is: 'When two vowels go walking, the first one does the talking!' 🚶",
+        "Short vowels like to hide between tall consonant sticks. Tracking them helps our eyes read smoothly.",
       animationType: "pulse-on-audio",
-      visualAnchor: "oa",
+      visualAnchor: "c a t",
     },
     {
       type: "tip",
-      content: "The vowel pair 'oa' says the long O sound like in b-OA-t ⛵",
+      content:
+        "Look closely at the middle! A round 'o' makes a wide sound like a hopping frog: /o/ /o/ /o/.",
       animationType: "stroke-by-stroke",
-      visualAnchor: "oa",
-    },
-    {
-      type: "tip",
-      content: "The vowel pair 'ee' says the long E sound like in tr-EE 🌳",
-      animationType: "mirror-flip",
-      visualAnchor: "ee",
+      visualAnchor: "f r o g",
     },
     {
       type: "activity",
-      content: "Stretch the vowel sounds slowly while reading aloud 🔊",
-      animationType: "pulse-on-audio", // Added missing property
-      visualAnchor: "ea",
+      content:
+        "Say the short vowel sounds aloud with Mimo: /a/ as in apple, /i/ as in igloo!",
+      animationType: "pulse-on-audio",
+      visualAnchor: "a i",
     },
   ],
-
   examples: [
     {
-      letter: "oa",
-      word: "boat",
-      emoji: "⛵",
-      sentence: "B-OA-t has the OA sound.",
-      color: "#0284C7",
+      letter: "a",
+      word: "cat",
+      emoji: "🐱",
+      sentence: "The c-a-t sat on the mat.",
+      color: "#EF4444",
     },
     {
-      letter: "ee",
-      word: "feet",
-      emoji: "👣",
-      sentence: "F-EE-t has the EE sound.",
-      color: "#7C3AED",
+      letter: "o",
+      word: "fox",
+      emoji: "🦊",
+      sentence: "A quick f-o-x hopped over the log.",
+      color: "#F59E0B",
     },
     {
-      letter: "ea",
-      word: "read",
-      emoji: "📘",
-      sentence: "R-EA-d uses the EA vowel team.",
-      color: "#059669",
+      letter: "i",
+      word: "fish",
+      emoji: "🐟",
+      sentence: "The little f-i-sh can swim fast.",
+      color: "#3B82F6",
     },
   ],
-
   guidedPractice: [
     {
-      question: "🧥 Select the missing vowel team: C___at",
-      options: ["oa", "ou"],
-      answer: "oa",
-      interactionType: "tap-to-reveal", // Moved to bottom to match first lesson
+      question:
+        "🎯 Which short vowel is missing in c_p? (Think of a drinking cup!)",
+      options: ["a", "u"],
+      answer: "u",
+      interactionType: "tap-to-reveal",
     },
     {
-      question: "📘 Which vowel team completes R___ad?",
-      options: ["ea", "ai"],
-      answer: "ea",
-      interactionType: "drag-and-drop", // Moved to bottom to match first lesson
+      question: "🐸 Drag the word that has the short /o/ sound",
+      options: ["hop", "hip"],
+      answer: "hop",
+      interactionType: "drag-and-drop",
     },
     {
-      question: "👣 Which vowel team makes the long E sound?",
-      options: ["ee", "oa"],
-      answer: "ee",
-      interactionType: "tap-to-reveal", 
+      question: "🍎 Which vowel sits in the middle of 'bag'?",
+      options: ["a", "e"],
+      answer: "a",
+      interactionType: "tap-to-reveal",
     },
   ],
-
   motivationalTips: [
-    "🌟 Teamwork makes the dream work—even for letters!",
-    "🌟 Take your time, stretching sounds helps your brain remember.",
-    "🌟 You are becoming an amazing reader!",
+    "🌟 Your eyes are getting faster at spotting vowels every single day!",
+    "🌟 Tracking the middle of the word keeps your reading on target.",
+    "🌟 Take your time, hunting for letters is a fun puzzle!",
   ],
-
   completionMessage:
-    "Fantastic work! 🎉 You are learning how vowel teams work together!",
+    "Super Safari Skills! You tracked down those short vowels! 🚀",
 };
 
 export default lesson;

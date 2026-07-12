@@ -1,3 +1,4 @@
+import { Level } from '@/types/lesson';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -8,7 +9,6 @@ import {
   View
 } from 'react-native';
 import { COLORS } from '../constants/colors';
-import { Level } from '../constants/lessonData';
 import { PracticeCard } from './Cardforpractice';
 
 interface LevelCollapsibleProps {

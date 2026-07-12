@@ -1,23 +1,18 @@
 // app/sign/lesson.tsx
 
+import { useSignModule } from '@/hooks/useSignModule';
+import { recordLessonCompletion } from '@/lib/queries/signModule';
+import { supabase } from '@/lib/supabase';
+import { Lesson, Level, SignItem } from '@/types/lesson';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Mascot } from '../../components/lesson/Mascot';
 import { MatchGame } from '../../components/lesson/MatchGame';
 import { QuizSlide } from '../../components/lesson/QuizSlide';
 import { ResultsScreen } from '../../components/lesson/ResultsScreen';
 import { TeachSlide } from '../../components/lesson/TeachSlide';
 import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS, LESSON_MAP, SignItem } from '../../constants/lessonData';
 
 type QuizType = 'whatSign' | 'whichImage';
 
@@ -46,7 +41,7 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-// Returns the quiz type for teach-phase index: even index (0,2,4...) → whatSign, odd index (1,3,5...) → whichImage
+// Returns the quiz type for teach-phase index
 function teachQuizType(signIndex: number): QuizType {
   return signIndex % 2 === 0 ? 'whatSign' : 'whichImage';
 }
@@ -60,11 +55,13 @@ interface Props {
   levelId: string;
   lessonId: string;
   onRetake: () => void;
+  levels: Level[];
+  lessonMap: Record<string, Lesson>;
 }
 
-function LessonInner({ levelId, lessonId, onRetake }: Props) {
+function LessonInner({ levelId, lessonId, onRetake, levels, lessonMap }: Props) {
   const router = useRouter();
-  const lessonData = LESSON_MAP[`${levelId}_${lessonId}`];
+  const lessonData = lessonMap[`${levelId}_${lessonId}`];
 
   const [phase, setPhase]   = useState<Phase>({ name: 'teach', signIndex: 0 });
   const [score, setScore]   = useState(0);
@@ -82,7 +79,7 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
   const signs = lessonData.signs;
 
   const getNextLesson = () => {
-    const level = LESSON_LEVELS.find(l => l.levelId === levelId);
+    const level = levels.find(l => l.levelId === levelId);
     if (!level) return null;
     const idx = level.lessons.findIndex(l => l.lessonId === lessonId);
     if (idx === -1 || idx >= level.lessons.length - 1) return null;
@@ -223,9 +220,22 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
     setTotalQ(finalTotal);
     const pct   = finalTotal > 0 ? Math.round((finalScore / finalTotal) * 100) : 0;
     const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const levelNumber = Number(levelId.replace('level-', ''));
+      const lessonNumber = Number(lessonData.lessonId.replace('lesson-', ''));
+      await recordLessonCompletion({
+        userId: user.id,
+        lessonUuid: lessonData.lessonUuid, // the real lessons.id uuid
+        levelNumber,
+        lessonNumber,
+        scorePct: pct,
+        totalXp: lessonData.xp,
+      }).catch(console.error);
+    }
     showMascot(
       'cheer',
-      "You crushed it! 🎉\nLet's see your final results!",
+      "You crushed it! \nLet's see your final results!",
       true, 'See Results',
       () => dismissAndRun(() => setPhase({ name: 'results' })),
     );
@@ -316,6 +326,7 @@ function LessonInner({ levelId, lessonId, onRetake }: Props) {
                 params: { lessonId: lessonData.lessonId } ,
               })
             }
+            onBackToLessons={() => router.push('/sign/learn')}
           />
         )}
       </View>
@@ -328,12 +339,17 @@ export default function LessonScreen() {
     levelId: string; lessonId: string;
   }>();
   const [retakeCount, setRetakeCount] = useState(0);
+  const { levels, lessonMap, loading, error } = useSignModule();
+  if (loading) return <ActivityIndicator style={{ marginTop: 40 }} color={COLORS.primary} />;
+  if (error) return <Text style={styles.error}>{error}</Text>;
 
   return (
     <LessonInner
       key={`${levelId}_${lessonId}_${retakeCount}`}
       levelId={levelId ?? ''}
       lessonId={lessonId ?? ''}
+      levels={levels}
+      lessonMap={lessonMap}
       onRetake={() => setRetakeCount(c => c + 1)}
     />
   );

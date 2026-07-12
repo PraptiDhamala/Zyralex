@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { SignItem } from '@/types/lesson';
+import { ResizeMode, Video } from 'expo-av';
+import React, { useEffect, useState } from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
-import { SignItem } from '../../constants/lessonData';
 import { COLORS } from '../../constants/colors';
 
 interface Props {
@@ -61,10 +65,17 @@ export const QuizSlide: React.FC<Props> = ({
         <>
           <Text style={styles.question}>What does this sign show?</Text>
           <View style={styles.videoBox}>
-             <Video source={{ uri: currentSign.video }} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
-                shouldPlay // Auto-plays the video 
-                isLooping //Loops the video
-                /> 
+            {currentSign?.video ? (
+            <Video
+              source={{ uri: currentSign.video }}
+              style={styles.video}
+              resizeMode={ResizeMode.CONTAIN}
+              shouldPlay
+              isLooping
+            />
+             ) : (
+            <Text style={{ color: 'white' }}>Video missing</Text>
+            )}
           </View>
           <View style={styles.optionGrid}>
             {options.map(opt => (
@@ -95,10 +106,17 @@ export const QuizSlide: React.FC<Props> = ({
                 onPress={() => handleSelect(opt)}
                 activeOpacity={0.75}
               >
-                 <Video source={{ uri: opt.video }} style={styles.video} resizeMode={ResizeMode.CONTAIN} 
-                    shouldPlay // Auto-plays the video 
-                    isLooping //Loops the video
-                    /> 
+              {opt?.video ? (
+              <Video
+              source={{ uri: opt.video }}
+              style={styles.video}
+              resizeMode={ResizeMode.CONTAIN}
+              shouldPlay
+              isLooping
+              />
+              ) : (
+              <Text style={{ color: 'white' }}>Video missing</Text>
+              )} 
               </TouchableOpacity>
             ))}
           </View>

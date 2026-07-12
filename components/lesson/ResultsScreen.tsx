@@ -1,7 +1,11 @@
 // components/lesson/ResultsScreen.tsx
-
+import { Lesson } from '@/types/lesson';
+import {
+  Ionicons
+} from "@expo/vector-icons";
 import React from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,7 +13,6 @@ import {
   View,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
-import { Lesson } from '../../constants/lessonData';
 
 interface Props {
   lessonTitle: string;
@@ -20,20 +23,27 @@ interface Props {
   onRetake: () => void;
   onNextLesson: (id: string) => void;
   onPractice: () => void;
+  onBackToLessons: () => void; 
 }
 
 export const ResultsScreen: React.FC<Props> = ({
-  lessonTitle, score, total, xp, nextLesson, onRetake, onNextLesson,onPractice
+  lessonTitle, score, total, xp, nextLesson, onRetake, onNextLesson, onPractice, onBackToLessons
 }) => {
   const pct   = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
+  const earnedXp = Math.round((pct / 100) * xp);
 
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.emoji}>🎉</Text>
+      {/* mimo */}
+      <Image
+        source={require('../../assets/mimo1.png')}
+        style={styles.mimoImage}
+        resizeMode="contain"
+      />
       <Text style={styles.title}>Lesson Complete!</Text>
       <Text style={styles.subtitle}>{lessonTitle}</Text>
 
@@ -57,7 +67,7 @@ export const ResultsScreen: React.FC<Props> = ({
         </View>
         <View style={styles.divider} />
         <View style={styles.scoreItem}>
-          <Text style={styles.scoreValue}>+{xp}</Text>
+          <Text style={styles.scoreValue}>+{earnedXp}</Text>
           <Text style={styles.scoreLabel}>XP earned</Text>
         </View>
       </View>
@@ -71,7 +81,7 @@ export const ResultsScreen: React.FC<Props> = ({
           : "📚 Keep practicing — retake the lesson to improve!"}
       </Text>
 
-      {/* Next Lesson — primary button, only if there is one */}
+      {/* Next Lesson */}
       {nextLesson && (
         <TouchableOpacity
           style={styles.nextBtn}
@@ -83,22 +93,35 @@ export const ResultsScreen: React.FC<Props> = ({
         </TouchableOpacity>
       )}
 
-      {/* Retake Lesson — secondary button, always shown */}
-      <TouchableOpacity
-        style={styles.retakeBtn}
-        onPress={onRetake}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.retakeBtnText}>🔄 Retake Lesson</Text>
-      </TouchableOpacity>
+      <View style={styles.secondaryRow}>
+        <TouchableOpacity
+          style={styles.secondaryBtn}
+          onPress={onRetake}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.secondaryBtnIcon}><Ionicons name="refresh-outline" size={24} color="#173d5e" /></Text>
+          <Text style={styles.secondaryBtnText}>Retake</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.practiceBtn}
-        onPress={onPractice}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.practiceBtnText}>📝 Practice Lesson</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.secondaryBtn}
+          onPress={onPractice}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.secondaryBtnIcon}><Ionicons name="create" size={24} color="#173d5e" /></Text>
+          <Text style={styles.secondaryBtnText}>Practice</Text>
+        </TouchableOpacity>
+
+        {/* NEW: Back to Lessons button */}
+        <TouchableOpacity
+          style={styles.secondaryBtn}
+          onPress={onBackToLessons}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.secondaryBtnIcon}><Ionicons name="school" size={24} color="#173d5e" /></Text>
+          <Text style={styles.secondaryBtnText}>Lessons</Text>
+        </TouchableOpacity>
+      </View>
 
     </ScrollView>
   );
@@ -111,7 +134,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 60,
   },
-  emoji:    { fontSize: 64, marginBottom: 12 },
+  mimoImage: { width: 130, height: 130, marginBottom: 8 },
   title:    { fontSize: 28, fontWeight: '800', color: COLORS.primary, marginBottom: 4 },
   subtitle: { fontSize: 15, color: COLORS.darkGray, marginBottom: 24 },
   starsRow: { flexDirection: 'row', gap: 8, marginBottom: 28 },
@@ -147,7 +170,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   nextBtnSub: {
     color: 'rgba(255,255,255,0.7)',
@@ -160,37 +183,28 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
   },
-  retakeBtn: {
+  secondaryRow: {
+    flexDirection: 'row',
     width: '100%',
+    gap: 10,
+  },
+  secondaryBtn: {
+    flex: 1,
     backgroundColor: COLORS.cream,
     borderRadius: 14,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: COLORS.border,
-    marginBottom: 12,
-
   },
-  retakeBtnText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: '600',
+  secondaryBtnIcon: {
+    fontSize: 20,
+    marginBottom: 4,
   },
-  practiceBtn: {
-  width: '100%',
-  backgroundColor: COLORS.primary,
-  borderRadius: 14,
-  paddingVertical: 16,
-  alignItems: 'center',
-  marginBottom: 12,
-  borderWidth:1.5,
-  borderColor:'#fff'
-
-},
-practiceBtnText: {
-  color: '#fff',
-  fontSize: 17,
-  fontWeight: '600',
-},
-
+  secondaryBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.black,
+    textAlign: 'center',
+  },
 });

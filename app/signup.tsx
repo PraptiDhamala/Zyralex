@@ -20,7 +20,12 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
-    if (!name || !email || !password) {
+    //trimming spaces in the inputs
+    const cleanEmail = email.trim();
+    const cleanPassword = password; 
+    const cleanName = name.trim();
+
+    if (!cleanName || !cleanEmail || !cleanPassword) {
       Alert.alert("Error", "Please fill all fields");
       return;
     }
@@ -29,15 +34,17 @@ export default function SignUp() {
       setLoading(true);
 
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: cleanEmail,
+        password: cleanPassword,
         options: {
-          data: { name }, // 👈 saves name into auth.users metadata
+          data: { name: cleanName }, 
         },
       });
 
       if (error) {
+        // print precise error
         Alert.alert("Signup Error", error.message);
+        console.error("Supabase Auth Error details:", error);
         return;
       }
 
@@ -45,9 +52,6 @@ export default function SignUp() {
         Alert.alert("Error", "User not created");
         return;
       }
-
-      // ✅ No need to insert into profiles manually
-      // The database trigger handles it automatically
 
       Alert.alert("Success", "Account created!");
       router.replace("/onboarding");

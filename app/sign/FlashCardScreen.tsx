@@ -1,10 +1,10 @@
-import { LESSON_MAP } from "@/constants/lessonData";
+import { useSignModule } from '@/hooks/useSignModule';
 import { FlashCARD } from "@/models/flashcard";
 import { createFlashCards } from "@/utils/flashcardHelp";
 import { ResizeMode, Video } from "expo-av";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -17,8 +17,8 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function FlashCardScreen() {
   const { levelId, lessonId } = useLocalSearchParams<{ levelId: string; lessonId: string }>();
-  const lessonKey = `${levelId}_${lessonId}`;
-  const lesson = LESSON_MAP[lessonKey];
+  const { lessonMap, loading } = useSignModule();
+  const lesson = lessonMap[`${levelId}_${lessonId}`];
   const router = useRouter();
 
   const [flashcards, setFlashcards] = useState<FlashCARD[]>([]);
@@ -32,8 +32,9 @@ export default function FlashCardScreen() {
       setCurrentCard(0);
       setFlipped(false);
     }
-  }, [lessonId, levelId]);
+  }, [lesson]);
 
+  if (loading) return <ActivityIndicator style={{ marginTop: 40 }} />;
   if (!lesson) {
     return <Text style={{ margin: 16 }}>Lesson not found</Text>;
   }

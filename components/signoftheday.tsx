@@ -1,20 +1,22 @@
+import { useSignModule } from "@/hooks/useSignModule";
+import { Level, SignItem } from '@/types/lesson';
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from 'expo-router';
 import LottieView from "lottie-react-native";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../constants/colors";
-import { LESSON_LEVELS, SignItem } from "../constants/lessonData";
-function getAllSigns(): SignItem[] {
-  return LESSON_LEVELS.flatMap(level =>
+
+function getAllSigns(levels: Level[]): SignItem[] {
+  return levels.flatMap(level =>
     level.lessons.flatMap(lesson => lesson.signs)
   );
 }
 
-function getSignOfTheDay(): SignItem {
-  const signs = getAllSigns();
+function getSignOfTheDay(levels: Level[]): SignItem | null {
+  const signs = getAllSigns(levels);
   if (signs.length === 0) return null as any;
-
   const today = new Date();
   const daySeed = today.getFullYear() * 1000 + today.getMonth() * 50 + today.getDate();
   const index = daySeed % signs.length;
@@ -22,7 +24,16 @@ function getSignOfTheDay(): SignItem {
 }
 
 export const SignOfTheDayPanel = () => {
-  const signOfTheDay = useMemo(() => getSignOfTheDay(), []);
+  const { levels, stats, loading, error, refetch } = useSignModule(); 
+  const signOfTheDay = useMemo(() => getSignOfTheDay(levels), [levels]);
+  const navigation = useNavigation();
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refetch();
+    });
+    return unsubscribe;
+  }, [navigation, refetch]);
+
   if (!signOfTheDay) return null;
 
   return (
@@ -31,8 +42,6 @@ export const SignOfTheDayPanel = () => {
       end={{ x: 1, y: 1 }}
       style={styles.panel}
     >
-
-    
     
       <Text style={styles.title}>Sign of the Day</Text>
       <Text style={styles.subtitle}>Learn one new sign every day!</Text>
@@ -40,15 +49,19 @@ export const SignOfTheDayPanel = () => {
       {/* Sign + Mascot Row */}
       <View style={styles.row}>
         <View style={styles.signContainer}>
+        {signOfTheDay?.video ? (
           <Video
-            source={{ uri: signOfTheDay.video }}
-            style={styles.signVideo}
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay
-            isLooping
+          source={{ uri: signOfTheDay.video }}
+          style={styles.signVideo}
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          isLooping
           />
-          <Text style={styles.signLabel}>{signOfTheDay.label}</Text>
+          ) : (
+          <Text style={{ color: 'white' }}>Video missing</Text>
+          )}
         </View>
+        
 
         <View style={styles.mascotContainer}>
            <LottieView
@@ -73,7 +86,8 @@ export const SignOfTheDayPanel = () => {
 
       {/* Streak */}
       <View style={styles.streakContainer}>
-        <Text style={styles.streakText}>🔥 Streak: 5 Days</Text>
+        <Text style={styles.streakText}> 🔥 Streak: {stats.dayStreak} {stats.dayStreak === 1 ? 'Day' : 'Days'}
+        </Text>
       </View>
    
     </LinearGradient>

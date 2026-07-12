@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import { Platform } from "react-native";
 
 const STORAGE_KEY = "zyralex:server_ip_override";
 const DEFAULT_PORT = 8000;
@@ -28,13 +29,23 @@ function getHostFromExpo(): string | null {
   if (!hostUri) return null;
   return hostUri.replace("exp://", "").split(":")[0];
 }
+
 export function getHostUriIp(): string | null {
   return getHostFromExpo();
 }
+
 export async function resolveServerIp(): Promise<string | null> {
   const override = await loadOverride();
+  console.log("DEBUG override value:", override);
   if (override) return override;
-  return getHostFromExpo();
+
+  const expoHost = getHostFromExpo();
+  console.log("DEBUG expoHost value:", expoHost);
+  if (expoHost) return expoHost;
+
+  if (Platform.OS === "web") return "localhost";
+
+  return null;
 }
 
 export async function setServerIpOverride(ip: string | null) {

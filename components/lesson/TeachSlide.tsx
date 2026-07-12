@@ -1,9 +1,13 @@
+import { SignItem } from '@/types/lesson';
+import { ResizeMode, Video } from 'expo-av';
 import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { ResizeMode, Video } from 'expo-av';
-import { SignItem } from '../../constants/lessonData';
 import { COLORS } from '../../constants/colors';
 
 
@@ -119,5 +123,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 17,
     fontWeight: '700',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
   },
 });

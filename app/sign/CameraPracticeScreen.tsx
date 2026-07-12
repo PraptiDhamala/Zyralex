@@ -13,7 +13,9 @@ import {
   View,
 } from "react-native";
 
-import { LESSON_MAP } from "../../constants/lessonData";
+import { useSignModule } from '@/hooks/useSignModule';
+import { recordPracticeAttempt } from '@/lib/queries/signModule'; 
+import { supabase } from '@/lib/supabase'; 
 
 export default function CameraPracticeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -21,16 +23,13 @@ export default function CameraPracticeScreen() {
   const router = useRouter();
 
   const { levelId, lessonId } = useLocalSearchParams<any>();
-  const lessonKey = `${levelId}_${lessonId}`;
-  const lesson = LESSON_MAP[lessonKey];
+  const { lessonMap, loading } = useSignModule();
 
   const [index, setIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [ isCapturing, setIsCapturing ] = useState(false);
   const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
-
-  const currentSign = lesson?.signs[index];
 
   useEffect(() => {
     requestPermission();
@@ -47,6 +46,18 @@ export default function CameraPracticeScreen() {
     }
     return () => clearInterval(interval);
   }, [loading]);
+
+  const lesson = lessonMap[`${levelId}_${lessonId}`];
+  const currentSign = lesson?.signs[index];
+ 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="white" />
+      </View>
+    );
+  }
+
 
   if (!permission?.granted) {
     return (
@@ -72,7 +83,7 @@ export default function CameraPracticeScreen() {
     if (!cameraRef.current) return;
 
     try {
-      setLoading(true);
+      setIsCapturing(true);
       const images: string[] = [];
 
       for (let i = 0; i < 10; i++) {
@@ -93,7 +104,7 @@ export default function CameraPracticeScreen() {
     } catch (e) {
       console.log(e);
     } finally {
-      setLoading(false);
+      setIsCapturing(false);
     }
   };
 
@@ -109,28 +120,51 @@ export default function CameraPracticeScreen() {
         } as any);
       });
 
-      formData.append("target_sign", currentSign.label);
+      formData.append("target_sign", currentSign?.label ?? "");
 
-      const response = await fetch("http://192.168.1.7:8000/predict", {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch("http://192.168.22.167:8000/predict", {
         method: "POST",
-        body: formData,
+        body: formData as any,
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        signal: controller.signal as any,
       });
+      clearTimeout(timeoutId);
 
-      const result = await response.json();
+      const result: any = await response.json();
       console.log(result);
 
       setScore(result.score || 0);
       setFeedback(result.feedback || "");
       setProgress(100); // complete when backend responds
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const levelNumber = Number(String(levelId).replace('level-', ''));
+        const lessonNumber = lesson ? Number(lesson.lessonId.replace('lesson-', '')) : NaN;
+        if (user && currentSign && lesson?.lessonUuid && !Number.isNaN(levelNumber) && !Number.isNaN(lessonNumber)) {
+          await recordPracticeAttempt({
+            userId: user.id,
+            signId: currentSign.signId,
+            accuracy: result.score || 0,
+            lessonUuid: lesson.lessonUuid,
+            levelNumber,
+            lessonNumber,
+          });
+        }
+      } catch (logErr) {
+        console.log('Failed to save practice attempt:', logErr);
+      }
     } catch (e) {
       console.log(e);
+      setFeedback("Couldn't reach the practice server — check your connection.");
     }
   };
 
- 
   const next = () => {
     setFeedback("");
     setScore(0);
@@ -150,6 +184,7 @@ export default function CameraPracticeScreen() {
       <CameraView ref={cameraRef} style={styles.camera} facing="front" />
 
       <View style={styles.top}>
+        {currentSign?.video ? (
         <Video
           source={{ uri: currentSign.video }}
           style={styles.video}
@@ -157,10 +192,13 @@ export default function CameraPracticeScreen() {
           shouldPlay
           isLooping
         />
-        <Text style={styles.title}>{currentSign.label}</Text>
+         ) : (
+        <Text style={{ color: 'white' }}>Video missing</Text>
+        )}
+        <Text style={styles.title}>{currentSign?.label}</Text>
       </View>
 
-      {loading && (
+      {isCapturing && (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color="white" />
           <Text style={{ color: "white", marginTop: 46 }}>
