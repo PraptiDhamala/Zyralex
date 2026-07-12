@@ -1,6 +1,7 @@
 import { useSignModule } from "@/hooks/useSignModule";
 import { Level, SignItem } from '@/types/lesson';
 import { ResizeMode, Video } from "expo-av";
+import { useNavigation } from 'expo-router'; 
 import { LinearGradient } from "expo-linear-gradient";
 import LottieView from "lottie-react-native";
 import React, { useMemo } from "react";
@@ -23,8 +24,16 @@ function getSignOfTheDay(levels: Level[]): SignItem | null {
 }
 
 export const SignOfTheDayPanel = () => {
-  const{ levels, loading, error } = useSignModule();
+  const { levels, stats, loading, error, refetch } = useSignModule(); 
   const signOfTheDay = useMemo(() => getSignOfTheDay(levels), [levels]);
+  const navigation = useNavigation();
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refetch();
+    });
+    return unsubscribe;
+  }, [navigation, refetch]);
+
   if (!signOfTheDay) return null;
 
   return (
@@ -77,7 +86,8 @@ export const SignOfTheDayPanel = () => {
 
       {/* Streak */}
       <View style={styles.streakContainer}>
-        <Text style={styles.streakText}>🔥 Streak: 5 Days</Text>
+        <Text style={styles.streakText}> 🔥 Streak: {stats.dayStreak} {stats.dayStreak === 1 ? 'Day' : 'Days'}
+        </Text>
       </View>
    
     </LinearGradient>

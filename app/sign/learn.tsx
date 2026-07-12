@@ -1,6 +1,7 @@
 // app/sign/learn.tsx
 
 import { useSignModule } from '@/hooks/useSignModule';
+import { useNavigation } from 'expo-router';
 import React from 'react';
 import {
   ActivityIndicator,
@@ -14,7 +15,16 @@ import { LevelCollapsible } from '../../components/LevelCollapsible';
 import { COLORS } from '../../constants/colors';
 
 export default function LearnScreen() {
-  const{ levels, loading, error } = useSignModule();
+  const { levels, loading, error, refetch } = useSignModule();
+
+  const navigation = useNavigation();
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refetch();
+    });
+    return unsubscribe;
+  }, [navigation, refetch]);
+
   if (loading) return <ActivityIndicator style={{ marginTop:40 }} />;
   if (error) return <Text style={{ margin:16 }}> {error} </Text>
   return (

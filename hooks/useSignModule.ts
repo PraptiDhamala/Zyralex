@@ -4,7 +4,13 @@ import { supabase } from '@/lib/supabase';
 import type { Lesson, Level } from '@/types/lesson';
 import { useCallback, useEffect, useState } from 'react';
 
-const EMPTY_STATS: UserStats = { dayStreak: 0, bestScore: 0, improvement: 0 };
+const EMPTY_STATS: UserStats = { 
+  dayStreak: 0,
+  totalXp: 0,
+  avgAccuracy: 0,
+  currentLevelId: null,
+  currentLessonId: null
+ };
 
 export function useSignModule() {
   const [levels, setLevels] = useState<Level[]>([]);

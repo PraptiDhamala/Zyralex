@@ -41,7 +41,7 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-// Returns the quiz type for teach-phase index: even index (0,2,4...) → whatSign, odd index (1,3,5...) → whichImage
+// Returns the quiz type for teach-phase index
 function teachQuizType(signIndex: number): QuizType {
   return signIndex % 2 === 0 ? 'whatSign' : 'whichImage';
 }
@@ -59,7 +59,7 @@ interface Props {
   lessonMap: Record<string, Lesson>;
 }
 
-function LessonInner({ levelId, lessonId, onRetake,levels, lessonMap }: Props) {
+function LessonInner({ levelId, lessonId, onRetake, levels, lessonMap }: Props) {
   const router = useRouter();
   const lessonData = lessonMap[`${levelId}_${lessonId}`];
 
@@ -222,12 +222,13 @@ function LessonInner({ levelId, lessonId, onRetake,levels, lessonMap }: Props) {
     const stars = pct >= 90 ? 3 : pct >= 60 ? 2 : 1;
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      // lessonData.lessonId is the uuid from lessons.id, so fetch it via useLessonLevels
+      const levelNumber = Number(levelId.replace('level-', ''));
+      const lessonNumber = Number(lessonData.lessonId.replace('lesson-', ''));
       await recordLessonCompletion({
         userId: user.id,
-        lessonUuid: lessonData.lessonId,
-        levelKey: levelId,
-        lessonKey: lessonId,
+        lessonUuid: lessonData.lessonUuid, // the real lessons.id uuid
+        levelNumber,
+        lessonNumber,
         scorePct: pct,
         totalXp: lessonData.xp,
       }).catch(console.error);
@@ -325,6 +326,7 @@ function LessonInner({ levelId, lessonId, onRetake,levels, lessonMap }: Props) {
                 params: { lessonId: lessonData.lessonId } ,
               })
             }
+            onBackToLessons={() => router.push('/sign/learn')}
           />
         )}
       </View>

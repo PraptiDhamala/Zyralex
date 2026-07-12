@@ -14,6 +14,8 @@ import {
 } from "react-native";
 
 import { useSignModule } from '@/hooks/useSignModule';
+import { recordPracticeAttempt } from '@/lib/queries/signModule'; 
+import { supabase } from '@/lib/supabase'; 
 
 export default function CameraPracticeScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -45,7 +47,7 @@ export default function CameraPracticeScreen() {
     return () => clearInterval(interval);
   }, [loading]);
 
-   const lesson = lessonMap[`${levelId}_${lessonId}`];
+  const lesson = lessonMap[`${levelId}_${lessonId}`];
   const currentSign = lesson?.signs[index];
  
   if (loading) {
@@ -123,13 +125,13 @@ export default function CameraPracticeScreen() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-      const response = await fetch("http://192.168.1.7:8000/predict", {
+      const response = await fetch("http://192.168.22.167:8000/predict", {
         method: "POST",
         body: formData as any,
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        signal: controller.signal,
+        signal: controller.signal as any,
       });
       clearTimeout(timeoutId);
 
@@ -139,13 +141,30 @@ export default function CameraPracticeScreen() {
       setScore(result.score || 0);
       setFeedback(result.feedback || "");
       setProgress(100); // complete when backend responds
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const levelNumber = Number(String(levelId).replace('level-', ''));
+        const lessonNumber = lesson ? Number(lesson.lessonId.replace('lesson-', '')) : NaN;
+        if (user && currentSign && lesson?.lessonUuid && !Number.isNaN(levelNumber) && !Number.isNaN(lessonNumber)) {
+          await recordPracticeAttempt({
+            userId: user.id,
+            signId: currentSign.signId,
+            accuracy: result.score || 0,
+            lessonUuid: lesson.lessonUuid,
+            levelNumber,
+            lessonNumber,
+          });
+        }
+      } catch (logErr) {
+        console.log('Failed to save practice attempt:', logErr);
+      }
     } catch (e) {
       console.log(e);
       setFeedback("Couldn't reach the practice server — check your connection.");
     }
   };
 
- 
   const next = () => {
     setFeedback("");
     setScore(0);

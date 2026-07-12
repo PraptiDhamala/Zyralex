@@ -19,18 +19,31 @@ export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => 
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
 
+  const isLevelComplete = level.total > 0 && level.completed === level.total;
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.header}
         onPress={() => setIsExpanded(!isExpanded)}
       >
-        <View style={styles.headerLeft}>
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelNumber}>{level.level}</Text>
+         <View style={styles.headerLeft}>
+          <View style={[styles.levelBadge, isLevelComplete && styles.levelBadgeComplete]}>
+            {isLevelComplete ? (
+              <Text style={styles.levelCompleteIcon}>✓</Text>
+            ) : (
+              <Text style={styles.levelNumber}>{level.level}</Text>
+            )}
           </View>
           <View>
-            <Text style={styles.levelTitle}>{level.title}</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.levelTitle}>{level.title}</Text>
+              {isLevelComplete && (
+                <View style={styles.completeBadge}>
+                  <Text style={styles.completeBadgeText}>Completed</Text>
+                </View>
+              )}
+            </View>
             <Text style={styles.progress}>
               {level.completed}/{level.total} completed
             </Text>
@@ -96,6 +109,31 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  levelBadgeComplete: {
+    backgroundColor: '#28A745',
+  },
+  levelCompleteIcon: {
+    color: COLORS.white,
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  completeBadge: {
+    backgroundColor: '#D4EDDA',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  completeBadgeText: {
+    color: '#1E7B34',
+    fontSize: 10,
+    fontWeight: '700',
   },
   levelNumber: {
     color: COLORS.white,

@@ -15,10 +15,10 @@ export type Lesson = {
   title: string;
   description: string;
   descriptionpractice: string;
-  duration: string;       // time taken by user to complete specific lesson
   xp: number;             // total xp
   earnedXp: number;       // earned by user
   completed: boolean;     //different for each user(whether they have completed the lesson or not)
+  accuracy: number | null; // lesson's own average camera-practice accuracy
   signs: SignItem[];
 };
 

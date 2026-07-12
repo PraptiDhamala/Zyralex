@@ -1,10 +1,12 @@
 import { useSignModule } from "@/hooks/useSignModule";
+import type { Lesson, Level } from "@/types/lesson";
 import {
   Ionicons
 } from "@expo/vector-icons";
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import React from 'react';
 import {
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -96,15 +98,60 @@ function ContinueLessonItem({
 }
 
 //LevelProgressCard (calls LevelProgressCardView)
-function LevelProgressCard() {
-  return <LevelProgressCardView progressPercentage={0} />;
+function LevelProgressCard({
+  levels,
+  currentLevelId,
+}: {
+  levels: Level[];
+  currentLevelId: string | null;
+}) {
+  if (!levels.length) return null;
+
+  // Fall back to the first level for new users
+  const activeLevel =
+    levels.find((lvl) => lvl.levelId === currentLevelId) ?? levels[0];
+
+  const levelSignsTotal = activeLevel.lessons.reduce((sum, l) => sum + l.signs.length, 0);
+  const levelSignsStudied = activeLevel.lessons
+    .filter((l) => l.completed)
+    .reduce((sum, l) => sum + l.signs.length, 0);
+  const progressPercentage = levelSignsTotal > 0
+    ? Math.round((levelSignsStudied / levelSignsTotal) * 100)
+    : 0;
+  const signsRemaining = Math.max(levelSignsTotal - levelSignsStudied, 0);
+
+  const nextLevel = levels.find((lvl) => lvl.level === activeLevel.level + 1);
+
+  return (
+    <LevelProgressCardView
+      levelTitle={`Level ${activeLevel.level}`}
+      levelSubtitle={activeLevel.title}
+      signsStudied={levelSignsStudied}
+      signsRemaining={signsRemaining}
+      nextLevelExists={!!nextLevel}
+      progressPercentage={progressPercentage}
+      lessons={activeLevel.lessons}
+    />
+  );
 }
 
 //LevelProgressCardView Component
 function LevelProgressCardView({
+  levelTitle,
+  levelSubtitle,
+  signsStudied,
+  signsRemaining,
+  nextLevelExists,
   progressPercentage,
+  lessons,
 }: {
+  levelTitle: string;
+  levelSubtitle: string;
+  signsStudied: number;
+  signsRemaining: number;
+  nextLevelExists: boolean;
   progressPercentage: number;
+  lessons: Lesson[];
 }) {
   return (
     <View style={styles.levelProgressContainer}>
@@ -114,19 +161,21 @@ function LevelProgressCardView({
             <Ionicons name="rocket" size={25} color="#eee2f9" />
           </View>
           <View>
-            <Text style={styles.levelTitle}>Level 1</Text>
-            <Text style={styles.levelSubtitle}>Beginner</Text>
+            <Text style={styles.levelTitle}>{levelTitle}</Text>
+            <Text style={styles.levelSubtitle}>{levelSubtitle}</Text>
           </View>
         </View>
         <View style={styles.levelXpSection}>
-          <Text style={styles.levelXp}>0 XP</Text>
-          <Text style={styles.levelXpNext}>100 to Level 2</Text>
+          <Text style={styles.levelXp}>{signsStudied} signs studied</Text>
+          <Text style={styles.levelXpNext}>
+            {nextLevelExists ? `${signsRemaining} to next level` : 'Max level'}
+          </Text>
         </View>
       </View>
 
       <View style={styles.levelProgressSection}>
         <View style={styles.levelProgressInfo}>
-          <Text style={styles.levelProgressText}>0% to next level</Text>
+          <Text style={styles.levelProgressText}>{progressPercentage}% to next level</Text>
         </View>
 
         <View style={styles.levelProgressBar}>
@@ -139,16 +188,18 @@ function LevelProgressCardView({
         </View>
 
         <View style={styles.lessonIndicators}>
-          {[...Array(6)].map((_, index) => (
+          {lessons.map((lesson) => (
             <View
-              key={index}
+              key={lesson.lessonId}
               style={[
                 styles.indicator,
-                index === 0 && styles.indicatorCompleted,
+                lesson.completed && styles.indicatorCompleted,
               ]}
             >
               <Text style={styles.indicatorText}>
-                {index === 0 ? <Ionicons name="checkmark-circle" size={25} color="#f0f7f9e6" /> :<Ionicons name="lock-closed" size={18} color="#90bc9a" /> }
+                {lesson.completed
+                  ? <Ionicons name="checkmark-circle" size={25} color="#f0f7f9e6" />
+                  : <Ionicons name="lock-closed" size={18} color="#90bc9a" />}
               </Text>
             </View>
           ))}
@@ -161,8 +212,32 @@ function LevelProgressCardView({
 // Main HomeScreen
 export default function HomeScreen() {
   const router = useRouter();
-  const { levels, stats } = useSignModule();
+  const navigation = useNavigation();
+  const { levels, stats, loading, error, refetch } = useSignModule();
+
+  // refetch every time the user comes back to this tab 
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refetch();
+    });
+    return unsubscribe;
+  }, [navigation, refetch]);
+
+  // Resume exactly where sign_user_progress says the user left
   const getNextLesson = () => {
+    if (stats.currentLevelId && stats.currentLessonId) {
+      const level = levels.find((l) => l.levelId === stats.currentLevelId);
+      if (level) {
+        const lastLesson = level.lessons.find((l) => l.lessonId === stats.currentLessonId);
+        if (lastLesson && !lastLesson.completed) return lastLesson;
+
+        const idx = level.lessons.findIndex((l) => l.lessonId === stats.currentLessonId);
+        if (idx !== -1 && idx + 1 < level.lessons.length) {
+          return level.lessons[idx + 1];
+        }
+      }
+    }
+
     for (const level of levels) {
       for (const lesson of level.lessons) {
         if (lesson && !lesson.completed) {
@@ -172,6 +247,21 @@ export default function HomeScreen() {
     }
     return null;
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator style={{ marginTop: 40 }} color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Text style={{ margin: 16 }}>{error}</Text>
+      </SafeAreaView>
+    );
+  }
 
   const nextLesson = getNextLesson();
 
@@ -189,26 +279,29 @@ export default function HomeScreen() {
         </View>
 
         {/* Level Progress Card */}
-        <LevelProgressCard />
+        <LevelProgressCard
+          levels={levels}
+          currentLevelId={stats.currentLevelId}
+        />
 
         {/* AI Tutor Card
         <AITutorCard />
          */}
 
         {/* Stats Cards */}
-        <View style={styles.statsSection}>
+          <View style={styles.statsSection}>
           <StatCard 
           icon= {<Ionicons name="flame" size={24} color="#f19238c0" />}
           value={stats.dayStreak} label="Day Streak" />
           <StatCard
-            icon= {<Ionicons name="trophy" size={25} color="#fcd743" />}
-            value={`${stats.bestScore}%`}
-            label="Best Score"
+            icon= {<Ionicons name="star" size={25} color="#fcd743" />}
+            value={stats.totalXp}
+            label="Total XP"
           />
           <StatCard
-           icon= {<Ionicons name="trending-up" size={25} color="#0a77d6c0" />}
-            value={`+${stats.improvement}%`}
-            label="Improvement"
+           icon= {<Ionicons name="analytics" size={25} color="#0a77d6c0" />}
+            value={`${stats.avgAccuracy}%`}
+            label="Avg Accuracy"
           />
         </View>
 
