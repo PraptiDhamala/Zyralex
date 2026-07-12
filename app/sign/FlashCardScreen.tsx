@@ -1,6 +1,6 @@
 import { useSignModule } from '@/hooks/useSignModule';
 import { FlashCARD } from "@/models/flashcard";
-import { createFlashCards } from "@/utlis/flashcardHelp";
+import { createFlashCards } from "@/utils/flashcardHelp";
 import { ResizeMode, Video } from "expo-av";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";

@@ -33,5 +33,5 @@ def dtw_distance(seq1, seq2):
                 dp[i - 1, j - 1]
             )
 
-    # Normalize so videos of different lengths are comparable
+   
     return float(dp[n, m] / (n + m))

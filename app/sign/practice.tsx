@@ -53,12 +53,6 @@ useFocusEffect(
       description: 'Test your memory with flash card practice',
       route: '/sign/Flashgrid',
     },
-    {
-      id: 'random',
-      title: 'Random Practice',
-      description: 'Challenge yourself with random signs',
-      route: '/sign/RandomPracticeScreen',
-    },
   ];
 
   return (

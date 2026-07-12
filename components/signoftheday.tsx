@@ -1,8 +1,8 @@
 import { useSignModule } from "@/hooks/useSignModule";
 import { Level, SignItem } from '@/types/lesson';
 import { ResizeMode, Video } from "expo-av";
-import { useNavigation } from 'expo-router'; 
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from 'expo-router';
 import LottieView from "lottie-react-native";
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";

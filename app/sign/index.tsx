@@ -1,6 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React from "react";
+import { useSignModule } from "@/hooks/useSignModule";
+import type { Lesson, Level } from "@/types/lesson";
+import {
+  Ionicons
+} from "@expo/vector-icons";
+import { useNavigation, useRouter } from 'expo-router';
+import React from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -10,11 +14,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { HelloWave } from "../../components/hello-wave";
-import { COLORS } from "../../constants/colors";
-import { LESSON_LEVELS } from "../../constants/lessonData";
-// import { USER_STATS } from '../../constants/mockData';
+} from 'react-native';
+import { HelloWave } from '../../components/hello-wave';
+import { COLORS } from '../../constants/colors';
 
 //ActionButton Component
 function ActionButton({
@@ -193,15 +195,9 @@ function LevelProgressCardView({
               ]}
             >
               <Text style={styles.indicatorText}>
-                {index === 0 ? (
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={25}
-                    color="#f0f7f9e6"
-                  />
-                ) : (
-                  <Ionicons name="lock-closed" size={18} color="#90bc9a" />
-                )}
+                {lesson.completed
+                  ? <Ionicons name="checkmark-circle" size={25} color="#f0f7f9e6" />
+                  : <Ionicons name="lock-closed" size={18} color="#90bc9a" />}
               </Text>
             </View>
           ))}
@@ -290,8 +286,8 @@ export default function HomeScreen() {
         <AITutorCard />
          */}
 
-        {/* Stats Cards
-        <View style={styles.statsSection}>
+        {/* Stats Cards */}
+          <View style={styles.statsSection}>
           <StatCard 
           icon= {<Ionicons name="flame" size={24} color="#f19238c0" />}
           value={stats.dayStreak} label="Day Streak" />
@@ -305,7 +301,7 @@ export default function HomeScreen() {
             value={`${stats.avgAccuracy}%`}
             label="Avg Accuracy"
           />
-        </View> */}
+        </View> 
 
         {/* Action Buttons */}
         <View style={styles.actionButtonsSection}>
@@ -525,8 +521,6 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     fontWeight: "500",
   },
-
-  // Action Buttons
   actionButtonsSection: {
     flexDirection: "row",
     paddingHorizontal: 10,
