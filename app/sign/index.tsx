@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useSignModule } from "@/hooks/useSignModule";
 import type { Lesson, Level } from "@/types/lesson";
 import {
@@ -6,11 +5,6 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation, useRouter } from 'expo-router';
 import React from 'react';
-=======
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React from "react";
->>>>>>> 00cb345c883b1144f9593ed018db357464f1fe24
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -20,17 +14,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-<<<<<<< HEAD
 } from 'react-native';
 import { HelloWave } from '../../components/hello-wave';
 import { COLORS } from '../../constants/colors';
-=======
-} from "react-native";
-import { HelloWave } from "../../components/hello-wave";
-import { COLORS } from "../../constants/colors";
-import { LESSON_LEVELS } from "../../constants/lessonData";
-// import { USER_STATS } from '../../constants/mockData';
->>>>>>> 00cb345c883b1144f9593ed018db357464f1fe24
 
 //ActionButton Component
 function ActionButton({
@@ -209,21 +195,9 @@ function LevelProgressCardView({
               ]}
             >
               <Text style={styles.indicatorText}>
-<<<<<<< HEAD
                 {lesson.completed
                   ? <Ionicons name="checkmark-circle" size={25} color="#f0f7f9e6" />
                   : <Ionicons name="lock-closed" size={18} color="#90bc9a" />}
-=======
-                {index === 0 ? (
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={25}
-                    color="#f0f7f9e6"
-                  />
-                ) : (
-                  <Ionicons name="lock-closed" size={18} color="#90bc9a" />
-                )}
->>>>>>> 00cb345c883b1144f9593ed018db357464f1fe24
               </Text>
             </View>
           ))}
@@ -312,13 +286,8 @@ export default function HomeScreen() {
         <AITutorCard />
          */}
 
-<<<<<<< HEAD
         {/* Stats Cards */}
           <View style={styles.statsSection}>
-=======
-        {/* Stats Cards
-        <View style={styles.statsSection}>
->>>>>>> 00cb345c883b1144f9593ed018db357464f1fe24
           <StatCard 
           icon= {<Ionicons name="flame" size={24} color="#f19238c0" />}
           value={stats.dayStreak} label="Day Streak" />
@@ -332,7 +301,7 @@ export default function HomeScreen() {
             value={`${stats.avgAccuracy}%`}
             label="Avg Accuracy"
           />
-        </View> */}
+        </View> 
 
         {/* Action Buttons */}
         <View style={styles.actionButtonsSection}>
