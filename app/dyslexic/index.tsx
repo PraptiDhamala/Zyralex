@@ -29,7 +29,7 @@ import { supabase } from "../../lib/supabase";
 import { fetchSyllables, scanFlashcard } from "../../utils/flashcard";
 import {
   getLessonKeyForWeakArea,
-  LESSON_COUNTS_PER_LEVEL
+  LESSON_COUNTS_PER_LEVEL,
 } from "../../utils/progress";
 import {
   clearServerIpOverride,
@@ -143,7 +143,7 @@ export default function DyslexicHome() {
 
       const { data: progressRow } = await supabase
         .from("dyslexic_user_progress")
-        .select("current_level, completed_levels")
+        .select("current_level, current_lesson, completed_levels")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -151,7 +151,8 @@ export default function DyslexicHome() {
       setCurrentLevelKey(currentLevel);
       setCompletedLevels(progressRow?.completed_levels ?? []);
 
-      const targetLessonKey = getLessonKeyForWeakArea(latestWeakArea);
+      const targetLessonKey =
+        progressRow?.current_lesson ?? getLessonKeyForWeakArea(latestWeakArea);
       const totalForLevel = LESSON_COUNTS_PER_LEVEL[currentLevel] ?? 5;
       setLessonsTotal(totalForLevel);
 

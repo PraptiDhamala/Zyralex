@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -232,7 +232,7 @@ export default function LearnScreen() {
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [existingAssessment, setExistingAssessment] = useState<any>(null);
   const [assessmentStarted, setAssessmentStarted] = useState(false);
-  const [questions] = useState(generateAssessmentQuestions());
+  const [questions, setQuestions] = useState(generateAssessmentQuestions());
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -242,20 +242,24 @@ export default function LearnScreen() {
   const [displayWeakArea, setDisplayWeakArea] = useState("letter_reversal");
 
   const startTime = useRef<number>(Date.now());
-  useEffect(() => {
-    (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        setCheckingExisting(true);
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          setCheckingExisting(false);
+          return;
+        }
+        const assessment = await getLatestAssessment(user.id);
+        setExistingAssessment(assessment);
+        setAssessmentStarted(false); // always re-show the summary/retake card on refocus
         setCheckingExisting(false);
-        return;
-      }
-      const assessment = await getLatestAssessment(user.id);
-      setExistingAssessment(assessment);
-      setCheckingExisting(false);
-    })();
-  }, []);
+      })();
+    }, []),
+  );
 
   const handleAnswer = async (selected: string) => {
     let updatedScore = score;
@@ -396,7 +400,16 @@ export default function LearnScreen() {
       } as any);
     }
   };
-
+  const handleRetake = () => {
+    setQuestions(generateAssessmentQuestions());
+    setCurrentQuestion(0);
+    setScore(0);
+    setWeakPatterns([]);
+    setFinished(false);
+    setLoading(false);
+    startTime.current = Date.now();
+    setAssessmentStarted(true);
+  };
   const renderTargetedCard = () => {
     // Display card is purely cosmetic — it shows what we detected, not where they start
     if (displayLevel === "hard") {
@@ -519,7 +532,7 @@ export default function LearnScreen() {
               styles.homeButton,
               { backgroundColor: "#F1F5F9", marginTop: 12 },
             ]}
-            onPress={() => setAssessmentStarted(true)}
+            onPress={handleRetake}
           >
             <Text style={{ color: "#475569", fontWeight: "700" }}>
               Retake Assessment
