@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import * as Speech from "expo-speech";
@@ -165,7 +166,6 @@ export default function LessonScreen() {
     })();
   }, []);
   useEffect(() => {
-    setStep(0);
     setFinished(false);
     setScore(0);
     setMascotConfig(null);
@@ -178,6 +178,16 @@ export default function LessonScreen() {
       if (lessonKey && activeLevel) {
         setResolvedLevel(activeLevel);
         setResolvedLessonKey(lessonKey as string);
+
+        if (!hasGreetedRef.current) {
+          hasGreetedRef.current = true;
+          const topic = (lessonKey as string).replace("_", " ");
+          Speech.speak(`Welcome back! Let's keep going with ${topic}.`, {
+            language: "en",
+            pitch: 1,
+            rate: 0.85,
+          });
+        }
         return;
       }
 
@@ -218,18 +228,17 @@ export default function LessonScreen() {
 
     (async () => {
       const progress = await getCurrentProgress(session.user.id);
-      const completedLevels: string[] = progress?.completed_levels ?? [];
-
-      const levelIdx = LEVEL_ORDER.indexOf(resolvedLevel);
-      if (levelIdx > 0) {
-        const requiredPrevious = LEVEL_ORDER[levelIdx - 1];
-        if (!completedLevels.includes(requiredPrevious)) {
-          setMascotConfig({
-            mood: "encourage",
-            message: `Slow down, friend! 🐼\n\nYou need to finish ${requiredPrevious.replace("level", "Level ")} before unlocking this one.\n\nLet's go back and keep working — you're so close!`,
-            displayMode: "modal",
-          });
-        }
+      const currentIdx = LEVEL_ORDER.indexOf(
+        progress?.current_level ?? "level1",
+      );
+      const resolvedIdx = LEVEL_ORDER.indexOf(resolvedLevel);
+      if (resolvedIdx > currentIdx) {
+        const requiredPrevious = LEVEL_ORDER[currentIdx];
+        setMascotConfig({
+          mood: "encourage",
+          message: `Slow down, friend! 🐼\n\nYou need to finish ${requiredPrevious.replace("level", "Level ")} before unlocking this one.\n\nLet's go back and keep working — you're so close!`,
+          displayMode: "modal",
+        });
       }
     })();
   }, [resolvedLevel, session?.user?.id]);
@@ -245,6 +254,41 @@ export default function LessonScreen() {
       }
     })();
   }, []);
+  // restore step once lesson is resolved
+  useEffect(() => {
+    if (!resolvedLevel || !resolvedLessonKey) return;
+    (async () => {
+      const key = `zyralex:step:${resolvedLevel}:${resolvedLessonKey}`;
+      const saved = await AsyncStorage.getItem(key);
+      setStep(saved ? Number(saved) : 0);
+    })();
+  }, [resolvedLevel, resolvedLessonKey]);
+
+  // persist step as it changes
+  useEffect(() => {
+    if (!resolvedLevel || !resolvedLessonKey) return;
+    const key = `zyralex:step:${resolvedLevel}:${resolvedLessonKey}`;
+    AsyncStorage.setItem(key, String(step));
+  }, [step, resolvedLevel, resolvedLessonKey]);
+  // restore the "lesson finished, awaiting decision" screen if user left mid-decision
+  useEffect(() => {
+    if (!resolvedLevel || !resolvedLessonKey) return;
+    (async () => {
+      const key = `zyralex:completed:${resolvedLevel}:${resolvedLessonKey}`;
+      const saved = await AsyncStorage.getItem(key);
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+      setScore(parsed.score ?? 0);
+      setFinished(true);
+      setCompletionReady(true);
+      setMascotConfig({
+        mood: "cheer",
+        message: `🎉 You finished the lesson!\n\nScore: ${parsed.score} / ${lessonData.guidedPractice?.length ?? 0}\n\nYou're on a roll — want to jump into the next lesson, or take a well-earned break and come back later?`,
+        displayMode: "modal",
+      });
+    })();
+  }, [resolvedLevel, resolvedLessonKey]);
 
   const saveIpOverride = async () => {
     const trimmed = ipInput.trim();
@@ -445,6 +489,13 @@ export default function LessonScreen() {
         displayMode: "modal",
       });
       Speech.speak("Amazing work! Lesson complete!", { rate: 0.85 });
+
+      if (resolvedLevel && resolvedLessonKey) {
+        AsyncStorage.setItem(
+          `zyralex:completed:${resolvedLevel}:${resolvedLessonKey}`,
+          JSON.stringify({ score }),
+        );
+      }
     } else {
       setStep(step + 1);
     }
@@ -724,6 +775,13 @@ export default function LessonScreen() {
                   console.warn("Progress save failed, navigating anyway:", err);
                 }
 
+                await AsyncStorage.removeItem(
+                  `zyralex:step:${resolvedLevel}:${resolvedLessonKey}`,
+                );
+                await AsyncStorage.removeItem(
+                  `zyralex:completed:${resolvedLevel}:${resolvedLessonKey}`,
+                );
+
                 setStep(0);
                 setFinished(false);
                 setScore(0);
@@ -732,7 +790,6 @@ export default function LessonScreen() {
                   resolvedLevel as string,
                   resolvedLessonKey as string,
                 );
-
                 if (nextRoute) {
                   router.replace(nextRoute);
                 } else {
@@ -797,7 +854,7 @@ export default function LessonScreen() {
           />
 
           {completionReady && !pendingWordHelp && (
-            <View style={styles.wordHelpButtons}>
+            <View style={[styles.wordHelpButtons, { flexWrap: "wrap" }]}>
               <TouchableOpacity
                 style={styles.yesButton}
                 onPress={async () => {
@@ -836,6 +893,13 @@ export default function LessonScreen() {
                     console.warn("Progress save failed:", err);
                   }
 
+                  await AsyncStorage.removeItem(
+                    `zyralex:step:${resolvedLevel}:${resolvedLessonKey}`,
+                  );
+                  await AsyncStorage.removeItem(
+                    `zyralex:completed:${resolvedLevel}:${resolvedLessonKey}`,
+                  );
+
                   setStep(0);
                   setFinished(false);
                   setScore(0);
@@ -855,10 +919,27 @@ export default function LessonScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
+                style={[styles.noButton, { backgroundColor: "#DBEAFE" }]}
+                onPress={() => {
+                  setMascotConfig(null);
+                  setCompletionReady(false);
+                  router.push({
+                    pathname: "/dyslexic/practice",
+                    params: { lesson: resolvedLessonKey, level: resolvedLevel },
+                  });
+                }}
+              >
+                <Text style={[styles.yesText, { color: "#2563EB" }]}>
+                  Practice Now
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 style={styles.noButton}
                 onPress={async () => {
                   setMascotConfig(null);
                   setCompletionReady(false);
+
                   try {
                     if (session?.user?.id) {
                       await upsertLessonProgress({
@@ -868,10 +949,40 @@ export default function LessonScreen() {
                         completed: true,
                         score,
                       });
+                      const nextRoute = getNextRoute(
+                        resolvedLevel as string,
+                        resolvedLessonKey as string,
+                      );
+                      if (nextRoute) {
+                        const params = (nextRoute as any).params;
+                        if (params.level1 !== resolvedLevel) {
+                          await markLevelCompleted(
+                            session.user.id,
+                            resolvedLevel as string,
+                          );
+                        }
+                        await saveCurrentProgress(
+                          session.user.id,
+                          params.level1,
+                          params.lesson,
+                        );
+                      }
                     }
                   } catch (err) {
                     console.warn("Progress save failed:", err);
                   }
+
+                  await AsyncStorage.removeItem(
+                    `zyralex:step:${resolvedLevel}:${resolvedLessonKey}`,
+                  );
+                  await AsyncStorage.removeItem(
+                    `zyralex:completed:${resolvedLevel}:${resolvedLessonKey}`,
+                  );
+
+                  setStep(0);
+                  setFinished(false);
+                  setScore(0);
+
                   Speech.speak("Great work today! See you next time.", {
                     rate: 0.85,
                   });
