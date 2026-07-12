@@ -14,6 +14,7 @@ import {
   getLatestAssessment,
   getLearnEntryRoute,
   saveCurrentProgress,
+  weakAreaToLesson,
 } from "../../utils/progress";
 const questionPool = [
   {
@@ -226,20 +227,6 @@ function generateAssessmentQuestions() {
 
   return shuffleArray(selectedQuestions);
 }
-
-// Maps the detected weak area pattern → the lesson key used in the curriculum
-const weakAreaToLesson: Record<string, string> = {
-  letter_reversal: "letter_reversal",
-  spelling_recognition: "letter_reversal",
-  visual_tracking: "visual_tracking",
-  phonics: "phonics",
-  phonological_awareness: "phonics",
-  phoneme_manipulation: "phonics",
-  vowel_processing: "vowel_processing",
-  decoding: "decoding",
-  chunking: "chunking",
-};
-
 export default function LearnScreen() {
   const router = useRouter();
   const [checkingExisting, setCheckingExisting] = useState(true);
