@@ -33,6 +33,9 @@ import {
   resolveServerIp,
 } from "../../utils/serverConfig";
 import { getWordOfTheDay } from "../../utils/wordOffDay";
+
+const LEVEL_ORDER = ["level1", "level2", "level3", "level4", "level5"];
+
 export default function DyslexicHome() {
   const router = useRouter();
 
@@ -63,14 +66,19 @@ export default function DyslexicHome() {
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [completedLessonsCount, setCompletedLessonsCount] = useState<number>(0);
   const [wordSource, setWordSource] = useState<"daily" | "scanned">("daily");
+  const [completedLevels, setCompletedLevels] = useState<string[]>([]);
+  const [currentLevelKey, setCurrentLevelKey] = useState<string>("level1");
+
   useFocusEffect(
     useCallback(() => {
       fetchUserData();
     }, []),
   );
+
   useEffect(() => {
     clearServerIpOverride();
   }, []);
+
   useEffect(() => {
     const checkAssessment = async () => {
       const {
@@ -127,6 +135,16 @@ export default function DyslexicHome() {
         .eq("user_id", user.id)
         .eq("completed", true);
 
+      const { data: progressRow } = await supabase
+        .from("dyslexic_user_progress")
+        .select("current_level, completed_levels")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const currentLevel = progressRow?.current_level ?? "level1";
+      setCurrentLevelKey(currentLevel);
+      setCompletedLevels(progressRow?.completed_levels ?? []);
+
       if (completions) {
         const currentLevelLessonCounts: Record<string, number> = {
           level1: 5,
@@ -136,13 +154,6 @@ export default function DyslexicHome() {
           level5: 1,
         };
 
-        const { data: progressRow } = await supabase
-          .from("user_progress")
-          .select("current_level")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        const currentLevel = progressRow?.current_level ?? "level1";
         const totalForLevel = currentLevelLessonCounts[currentLevel] ?? 5;
 
         const completedInLevel = completions.filter(
@@ -184,6 +195,7 @@ export default function DyslexicHome() {
       setIsScanning(false);
     }
   };
+
   const handleScanCard = async () => {
     const { granted } = await requestCameraPermission();
     console.log("DEBUG camera granted:", granted);
@@ -377,27 +389,34 @@ export default function DyslexicHome() {
             />
           </View>
           <Text style={styles.progressPercent}>
-            {progressPercent}% milestones completed
+            {progressPercent}% of {currentLevelKey.replace("level", "Level ")}{" "}
+            completed
           </Text>
           <View style={styles.bubbleRow}>
-            <View style={[styles.bubble, styles.activeBubble]}>
-              <FontAwesome5 name="seedling" size={16} color="white" />
-            </View>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <View
-                key={i}
-                style={[
-                  styles.bubble,
-                  progressPercent >= i * 20 && styles.activeBubble,
-                ]}
-              >
-                <Ionicons
-                  name={progressPercent >= i * 20 ? "checkmark" : "lock-closed"}
-                  size={16}
-                  color={progressPercent >= i * 20 ? "white" : "#d1d5db"}
-                />
-              </View>
-            ))}
+            {LEVEL_ORDER.map((lvl) => {
+              const isCompleted = completedLevels.includes(lvl);
+              const isCurrent = lvl === currentLevelKey;
+              const isUnlocked = isCompleted || isCurrent;
+
+              return (
+                <View
+                  key={lvl}
+                  style={[styles.bubble, isUnlocked && styles.activeBubble]}
+                >
+                  <Ionicons
+                    name={
+                      isCompleted
+                        ? "checkmark"
+                        : isCurrent
+                          ? "play"
+                          : "lock-closed"
+                    }
+                    size={16}
+                    color={isUnlocked ? "white" : "#d1d5db"}
+                  />
+                </View>
+              );
+            })}
           </View>
         </View>
 
@@ -486,7 +505,7 @@ export default function DyslexicHome() {
                 const dest = await getLearnEntryRoute(user.id);
 
                 if (dest.kind === "assessment") {
-                  router.push("/dyslexic/learn"); 
+                  router.push("/dyslexic/learn");
                 } else {
                   router.push({
                     pathname: "/dyslexic/module/[level1]/[lesson]",

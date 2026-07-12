@@ -10,20 +10,9 @@ export async function getLatestAssessment(userId: string) {
   if (error) throw error;
   return data;
 }
-
-export async function getLessonRow(levelKey: string, lessonKey: string) {
-  const { data, error } = await supabase
-    .from("lessons")
-    .select("id, sort_order")
-    .eq("level_key", levelKey)
-    .eq("lesson_key", lessonKey)
-    .single();
-  if (error) throw error;
-  return data;
-}
 export async function getCurrentProgress(userId: string) {
   const { data } = await supabase
-    .from("user_progress")
+    .from("dyslexic_user_progress") // <-- changed
     .select("current_level, current_lesson, completed_levels")
     .eq("user_id", userId)
     .maybeSingle();
@@ -35,7 +24,7 @@ export async function saveCurrentProgress(
   currentLevel: string,
   currentLesson: string,
 ) {
-  await supabase.from("user_progress").upsert(
+  await supabase.from("dyslexic_user_progress").upsert(
     {
       user_id: userId,
       current_level: currentLevel,
@@ -45,34 +34,21 @@ export async function saveCurrentProgress(
   );
 }
 export async function markLevelCompleted(userId: string, level: string) {
-  // Read existing completed_levels first
   const { data } = await supabase
-    .from("user_progress")
+    .from("dyslexic_user_progress")
     .select("completed_levels")
     .eq("user_id", userId)
     .maybeSingle();
 
   const existing: string[] = data?.completed_levels ?? [];
-  if (existing.includes(level)) return; // already marked
+  if (existing.includes(level)) return;
 
   await supabase
-    .from("user_progress")
+    .from("dyslexic_user_progress")
     .upsert(
       { user_id: userId, completed_levels: [...existing, level] },
       { onConflict: "user_id" },
     );
-}
-export async function getLevelProgress(userId: string, levelKey: string) {
-  const { data, error } = await supabase
-    .from("user_progress")
-    .select(
-      "lesson_id, completed, unlocked, lessons!inner(level_key, lesson_key, sort_order)",
-    )
-    .eq("user_id", userId)
-    .eq("lessons.level_key", levelKey)
-    .order("lessons(sort_order)", { ascending: true });
-  if (error) throw error;
-  return data;
 }
 
 export async function upsertLessonProgress(params: {
@@ -94,17 +70,6 @@ export async function upsertLessonProgress(params: {
   );
   if (error) throw error;
 }
-
-export async function unlockLesson(userId: string, lessonId: string) {
-  const { error } = await supabase
-    .from("user_progress")
-    .upsert(
-      { user_id: userId, lesson_id: lessonId, unlocked: true },
-      { onConflict: "user_id,lesson_id" },
-    );
-  if (error) throw error;
-}
-
 
 export type LearnDestination =
   | { kind: "assessment" }
