@@ -1,8 +1,6 @@
-import {
-  Ionicons
-} from "@expo/vector-icons";
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -11,20 +9,19 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { HelloWave } from '../../components/hello-wave';
-import { COLORS } from '../../constants/colors';
-import { LESSON_LEVELS } from '../../constants/lessonData';
-import { USER_STATS } from '../../constants/mockData';
+} from "react-native";
+import { HelloWave } from "../../components/hello-wave";
+import { COLORS } from "../../constants/colors";
+import { LESSON_LEVELS } from "../../constants/lessonData";
+// import { USER_STATS } from '../../constants/mockData';
 
 //ActionButton Component
 function ActionButton({
   icon,
   label,
   onPress,
-}: 
-{
-  icon: string |React.ReactNode;   
+}: {
+  icon: string | React.ReactNode;
   label: string;
   onPress: () => void;
 }) {
@@ -48,7 +45,7 @@ function StatCard({
   value,
   label,
 }: {
-  icon: string | React.ReactNode;   
+  icon: string | React.ReactNode;
   value: string | number;
   label: string;
 }) {
@@ -65,7 +62,6 @@ function StatCard({
   );
 }
 
-
 //ContinueLessonItem Component
 function ContinueLessonItem({
   icon,
@@ -73,7 +69,7 @@ function ContinueLessonItem({
   description,
   onPress,
 }: {
-  icon: string |React.ReactNode;
+  icon: string | React.ReactNode;
   title: string;
   description: string;
   onPress: () => void;
@@ -149,7 +145,15 @@ function LevelProgressCardView({
               ]}
             >
               <Text style={styles.indicatorText}>
-                {index === 0 ? <Ionicons name="checkmark-circle" size={25} color="#f0f7f9e6" /> :<Ionicons name="lock-closed" size={18} color="#90bc9a" /> }
+                {index === 0 ? (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={25}
+                    color="#f0f7f9e6"
+                  />
+                ) : (
+                  <Ionicons name="lock-closed" size={18} color="#90bc9a" />
+                )}
               </Text>
             </View>
           ))}
@@ -189,7 +193,7 @@ export default function HomeScreen() {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-         <HelloWave />
+          <HelloWave />
           <Text style={styles.welcomeTitle}>Welcome Back!</Text>
           <Text style={styles.welcomeSubtitle}>
             Continue your learning journey
@@ -203,7 +207,7 @@ export default function HomeScreen() {
         <AITutorCard />
          */}
 
-        {/* Stats Cards */}
+        {/* Stats Cards
         <View style={styles.statsSection}>
           <StatCard 
           icon= {<Ionicons name="flame" size={24} color="#f19238c0" />}
@@ -218,24 +222,24 @@ export default function HomeScreen() {
             value={`+${USER_STATS.improvement}%`}
             label="Improvement"
           />
-        </View>
+        </View> */}
 
         {/* Action Buttons */}
         <View style={styles.actionButtonsSection}>
           <ActionButton
-            icon= {<Ionicons name="book" size={24} color="#90bc9a" />}
+            icon={<Ionicons name="book" size={24} color="#90bc9a" />}
             label="Learn"
-            onPress={() => router.push('/sign/learn')}
+            onPress={() => router.push("/sign/learn")}
           />
           <ActionButton
-            icon= {<Ionicons name="create" size={24} color="#90bc9a" />}
+            icon={<Ionicons name="create" size={24} color="#90bc9a" />}
             label="Practice"
-            onPress={() => router.push('/sign/practice')}
+            onPress={() => router.push("/sign/practice")}
           />
           <ActionButton
-           icon= {<Ionicons name="game-controller" size={24} color="#90bc9a" />}
+            icon={<Ionicons name="game-controller" size={24} color="#90bc9a" />}
             label="Games"
-            onPress={() => router.push('/sign/games')}
+            onPress={() => router.push("/sign/games")}
           />
         </View>
 
@@ -244,10 +248,10 @@ export default function HomeScreen() {
           <View style={styles.continueSection}>
             <Text style={styles.sectionTitle}>Continue Learning</Text>
             <ContinueLessonItem
-              icon= {<Ionicons name="school" size={30} color="#1b1b19fc" />}
+              icon={<Ionicons name="school" size={30} color="#1b1b19fc" />}
               title={nextLesson.title}
               description={nextLesson.description}
-              onPress={() => router.push('/sign/learn')}
+              onPress={() => router.push("/sign/learn")}
             />
           </View>
         )}
@@ -271,7 +275,7 @@ const styles = StyleSheet.create({
 
   //Welcome
   welcomeSection: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 24,
     paddingHorizontal: 16,
   },
@@ -281,15 +285,15 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.darkGray,
     marginBottom: 4,
-    textAlign: 'center',
+    textAlign: "center",
   },
   welcomeSubtitle: {
     fontSize: 14,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   // Level Progress Card
@@ -304,14 +308,14 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   levelHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 14,
   },
   levelTitleSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     flex: 1,
   },
@@ -320,15 +324,15 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   levelIcon: {
     fontSize: 20,
   },
   levelTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.darkGray,
   },
   levelSubtitle: {
@@ -337,11 +341,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   levelXpSection: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   levelXp: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.primary,
   },
   levelXpNext: {
@@ -358,22 +362,22 @@ const styles = StyleSheet.create({
   levelProgressText: {
     fontSize: 11,
     color: COLORS.textLight,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
   levelProgressBar: {
     height: 6,
     backgroundColor: COLORS.border,
     borderRadius: 3,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 12,
   },
   levelProgressFill: {
-    height: '100%',
+    height: "100%",
     backgroundColor: COLORS.primary,
   },
   lessonIndicators: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   indicator: {
@@ -383,8 +387,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.border,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   indicatorCompleted: {
     backgroundColor: COLORS.primary,
@@ -393,7 +397,7 @@ const styles = StyleSheet.create({
   indicatorText: {
     fontSize: 12,
     color: COLORS.white,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   levelFooter: {
     paddingTop: 10,
@@ -403,23 +407,23 @@ const styles = StyleSheet.create({
   nextLevel: {
     fontSize: 11,
     color: COLORS.textLight,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 
   // Stats Cards
   statsSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 12,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   statCard: {
     flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: COLORS.border,
   },
@@ -429,19 +433,19 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     color: COLORS.textLight,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 
-  // Action Buttons 
+  // Action Buttons
   actionButtonsSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 10,
     paddingVertical: 16,
     gap: 8,
@@ -455,8 +459,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   actionButtonContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   actionButtonIcon: {
     fontSize: 28,
@@ -464,7 +468,7 @@ const styles = StyleSheet.create({
   },
   actionButtonLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.darkGray,
   },
 
@@ -475,14 +479,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.darkGray,
     marginBottom: 12,
   },
   continueContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: COLORS.white,
     borderRadius: 12,
     paddingHorizontal: 14,
@@ -492,8 +496,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   continueContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     flex: 1,
   },
@@ -505,7 +509,7 @@ const styles = StyleSheet.create({
   },
   continueTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: COLORS.darkGray,
     marginBottom: 2,
   },
@@ -516,7 +520,7 @@ const styles = StyleSheet.create({
   continueArrow: {
     fontSize: 16,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 
   bottomPadding: {

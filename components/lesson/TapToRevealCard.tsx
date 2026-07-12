@@ -24,19 +24,6 @@ interface TapToRevealCardProps {
   variant?: Variant;
   onSpeak: (text: string) => void;
 }
-
-/**
- * A single option tile.
- *
- * IMPORTANT FIX: every tile starts hidden behind "❓" — not just the
- * correct one. A tile only reveals its text when:
- *   1. the child taps it (a private "peek" — only that tile flips), or
- *   2. the round is confirmed (showResult = true) — at which point
- *      EVERY tile flips to reveal its word, with the correct one
- *      highlighted green and the child's wrong pick highlighted red.
- * This way a curious tap never leaks the answer, and after confirming
- * the child always gets to see the full picture (not just their own card).
- */
 function RevealTile({
   option,
   index,
@@ -64,7 +51,6 @@ function RevealTile({
   const glow = useSharedValue(0);
   const shake = useSharedValue(0);
 
-  // Staggered entrance so cards feel alive rather than snapping in.
   useEffect(() => {
     entranceScale.value = withDelay(
       index * 90,
@@ -72,8 +58,6 @@ function RevealTile({
     );
   }, []);
 
-  // Flip / pop whenever revealed state changes (either a private peek
-  // tap, or the "reveal everything" moment after confirming).
   useEffect(() => {
     if (variant === "mirror-flip") {
       flipProgress.value = withDelay(
@@ -97,7 +81,6 @@ function RevealTile({
     }
   }, [isRevealed, variant, showResult]);
 
-  // Little celebratory bounce or shake once results are in.
   useEffect(() => {
     if (!showResult) return;
     if (isCorrectAnswer) {
@@ -181,7 +164,7 @@ function RevealTile({
         >
           {resultIcon}
           <Animated.View style={[styles.face, frontFaceStyle]}>
-            <Text style={styles.tileText}>❓</Text>
+            <Text style={styles.tileText}>?</Text>
           </Animated.View>
           <Animated.View
             style={[styles.face, styles.faceBack, tileStyle, backFaceStyle]}
@@ -189,7 +172,7 @@ function RevealTile({
             <Text
               style={[styles.tileText, isRevealed && styles.tileTextFlipped]}
             >
-              {option}
+              {isRevealed ? option : "?"}
             </Text>
           </Animated.View>
         </Animated.View>
@@ -247,15 +230,12 @@ export default function TapToRevealCard({
     const isCorrect = selectedOption === practice.answer;
 
     if (!isCorrect) {
-      // Let the child hear the right word once every card has revealed.
       setTimeout(
         () => onSpeak(practice.answer),
         practice.options.length * 110 + 250,
       );
     }
 
-    // Wait for the full staggered reveal to finish before advancing,
-    // so the child actually sees every card flip — not just theirs.
     setTimeout(
       () => onAnswer(selectedOption, practice.answer),
       practice.options.length * 110 + 900,
@@ -419,7 +399,9 @@ const styles = StyleSheet.create({
     borderColor: "#CBD5E1",
   },
   tileText: {
-    fontSize: 32,
+    fontSize: 36,
+    fontWeight: "700",
+    color: "#94A3B8",
   },
   tileTextFlipped: {
     fontSize: 28,

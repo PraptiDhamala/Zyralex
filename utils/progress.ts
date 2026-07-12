@@ -8,7 +8,7 @@ export async function getLatestAssessment(userId: string) {
     .limit(1)
     .maybeSingle();
   if (error) throw error;
-  return data; // null => user has never taken the diagnostic
+  return data;
 }
 
 export async function getLessonRow(levelKey: string, lessonKey: string) {
@@ -27,7 +27,7 @@ export async function getCurrentProgress(userId: string) {
     .select("current_level, current_lesson, completed_levels")
     .eq("user_id", userId)
     .maybeSingle();
-  return data; // null if first time
+  return data;
 }
 
 export async function saveCurrentProgress(
@@ -103,4 +103,35 @@ export async function unlockLesson(userId: string, lessonId: string) {
       { onConflict: "user_id,lesson_id" },
     );
   if (error) throw error;
+}
+
+
+export type LearnDestination =
+  | { kind: "assessment" }
+  | { kind: "lesson"; level: string; lesson: string };
+
+export async function getLearnEntryRoute(
+  userId: string,
+): Promise<LearnDestination> {
+  const assessment = await getLatestAssessment(userId);
+
+  if (!assessment) {
+    return { kind: "assessment" };
+  }
+
+  const progress = await getCurrentProgress(userId);
+
+  if (progress?.current_level && progress?.current_lesson) {
+    return {
+      kind: "lesson",
+      level: progress.current_level,
+      lesson: progress.current_lesson,
+    };
+  }
+
+  return {
+    kind: "lesson",
+    level: assessment.level ?? "level1",
+    lesson: assessment.weak_area ?? "letter_reversal",
+  };
 }

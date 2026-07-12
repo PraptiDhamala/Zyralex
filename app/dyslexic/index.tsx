@@ -27,6 +27,7 @@ import { HelloWave } from "../../components/hello-wave";
 import { COLORS } from "../../constants/colors";
 import { supabase } from "../../lib/supabase";
 import { fetchSyllables, scanFlashcard } from "../../utils/flashcard";
+import { getLearnEntryRoute } from "../../utils/progress";
 import {
   clearServerIpOverride,
   resolveServerIp,
@@ -184,11 +185,11 @@ export default function DyslexicHome() {
     }
   };
   const handleScanCard = async () => {
-  const { granted } = await requestCameraPermission();
-  console.log("DEBUG camera granted:", granted);
-  if (!granted) return;
-  setShowCamera(true);
-};
+    const { granted } = await requestCameraPermission();
+    console.log("DEBUG camera granted:", granted);
+    if (!granted) return;
+    setShowCamera(true);
+  };
 
   const handleCapture = async () => {
     if (!cameraRef.current) return;
@@ -476,7 +477,23 @@ export default function DyslexicHome() {
           <View style={styles.actionButtonsSection}>
             <Pressable
               style={styles.actionButton}
-              onPress={() => router.push("/dyslexic/learn")}
+              onPress={async () => {
+                const {
+                  data: { user },
+                } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const dest = await getLearnEntryRoute(user.id);
+
+                if (dest.kind === "assessment") {
+                  router.push("/dyslexic/learn"); 
+                } else {
+                  router.push({
+                    pathname: "/dyslexic/module/[level1]/[lesson]",
+                    params: { level1: dest.level, lesson: dest.lesson },
+                  } as any);
+                }
+              }}
             >
               <View style={styles.actionButtonContent}>
                 <Ionicons name="clipboard-outline" size={24} color="#3b82f6" />

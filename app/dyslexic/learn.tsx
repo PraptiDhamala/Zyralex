@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -8,9 +8,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Mascot } from "../../components/lesson/Mascot";
 import { supabase } from "../../lib/supabase";
-import { saveCurrentProgress } from "../../utils/progress";
-
+import {
+  getLatestAssessment,
+  getLearnEntryRoute,
+  saveCurrentProgress,
+} from "../../utils/progress";
 const questionPool = [
   {
     question: "Which word rhymes with 'Cake'?",
@@ -238,7 +242,9 @@ const weakAreaToLesson: Record<string, string> = {
 
 export default function LearnScreen() {
   const router = useRouter();
-
+  const [checkingExisting, setCheckingExisting] = useState(true);
+  const [existingAssessment, setExistingAssessment] = useState<any>(null);
+  const [assessmentStarted, setAssessmentStarted] = useState(false);
   const [questions] = useState(generateAssessmentQuestions());
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -249,6 +255,20 @@ export default function LearnScreen() {
   const [displayWeakArea, setDisplayWeakArea] = useState("letter_reversal");
 
   const startTime = useRef<number>(Date.now());
+  useEffect(() => {
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setCheckingExisting(false);
+        return;
+      }
+      const assessment = await getLatestAssessment(user.id);
+      setExistingAssessment(assessment);
+      setCheckingExisting(false);
+    })();
+  }, []);
 
   const handleAnswer = async (selected: string) => {
     let updatedScore = score;
@@ -375,6 +395,20 @@ export default function LearnScreen() {
 
     router.push(`/dyslexic/module/${level}/${lesson}`);
   };
+  const handleContinueLearning = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const dest = await getLearnEntryRoute(user.id);
+    if (dest.kind === "lesson") {
+      router.push({
+        pathname: "/dyslexic/module/[level1]/[lesson]",
+        params: { level1: dest.level, lesson: dest.lesson },
+      } as any);
+    }
+  };
 
   const renderTargetedCard = () => {
     // Display card is purely cosmetic — it shows what we detected, not where they start
@@ -466,7 +500,48 @@ export default function LearnScreen() {
         );
     }
   };
+  if (checkingExisting) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
+  if (existingAssessment && !assessmentStarted) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Mascot
+          mood="cheer"
+          message={`You've already taken the assessment!\n\nScore: ${existingAssessment.score}/10\nWeak Area: ${(existingAssessment.weak_area ?? "").replace(/_/g, " ")}\n\nWant to continue where you left off, or retake the test?`}
+        />
+        <View style={styles.retakeButtonsRow}>
+          <TouchableOpacity
+            style={styles.homeButton}
+            onPress={handleContinueLearning}
+          >
+            <Text style={styles.homeButtonText}>Continue Learning →</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.homeButton,
+              { backgroundColor: "#F1F5F9", marginTop: 12 },
+            ]}
+            onPress={() => setAssessmentStarted(true)}
+          >
+            <Text style={{ color: "#475569", fontWeight: "700" }}>
+              Retake Assessment
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>ZyraLex Dyslexia Assessment</Text>
@@ -705,6 +780,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
+  },
+  retakeButtonsRow: {
+    position: "absolute",
+    bottom: 60,
+    left: 24,
+    right: 24,
+    zIndex: 100000,
   },
   homeButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
 });
