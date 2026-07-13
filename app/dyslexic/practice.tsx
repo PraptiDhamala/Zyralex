@@ -342,43 +342,53 @@ export default function DyslexicPractice() {
   };
 
   const handleProcessMimoSpeech = (
-    outcome: "well_done" | "keep_trying" | "slow",
-  ) => {
-    if (!currentWord) return;
-    setSpokenText(currentWord);
+  outcome: "well_done" | "keep_trying" | "rushed" | "no_speech",
+) => {
+  if (!currentWord) return;
+  setSpokenText(currentWord);
 
-    if (outcome === "well_done") {
-      setMimoFeedback({
-        title: "Well done! 🎉",
-        message: `You said "${currentWord.toUpperCase()}" perfectly! Mimo is super proud of you.`,
-        borderColor: "#15803D",
-        textColor: "#15803D",
-        bgColor: "#DCFCE7",
-      });
+  if (outcome === "well_done") {
+    setMimoFeedback({
+      title: "Well done! 🎉",
+      message: `You said "${currentWord.toUpperCase()}" perfectly! Mimo is super proud of you.`,
+      borderColor: "#15803D",
+      textColor: "#15803D",
+      bgColor: "#DCFCE7",
+    });
 
-      if (typeof advanceToNextFeature === "function") {
-        advanceToNextFeature();
-      }
-    } else if (outcome === "keep_trying") {
-      setMimoFeedback({
-        title: "Keep trying! 🌟",
-        message:
-          "You are so close! Let's try to say the sounds clearly with Mimo again.",
-        borderColor: "#B45309",
-        textColor: "#B45309",
-        bgColor: "#FEF3C7",
-      });
-    } else {
-      setMimoFeedback({
-        title: "A little bit slow... 🕒",
-        message:
-          "Great sounds! Let's try to bring those letters together a tiny bit faster next time.",
-        borderColor: "#B91C1C",
-        textColor: "#B91C1C",
-        bgColor: "#FEE2E2",
-      });
+    if (typeof advanceToNextFeature === "function") {
+      advanceToNextFeature();
     }
-  };
+  } else if (outcome === "keep_trying") {
+    setMimoFeedback({
+      title: "Keep trying! 🌟",
+      message:
+        "So close! Let's try to say the words one more time together.",
+      borderColor: "#B45309",
+      textColor: "#B45309",
+      bgColor: "#FEF3C7",
+    });
+  } else if (outcome === "rushed") {
+    setMimoFeedback({
+      title: "Oops! ❌",
+      message:
+        "The words didn’t match. Let’s try again carefully.",
+      borderColor: "#B91C1C",
+      textColor: "#B91C1C",
+      bgColor: "#FEE2E2",
+    });
+  } else if (outcome === "no_speech") {
+    setMimoFeedback({
+      title: "Please speak first 🎤",
+      message:
+        "We didn’t hear anything. Try saying the word aloud!",
+      borderColor: "#6B7280",
+      textColor: "#6B7280",
+      bgColor: "#E5E7EB",
+    });
+  }
+};
+
 
   if (activeLessonGame === "LETTER_RECOGNITION") {
     return (
