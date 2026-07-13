@@ -7,7 +7,13 @@ import {
   View,
 } from 'react-native';
 import { COLORS } from '../constants/colors';
-import { PracticeSession } from '../constants/mockData';
+
+interface PracticeSession {
+  id: string;
+  title: string;
+  description?: string;
+  icon?: React.ReactNode;
+}
 
 interface PracticeSessionCardProps {
   session: PracticeSession;
@@ -18,22 +24,23 @@ export const PracticeSessionCard: React.FC<PracticeSessionCardProps> = ({
   session,
   onPress,
 }) => {
-  const passPercentage = Math.round((session.passed / session.questions) * 100);
-
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.iconContainer}>
+        {session.icon}
+      </View>
       <View style={styles.content}>
         <Text style={styles.title}>{session.title}</Text>
-        <Text style={styles.stats}>
-          {session.questions} questions • Pass: {session.passed}/{session.questions}
-        </Text>
+        {session.description && (
+          <Text style={styles.description}>{session.description}</Text>
+        )}
       </View>
-      <TouchableOpacity style={styles.moreButton}>
-        <Text style={styles.moreButtonText}>•••</Text>
-      </TouchableOpacity>
+      
     </TouchableOpacity>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   card: {
@@ -52,26 +59,23 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: '600',
     color: COLORS.darkGray,
     marginBottom: 6,
   },
-  stats: {
+  description: {
     fontSize: 13,
     color: COLORS.darkGray,
   },
-  moreButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  moreButtonText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  iconContainer: {
+  width: 50,
+  height: 50,
+  borderRadius: 30,
+  backgroundColor: COLORS.primary,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 12,
+},
+
 });

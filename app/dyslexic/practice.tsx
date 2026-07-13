@@ -1,12 +1,25 @@
 import {
   ArrowLeft,
   BarChart3,
+  BookOpen,
   ChevronRight,
   Eye,
+  Flame,
+  Mic,
   Pause,
+  PawPrint,
+  PenLine,
   Play,
+  Rocket,
   RotateCcw,
   Settings,
+  Sprout,
+  Target,
+  Type,
+  Wrench,
+  XCircle,
+  CheckCircle2,
+  Zap,
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -188,7 +201,7 @@ export default function DyslexicPractice() {
       {
         id: "beginner" as const,
         label: "Beginner",
-        emoji: "🌱",
+        icon: Sprout,
         words:
           PRACTICE_DATA_MATRIX.beginner?.readAloud?.length +
             PRACTICE_DATA_MATRIX.beginner?.phonics?.length || 20,
@@ -196,7 +209,7 @@ export default function DyslexicPractice() {
       {
         id: "intermediate" as const,
         label: "Intermed.",
-        emoji: "🔥",
+        icon: Flame,
         words:
           PRACTICE_DATA_MATRIX.intermediate?.readAloud?.length +
             PRACTICE_DATA_MATRIX.intermediate?.phonics?.length || 30,
@@ -204,7 +217,7 @@ export default function DyslexicPractice() {
       {
         id: "advanced" as const,
         label: "Advanced",
-        emoji: "⚡",
+        icon: Zap,
         words:
           PRACTICE_DATA_MATRIX.advanced?.readAloud?.length +
             PRACTICE_DATA_MATRIX.advanced?.phonics?.length || 40,
@@ -217,21 +230,24 @@ export default function DyslexicPractice() {
     () => [
       {
         id: "LETTER_RECOGNITION",
-        icon: "🔤",
+        icon: Type,
+        iconColor: "#2563EB",
         name: "Letter Recognition",
         meta: "Identify letter variants",
         bg: "#EFF6FF",
       },
       {
         id: "SIMPLE_WORDS",
-        icon: "✍️",
+        icon: PenLine,
+        iconColor: "#A855F7",
         name: "Simple Words",
         meta: "Assemble structural blocks",
         bg: "#FDF4FF",
       },
       {
         id: "SYLLABLE_BASICS",
-        icon: "🗣️",
+        icon: Mic,
+        iconColor: "#16A34A",
         name: "Syllable Basics",
         meta: "Break down vocal sound rhythms",
         bg: "#F0FFF4",
@@ -319,7 +335,7 @@ export default function DyslexicPractice() {
 
     if (cleanInput === expectedSound || cleanInput === "correct") {
       setPhonicsValidationMsg({
-        text: `✔ Excellent! "${currentPhonemes[activeChunkIndex]?.toUpperCase()}" is correct.`,
+        text: `Excellent! "${currentPhonemes[activeChunkIndex]?.toUpperCase()}" is correct.`,
         isCorrect: true,
       });
 
@@ -342,43 +358,53 @@ export default function DyslexicPractice() {
   };
 
   const handleProcessMimoSpeech = (
-    outcome: "well_done" | "keep_trying" | "slow",
-  ) => {
-    if (!currentWord) return;
-    setSpokenText(currentWord);
+  outcome: "well_done" | "keep_trying" | "rushed" | "no_speech",
+) => {
+  if (!currentWord) return;
+  setSpokenText(currentWord);
 
-    if (outcome === "well_done") {
-      setMimoFeedback({
-        title: "Well done! 🎉",
-        message: `You said "${currentWord.toUpperCase()}" perfectly! Mimo is super proud of you.`,
-        borderColor: "#15803D",
-        textColor: "#15803D",
-        bgColor: "#DCFCE7",
-      });
+  if (outcome === "well_done") {
+    setMimoFeedback({
+      title: "Well done!",
+      message: `You said "${currentWord.toUpperCase()}" perfectly! Mimo is super proud of you.`,
+      borderColor: "#15803D",
+      textColor: "#15803D",
+      bgColor: "#DCFCE7",
+    });
 
-      if (typeof advanceToNextFeature === "function") {
-        advanceToNextFeature();
-      }
-    } else if (outcome === "keep_trying") {
-      setMimoFeedback({
-        title: "Keep trying! 🌟",
-        message:
-          "You are so close! Let's try to say the sounds clearly with Mimo again.",
-        borderColor: "#B45309",
-        textColor: "#B45309",
-        bgColor: "#FEF3C7",
-      });
-    } else {
-      setMimoFeedback({
-        title: "A little bit slow... 🕒",
-        message:
-          "Great sounds! Let's try to bring those letters together a tiny bit faster next time.",
-        borderColor: "#B91C1C",
-        textColor: "#B91C1C",
-        bgColor: "#FEE2E2",
-      });
+    if (typeof advanceToNextFeature === "function") {
+      advanceToNextFeature();
     }
-  };
+  } else if (outcome === "keep_trying") {
+    setMimoFeedback({
+      title: "Keep trying!",
+      message:
+        "So close! Let's try to say the words one more time together.",
+      borderColor: "#B45309",
+      textColor: "#B45309",
+      bgColor: "#FEF3C7",
+    });
+  } else if (outcome === "rushed") {
+    setMimoFeedback({
+      title: "Oops!",
+      message:
+        "The words didn’t match. Let’s try again carefully.",
+      borderColor: "#B91C1C",
+      textColor: "#B91C1C",
+      bgColor: "#FEE2E2",
+    });
+  } else if (outcome === "no_speech") {
+    setMimoFeedback({
+      title: "Please speak first",
+      message:
+        "We didn’t hear anything. Try saying the word aloud!",
+      borderColor: "#6B7280",
+      textColor: "#6B7280",
+      bgColor: "#E5E7EB",
+    });
+  }
+};
+
 
   if (activeLessonGame === "LETTER_RECOGNITION") {
     return (
@@ -532,9 +558,16 @@ export default function DyslexicPractice() {
                   },
                 ]}
               >
-                <Text style={s.camFeedbackText}>
-                  {phonicsValidationMsg.text}
-                </Text>
+                <View style={s.camFeedbackRow}>
+                  {phonicsValidationMsg.isCorrect ? (
+                    <CheckCircle2 size={16} color="#FFFFFF" />
+                  ) : (
+                    <XCircle size={16} color="#FFFFFF" />
+                  )}
+                  <Text style={s.camFeedbackText}>
+                    {phonicsValidationMsg.text}
+                  </Text>
+                </View>
               </View>
             )}
           </View>
@@ -564,14 +597,16 @@ export default function DyslexicPractice() {
                     )
                   }
                 >
+                  <CheckCircle2 size={16} color="#FFFFFF" />
                   <Text style={s.simBtnText}>
-                    ✔ Match "{currentPhonemes[activeChunkIndex]?.toUpperCase()}"
+                    Match "{currentPhonemes[activeChunkIndex]?.toUpperCase()}"
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[s.simBtn, { backgroundColor: "#EF4444" }]}
                   onPress={() => handleVerifyPhonemeSpeechInput("wrong_sound")}
                 >
+                  <XCircle size={16} color="#FFFFFF" />
                   <Text style={s.simBtnText}>Distort Sound</Text>
                 </TouchableOpacity>
               </View>
@@ -618,17 +653,30 @@ export default function DyslexicPractice() {
         /* STANDARD NORMAL LESSON SUBMENU SELECTION FLOW (Camera stays closed on load) — unchanged */
         <View style={s.screen}>
           <View style={s.debugHud}>
-            <Text style={s.debugText} numberOfLines={2}>
-              Learn Status:{" "}
-              {isLearnGatePassed(activeLevelKey)
-                ? "✅ COMPLETED"
-                : "❌ NOT LEARNED"}
-            </Text>
+            <View style={s.debugTextRow}>
+              <Text style={s.debugText}>Learn Status:</Text>
+              {isLearnGatePassed(activeLevelKey) ? (
+                <View style={s.debugStatusRow}>
+                  <CheckCircle2 size={14} color="#15803D" />
+                  <Text style={[s.debugStatusText, { color: "#15803D" }]}>
+                    COMPLETED
+                  </Text>
+                </View>
+              ) : (
+                <View style={s.debugStatusRow}>
+                  <XCircle size={14} color="#B91C1C" />
+                  <Text style={[s.debugStatusText, { color: "#B91C1C" }]}>
+                    NOT LEARNED
+                  </Text>
+                </View>
+              )}
+            </View>
             <TouchableOpacity
               style={s.debugBtn}
               onPress={() => debugCompleteLearnModule(activeLevelKey)}
             >
-              <Text style={s.debugBtnText}>🔧 Clear Gate</Text>
+              <Wrench size={14} color="#fff" />
+              <Text style={s.debugBtnText}>Clear Gate</Text>
             </TouchableOpacity>
           </View>
 
@@ -651,7 +699,11 @@ export default function DyslexicPractice() {
                       activeOpacity={0.75}
                       style={[s.diffItem, isActive && s.diffActive]}
                     >
-                      <Text style={s.diffEmoji}>{d.emoji}</Text>
+                      <d.icon
+                        size={20}
+                        color={isActive ? "#FFFFFF" : "#2563EB"}
+                        style={s.diffIconWrap}
+                      />
                       <Text
                         style={[s.diffLabel, isActive && s.diffLabelActive]}
                         numberOfLines={1}
@@ -691,9 +743,12 @@ export default function DyslexicPractice() {
 
             {/* Secondary Sub Games Mapping Panels List */}
             <View style={s.card}>
-              <Text style={s.cardTitle}>
-                📚 LESSON PRACTICE ({currentDiff.label})
-              </Text>
+              <View style={s.cardTitleRow}>
+                <BookOpen size={14} color="#6B9EC8" />
+                <Text style={s.cardTitleText}>
+                  LESSON PRACTICE ({currentDiff.label})
+                </Text>
+              </View>
               {LESSON_ITEMS.map((item, i) => (
                 <TouchableOpacity
                   key={item.id}
@@ -706,7 +761,7 @@ export default function DyslexicPractice() {
                 >
                   <View style={s.pLeft}>
                     <View style={[s.pIcon, { backgroundColor: item.bg }]}>
-                      <Text style={{ fontSize: 16 }}>{item.icon}</Text>
+                      <item.icon size={18} color={item.iconColor} />
                     </View>
                     <View style={s.pTextContainer}>
                       <Text style={s.pName} numberOfLines={1}>
@@ -726,7 +781,10 @@ export default function DyslexicPractice() {
 
             {/* Immersive Camera Launch Anchor Panel Block */}
             <View style={s.card}>
-              <Text style={s.cardTitle}>🎯 ATTENTION PHONICS COACH</Text>
+              <View style={s.cardTitleRow}>
+                <Target size={14} color="#6B9EC8" />
+                <Text style={s.cardTitleText}>ATTENTION PHONICS COACH</Text>
+              </View>
               <Text style={s.phonicsHint}>
                 Launch an immersive portrait reading sequence featuring active
                 eye tracking & vocal assessment.
@@ -735,8 +793,9 @@ export default function DyslexicPractice() {
                 style={s.primaryLaunchCameraBtn}
                 onPress={handleOpenCameraFlow}
               >
+                <Rocket size={16} color="#fff" />
                 <Text style={s.primaryLaunchCameraBtnText}>
-                  🚀 Open Fullscreen Camera
+                  Open Fullscreen Camera
                 </Text>
               </TouchableOpacity>
             </View>
@@ -768,7 +827,10 @@ export default function DyslexicPractice() {
       >
         <View style={s.modalOverlay}>
           <View style={s.modalContent}>
-            <Text style={s.modalTitle}>Mimo's Focus Report 🐾</Text>
+            <View style={s.modalTitleRow}>
+              <PawPrint size={20} color="#1E3A5F" />
+              <Text style={s.modalTitle}>Mimo's Focus Report</Text>
+            </View>
             <Text style={s.modalScore}>
               {evaluationData?.finalScore}% Focus Score
             </Text>
@@ -810,14 +872,32 @@ const s = StyleSheet.create({
     borderColor: "#93C5FD",
     marginBottom: 12,
   },
-  debugText: {
+  debugTextRow: {
     flex: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 8,
+    marginRight: 8,
+  },
+  debugText: {
     fontSize: 13,
     fontWeight: "600",
     color: "#1E40AF",
-    marginRight: 8,
+  },
+  debugStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  debugStatusText: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   debugBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     backgroundColor: "#2563EB",
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -932,6 +1012,12 @@ const s = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
   },
+  camFeedbackRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
   camFeedbackText: {
     color: "#FFFFFF",
     fontWeight: "800",
@@ -966,6 +1052,8 @@ const s = StyleSheet.create({
   simRow: { flexDirection: "row", gap: 8, marginBottom: 10 },
   simBtn: {
     flex: 1,
+    flexDirection: "row",
+    gap: 6,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: "center",
@@ -1008,6 +1096,18 @@ const s = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 12,
   },
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
+  },
+  cardTitleText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#6B9EC8",
+    letterSpacing: 1,
+  },
   diffRow: { flexDirection: "row", gap: 6, justifyContent: "space-between" },
   diffItem: {
     flex: 1,
@@ -1020,7 +1120,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   diffActive: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
-  diffEmoji: { fontSize: 18, marginBottom: 2 },
+  diffIconWrap: { marginBottom: 4 },
   diffLabel: {
     fontSize: 12,
     fontWeight: "700",
@@ -1093,10 +1193,13 @@ const s = StyleSheet.create({
     fontStyle: "italic",
   },
   primaryLaunchCameraBtn: {
+    flexDirection: "row",
+    gap: 8,
     backgroundColor: "#2563EB",
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
     marginTop: 4,
   },
   primaryLaunchCameraBtnText: {
@@ -1120,11 +1223,16 @@ const s = StyleSheet.create({
     padding: 24,
     alignItems: "center",
   },
+  modalTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#1E3A5F",
-    marginBottom: 12,
     textAlign: "center",
   },
   modalScore: {

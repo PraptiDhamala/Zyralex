@@ -1,4 +1,7 @@
 import { Level } from '@/types/lesson';
+import {
+  Ionicons
+} from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -12,22 +15,27 @@ import { COLORS } from '../constants/colors';
 import { LessonCard } from './LessonCard';
 
 interface LevelCollapsibleProps {
-  level: Level ;
+  level: Level;
+  previousLevelComplete: boolean; 
 }
 
-export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => {
+export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level, previousLevelComplete }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
 
+  const isLocked = !previousLevelComplete; // <-- now works
   const isLevelComplete = level.total > 0 && level.completed === level.total;
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={styles.header}
-        onPress={() => setIsExpanded(!isExpanded)}
+        style={[styles.header, isLocked && { opacity: 0.5 }]}
+        onPress={() => {
+          if (!isLocked) setIsExpanded(!isExpanded);
+        }}
+        disabled={isLocked}
       >
-         <View style={styles.headerLeft}>
+        <View style={styles.headerLeft}>
           <View style={[styles.levelBadge, isLevelComplete && styles.levelBadgeComplete]}>
             {isLevelComplete ? (
               <Text style={styles.levelCompleteIcon}>✓</Text>
@@ -38,6 +46,11 @@ export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => 
           <View>
             <View style={styles.titleRow}>
               <Text style={styles.levelTitle}>{level.title}</Text>
+              {isLocked && (
+                <View style={styles.completeBadge}>
+                  <Text style={[styles.completeBadgeText, { color: 'gray' }]}> Locked.<Ionicons name="lock-closed" size={15} color="#52476b" /></Text>
+                </View>
+              )}
               {isLevelComplete && (
                 <View style={styles.completeBadge}>
                   <Text style={styles.completeBadgeText}>Completed</Text>
@@ -52,24 +65,25 @@ export const LevelCollapsible: React.FC<LevelCollapsibleProps> = ({ level }) => 
         <Text style={styles.expandIcon}>{isExpanded ? '▼' : '▶'}</Text>
       </TouchableOpacity>
 
-      {isExpanded && (
+      {!isLocked && isExpanded && (
         <View style={styles.content}>
           {level.lessons.map((lesson) => (
             <LessonCard
               key={lesson.lessonId}
               lesson={lesson}
-              onPress={async() =>
-                {
-                  try {
-                    // Save current lesson globally
-                    await AsyncStorage.setItem(
-                      "currentLesson",
-                      JSON.stringify({ levelId: level.levelId, lessonId: lesson.lessonId })
-                    );
-                  } catch (e) {
-                    console.error("Failed to save lesson", e);
-                  }
-                 router.push({pathname: '/sign/lesson',params: { levelId: level.levelId, lessonId: lesson.lessonId },})
+              onPress={async () => {
+                try {
+                  await AsyncStorage.setItem(
+                    "currentLesson",
+                    JSON.stringify({ levelId: level.levelId, lessonId: lesson.lessonId })
+                  );
+                } catch (e) {
+                  console.error("Failed to save lesson", e);
+                }
+                router.push({
+                  pathname: '/sign/lesson',
+                  params: { levelId: level.levelId, lessonId: lesson.lessonId },
+                });
               }}
             />
           ))}

@@ -1,4 +1,5 @@
 import { SignOfTheDayPanel } from "@/components/signoftheday";
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { RelativePathString, useRouter } from 'expo-router';
@@ -43,15 +44,17 @@ useFocusEffect(
   const PRACTICE_MODES = [
     {
       id: 'lesson',
-      title: 'Lesson Practice',
+      title: 'Lesson Camera Practice',
       description: 'Complete practice sessions to master each lesson',
       route: '/sign/practicegrid',
+      icon: <Ionicons name="camera-outline" size={24} color="white" />,
     },
     {
       id: 'flashcards',
       title: 'Flash Cards',
       description: 'Test your memory with flash card practice',
       route: '/sign/Flashgrid',
+      icon: <Ionicons name="albums-outline" size={24} color="white" />,
     },
   ];
 
@@ -77,9 +80,7 @@ useFocusEffect(
                 id: mode.id,
                 title: mode.title,
                 description: mode.description,
-                difficulty: selectedDifficulty,
-                questions: 0,
-                passed: 0,
+                 icon: mode.icon, 
               }}
               onPress={() =>
                 router.push({
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 30,
     fontWeight: '700',
     color: COLORS.primary,
   },

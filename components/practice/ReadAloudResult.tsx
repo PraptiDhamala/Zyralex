@@ -3,15 +3,22 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ReadAloudResultProps {
-  status: "well_done" | "keep_trying" | "slow";
+  status: "well_done" | "keep_trying" | "rushed";
   onReset: () => void;
 }
 
 export default function ReadAloudResult({ status, onReset }: ReadAloudResultProps) {
   const getLayout = () => {
-    if (status === "well_done") return { label: "Excellent Accuracy!", color: "#15803D" };
-    if (status === "slow") return { label: "Good Pace, Let's Build Speed!", color: "#B91C1C" };
-    return { label: "Let's practice sounds again!", color: "#B45309" };
+    switch (status) {
+      case "well_done":
+        return { label: "Perfect! All words correct 🎉", color: "#15803D" };
+      case "keep_trying":
+        return { label: "Good effort! Some words matched 🌟", color: "#B45309" };
+      case "rushed":
+        return { label: "Oops, words didn’t match. Try again!", color: "#B91C1C" };
+      default:
+        return { label: "Let's practice again!", color: "#374151" };
+    }
   };
 
   const layout = getLayout();
@@ -27,8 +34,20 @@ export default function ReadAloudResult({ status, onReset }: ReadAloudResultProp
 }
 
 const s = StyleSheet.create({
-  box: { padding: 14, borderWidth: 1.5, borderRadius: 12, alignItems: "center", gap: 10, backgroundColor: "#FFF" },
-  text: { fontSize: 14, fontWeight: "700" },
-  btn: { backgroundColor: "#2563EB", paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
+  box: {
+    padding: 14,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#FFF"
+  },
+  text: { fontSize: 14, fontWeight: "700", textAlign: "center" },
+  btn: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8
+  },
   btnText: { color: "#FFF", fontSize: 13, fontWeight: "600" }
 });
