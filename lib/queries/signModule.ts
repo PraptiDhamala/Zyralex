@@ -89,7 +89,7 @@ async function fetchLessons() {
     .from('lessons')
     .select(
       `id, lesson_title, level_id,
-       sign_lesson_details ( xp, description, level_number, lesson_number, lesson_title )`
+       sign_lesson_details ( xp, description,practice_description, level_number, lesson_number, lesson_title )`
     )
     .eq('module', MODULE);
   if (error) throw error;
@@ -175,7 +175,7 @@ function assembleLevels(
           lessonUuid: l.id,
           title: details?.lesson_title ?? l.lesson_title,
           description: details?.description ?? '',
-          descriptionpractice: details?.description ?? '',
+          descriptionpractice: details?.practice_description ?? '',
           xp: details?.xp ?? 0,
           earnedXp: earnedXpFor(l.id),
           completed: isCompleted(lvl.level_number, lessonNumber),

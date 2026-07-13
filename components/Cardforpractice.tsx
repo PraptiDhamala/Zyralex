@@ -15,17 +15,23 @@ interface LessonCardProps {
 }
 
 export const PracticeCard: React.FC<LessonCardProps> = ({ lesson, onPress }) => {
+console.log(lesson);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.content}>
         <Text style={styles.title}>{lesson.title}</Text>
-        <Text style={styles.description}>{lesson.descriptionpractice}</Text>
+        <Text style={styles.description}>
+        {lesson.descriptionpractice }
+       </Text>
+
       </View>
       <TouchableOpacity style={styles.moreButton}>
         <Text style={styles.moreButtonText}>•••</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
+  
 };
 
 const styles = StyleSheet.create({
