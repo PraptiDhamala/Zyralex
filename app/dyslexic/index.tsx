@@ -27,7 +27,10 @@ import { HelloWave } from "../../components/hello-wave";
 import { COLORS } from "../../constants/colors";
 import { supabase } from "../../lib/supabase";
 import { fetchSyllables, scanFlashcard } from "../../utils/flashcard";
-import { getLearnEntryRoute } from "../../utils/progress";
+import {
+  getLessonKeyForWeakArea,
+  LESSON_COUNTS_PER_LEVEL,
+} from "../../utils/progress";
 import {
   clearServerIpOverride,
   resolveServerIp,
@@ -68,6 +71,7 @@ export default function DyslexicHome() {
   const [wordSource, setWordSource] = useState<"daily" | "scanned">("daily");
   const [completedLevels, setCompletedLevels] = useState<string[]>([]);
   const [currentLevelKey, setCurrentLevelKey] = useState<string>("level1");
+  const [lessonsTotal, setLessonsTotal] = useState<number>(5);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,11 +120,13 @@ export default function DyslexicHome() {
 
       if (assessmentError) throw assessmentError;
 
+      let latestWeakArea = "None";
       if (assessmentData && assessmentData.length > 0) {
         const latest = assessmentData[0];
         setScore(latest.score ?? 0);
         setLevel(latest.level || "Beginner");
-        setWeakArea(latest.weak_area || "None");
+        latestWeakArea = latest.weak_area || "None";
+        setWeakArea(latestWeakArea);
         setReviewMessage(latest.review || "Take your assessment to begin.");
       } else {
         setScore(0);
@@ -137,7 +143,7 @@ export default function DyslexicHome() {
 
       const { data: progressRow } = await supabase
         .from("dyslexic_user_progress")
-        .select("current_level, completed_levels")
+        .select("current_level, current_lesson, completed_levels")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -145,19 +151,15 @@ export default function DyslexicHome() {
       setCurrentLevelKey(currentLevel);
       setCompletedLevels(progressRow?.completed_levels ?? []);
 
+      const targetLessonKey =
+        progressRow?.current_lesson ?? getLessonKeyForWeakArea(latestWeakArea);
+      const totalForLevel = LESSON_COUNTS_PER_LEVEL[currentLevel] ?? 5;
+      setLessonsTotal(totalForLevel);
+
       if (completions) {
-        const currentLevelLessonCounts: Record<string, number> = {
-          level1: 5,
-          level2: 5,
-          level3: 5,
-          level4: 1,
-          level5: 1,
-        };
-
-        const totalForLevel = currentLevelLessonCounts[currentLevel] ?? 5;
-
         const completedInLevel = completions.filter(
-          (c) => c.level_key === currentLevel,
+          (c) =>
+            c.level_key === currentLevel && c.lesson_key === targetLessonKey,
         ).length;
 
         setCompletedLessonsCount(completedInLevel);
@@ -379,7 +381,7 @@ export default function DyslexicHome() {
             <View style={styles.xpContainer}>
               <Text style={styles.xpText}>{completedLessonsCount * 25} XP</Text>
               <Text style={styles.xpSubtext}>
-                Lessons: {completedLessonsCount}/4
+                Lessons: {completedLessonsCount}/{lessonsTotal}
               </Text>
             </View>
           </View>
@@ -496,23 +498,7 @@ export default function DyslexicHome() {
           <View style={styles.actionButtonsSection}>
             <Pressable
               style={styles.actionButton}
-              onPress={async () => {
-                const {
-                  data: { user },
-                } = await supabase.auth.getUser();
-                if (!user) return;
-
-                const dest = await getLearnEntryRoute(user.id);
-
-                if (dest.kind === "assessment") {
-                  router.push("/dyslexic/learn");
-                } else {
-                  router.push({
-                    pathname: "/dyslexic/module/[level1]/[lesson]",
-                    params: { level1: dest.level, lesson: dest.lesson },
-                  } as any);
-                }
-              }}
+              onPress={() => router.push("/dyslexic/learn")}
             >
               <View style={styles.actionButtonContent}>
                 <Ionicons name="clipboard-outline" size={24} color="#3b82f6" />

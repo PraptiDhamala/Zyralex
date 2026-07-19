@@ -1,9 +1,11 @@
 // components/lesson/ResultsScreen.tsx
-
 import { Lesson } from '@/types/lesson';
+import {
+  Ionicons
+} from "@expo/vector-icons";
 import React from 'react';
 import {
-  Image, 
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -97,7 +99,7 @@ export const ResultsScreen: React.FC<Props> = ({
           onPress={onRetake}
           activeOpacity={0.8}
         >
-          <Text style={styles.secondaryBtnIcon}>🔄</Text>
+          <Text style={styles.secondaryBtnIcon}><Ionicons name="refresh-outline" size={24} color="#173d5e" /></Text>
           <Text style={styles.secondaryBtnText}>Retake</Text>
         </TouchableOpacity>
 
@@ -106,7 +108,7 @@ export const ResultsScreen: React.FC<Props> = ({
           onPress={onPractice}
           activeOpacity={0.8}
         >
-          <Text style={styles.secondaryBtnIcon}>📝</Text>
+          <Text style={styles.secondaryBtnIcon}><Ionicons name="create" size={24} color="#173d5e" /></Text>
           <Text style={styles.secondaryBtnText}>Practice</Text>
         </TouchableOpacity>
 
@@ -116,7 +118,7 @@ export const ResultsScreen: React.FC<Props> = ({
           onPress={onBackToLessons}
           activeOpacity={0.8}
         >
-          <Text style={styles.secondaryBtnIcon}>📚</Text>
+          <Text style={styles.secondaryBtnIcon}><Ionicons name="school" size={24} color="#173d5e" /></Text>
           <Text style={styles.secondaryBtnText}>Lessons</Text>
         </TouchableOpacity>
       </View>
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.primary,
+    color: COLORS.black,
     textAlign: 'center',
   },
 });

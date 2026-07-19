@@ -39,10 +39,22 @@ export default function LearnScreen() {
 
         {/* Lesson Levels */}
         <View style={styles.lessonsContainer}>
-          {levels.map((level) => (
-            <LevelCollapsible key={level.levelId} level={level} />
-          ))}
+        {levels.map((level, index) => {
+          const previousComplete =
+            index === 0// first level is always unlocked
+              ? true
+              : levels[index - 1].completed === levels[index - 1].total;
+
+          return (
+            <LevelCollapsible
+              key={level.levelId}
+              level={level}
+              previousLevelComplete={previousComplete} 
+            />
+          );
+        })}
         </View>
+
 
         {/* Bottom Padding */}
         <View style={styles.bottomPadding} />

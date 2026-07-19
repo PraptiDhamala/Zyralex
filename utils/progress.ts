@@ -1,4 +1,28 @@
 import { supabase } from "../lib/supabase";
+export const weakAreaToLesson: Record<string, string> = {
+  letter_reversal: "letter_reversal",
+  spelling_recognition: "letter_reversal",
+  visual_tracking: "visual_tracking",
+  phonics: "phonics",
+  phonological_awareness: "phonics",
+  phoneme_manipulation: "phonics",
+  vowel_processing: "vowel_processing",
+  decoding: "decoding",
+  chunking: "chunking",
+};
+
+export function getLessonKeyForWeakArea(weakArea?: string | null): string {
+  if (!weakArea) return "letter_reversal";
+  return weakAreaToLesson[weakArea.trim().toLowerCase()] ?? "letter_reversal";
+}
+
+export const LESSON_COUNTS_PER_LEVEL: Record<string, number> = {
+  level1: 5,
+  level2: 5,
+  level3: 5,
+  level4: 1,
+  level5: 1,
+};
 export async function getLatestAssessment(userId: string) {
   const { data, error } = await supabase
     .from("assessments")
